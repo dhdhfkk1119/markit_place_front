@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/auth/login_page/login_page.dart';
+import 'package:markit_place_front/presentation/pages/auth/register_page/register_page.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/main_screen.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -15,7 +17,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: MainScreen(),
+      routes: {
+        "/register": (context) => const RegisterPage(),
+        "product/list": (context) => const ProductListPage()
+      },
     );
   }
 }

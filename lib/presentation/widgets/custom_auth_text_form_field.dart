@@ -20,7 +20,7 @@ class CustomAuthTextFormField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title),
-        const SizedBox(height: smallGap),
+        const SizedBox(height: fiveGap),
         TextFormField(
           onChanged: onChanged,
           obscureText: obscureText,

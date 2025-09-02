@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
-const double smallGap = 5.0;
-const double mediumGap = 10.0;
-const double largeGap = 20.0;
-const double xlargeGap = 100.0;
+const double fiveGap = 5.0;
+const double tenGap = 10.0;
+const double twenGap = 20.0;
+const double thiGap = 30.0;
+const double fortGap = 30.0;
+const double fifGap = 50.0;
+const double handGap = 100.0;
 
 double getScreenWidth(BuildContext context) {
   return MediaQuery.of(context).size.width;

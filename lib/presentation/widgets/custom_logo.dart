@@ -1,27 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 
 class CustomLogo extends StatelessWidget {
   final String title;
+  final String mTitle;
+  final String fontFamily;
 
-  const CustomLogo(this.title, {Key? key}) : super(key: key);
+  const CustomLogo(this.title, this.mTitle, this.fontFamily, {Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: xlargeGap),
-        SvgPicture.asset(
-          "assets/logo.png",
-          height: 70,
-          width: 70,
-        ),
         Text(
           title,
-          style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 40,
+            fontFamily: fontFamily,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: largeGap),
+        const SizedBox(
+          height: fifGap,
+        ),
+        Text(
+          mTitle,
+          style: TextStyle(
+              fontSize: 20,
+              fontFamily: fontFamily,
+              fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: fifGap),
+        const Image(
+          image: AssetImage('assets/logo.png'),
+          width: 200,
+        ),
+        const SizedBox(height: fifGap)
       ],
     );
   }
