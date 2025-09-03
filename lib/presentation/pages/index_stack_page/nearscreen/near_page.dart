@@ -18,14 +18,9 @@ class _NearPageState extends State<NearPage> {
   @override
   void initState() {
     super.initState();
-    _loadEnvFile();
     WidgetsFlutterBinding.ensureInitialized();
     _initNaverMap();
     _locationFuture = _fetchPosition();
-  }
-
-  Future<void> _loadEnvFile() async {
-    await dotenv.load(fileName: ".env");
   }
 
   Future<void> _initNaverMap() async {
