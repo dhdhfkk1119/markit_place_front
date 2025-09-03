@@ -16,8 +16,6 @@ class _ProductListBodyState extends State<ProductListBody>
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -76,9 +74,7 @@ class _ProductListBodyState extends State<ProductListBody>
             ),
 
             // 상품 리스트
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
+            Expanded(
               child: const ProductListItem(),
             ),
           ],
