@@ -328,5 +328,8 @@ $RECYCLE.BIN/
 build/
 .idea/
 
+# 환경변수 무시
+.env
+
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij,windows,eclipse,visualstudiocode,macos,flutter
