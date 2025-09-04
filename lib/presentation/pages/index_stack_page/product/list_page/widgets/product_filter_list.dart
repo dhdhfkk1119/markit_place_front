@@ -68,6 +68,10 @@ class _ProductFiterListState extends State<ProductFilterList> {
             });
           },
         ),
+        Container(
+          height: 2,
+          color: Colors.grey,
+        ),
         getTitle('위치'),
         getTitle('부산 광역시 부산 진구'),
         ..._placeFilters.keys.map((key) {
@@ -81,6 +85,10 @@ class _ProductFiterListState extends State<ProductFilterList> {
             },
           );
         }).toList(),
+        Container(
+          height: 2,
+          color: Colors.grey,
+        ),
         getTitle('카테고리'),
         ..._categoryFilters.keys.map((key) {
           return FilterItemWidget(
@@ -93,6 +101,10 @@ class _ProductFiterListState extends State<ProductFilterList> {
             },
           );
         }).toList(),
+        Container(
+          height: 2,
+          color: Colors.grey,
+        ),
         getTitle('가격'),
         ..._priceFilters.keys.map((key) {
           return FilterItemWidget(
@@ -105,6 +117,10 @@ class _ProductFiterListState extends State<ProductFilterList> {
             },
           );
         }).toList(),
+        Container(
+          height: 2,
+          color: Colors.grey,
+        ),
       ]),
     );
   }
