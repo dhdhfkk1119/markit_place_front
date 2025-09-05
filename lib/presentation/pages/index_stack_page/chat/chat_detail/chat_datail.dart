@@ -169,16 +169,14 @@ class _ChatDetailState extends State<ChatDetail> {
                       return _buildOtherMessage(context, item);
                     }
                   }
-                }, // itemBuilder는 여기서 끝!
+                },
               ),
             )
           ],
         ),
       ),
     );
-  } // build 메서드는 여기서 끝!
-
-  // --- ⭐ 함수 정의를 build 메서드 밖으로 이동! ---
+  }
 
   Widget _buildDateSeparator(String date) {
     return Center(
