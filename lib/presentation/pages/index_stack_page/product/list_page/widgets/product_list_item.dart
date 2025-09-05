@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../detail_page/detail_page.dart';
+
 class ProductListItem extends StatefulWidget {
   final bool _isFilterVisible;
   const ProductListItem(this._isFilterVisible, {super.key});
@@ -12,16 +14,27 @@ class ProductListItem extends StatefulWidget {
 class _ProductListItemState extends State<ProductListItem> {
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 100,
-      child: Row(
-        children: [
-          _buildProductImage(),
-          const SizedBox(width: 16),
-          Expanded(child: _buildProductInfo()),
-          const SizedBox(width: 8),
-          _buildConditionalActions(),
-        ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
+          MaterialPageRoute(
+            builder: (context) => DetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
+          ),
+        );
+      },
+      child: SizedBox(
+        height: 100,
+        child: Row(
+          children: [
+            _buildProductImage(),
+            const SizedBox(width: 16),
+            Expanded(child: _buildProductInfo()),
+            const SizedBox(width: 8),
+            _buildConditionalActions(),
+          ],
+        ),
       ),
     );
   }
