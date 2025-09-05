@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:location/location.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
 
 class NearPage extends StatefulWidget {
   const NearPage({super.key});
@@ -12,7 +11,7 @@ class NearPage extends StatefulWidget {
 }
 
 class _NearPageState extends State<NearPage> {
-  Future<LocationData?>? _locationFuture = null;
+  Future<LocationData?>? _locationFuture;
   NLatLng? _currentPosition;
   late final NaverMapController _mapController;
 
@@ -90,7 +89,7 @@ class _NearPageState extends State<NearPage> {
                 NLatLng(locationData.latitude!, locationData.longitude!);
 
             if (_currentPosition == null) {
-              return Placeholder();
+              return const Placeholder();
             }
 
             return NaverMap(
@@ -114,7 +113,7 @@ class _NearPageState extends State<NearPage> {
       ]),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if (_currentPosition != null && _mapController != null) {
+          if (_currentPosition != null) {
             final cameraUpdate =
                 NCameraUpdate.scrollAndZoomTo(target: _currentPosition!);
 

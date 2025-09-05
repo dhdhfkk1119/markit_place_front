@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class SnackBarUtil {
@@ -7,7 +8,13 @@ class SnackBarUtil {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         backgroundColor: Colors.green,
         duration: Duration(seconds: 2),
       ),
@@ -20,7 +27,13 @@ class SnackBarUtil {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         backgroundColor: Colors.red,
         duration: Duration(seconds: 3),
       ),
@@ -33,7 +46,13 @@ class SnackBarUtil {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         duration: Duration(seconds: 2),
       ),
     );
@@ -45,7 +64,13 @@ class SnackBarUtil {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         backgroundColor: Colors.orange,
         duration: Duration(seconds: 2),
       ),
