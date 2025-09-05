@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/chat_datail.dart';
 
 class ChatList extends StatefulWidget {
   const ChatList({super.key});
@@ -101,14 +102,14 @@ class _ChatListState extends State<ChatList> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(
+                          const Text(
                             ("구매 또는 판매시 안전하고 깨끗한 거래 환경을 조성해주세요.\n이를 지키지 않아 발생하는 모든 책임은 이용자에게 있습니다."),
                             style: TextStyle(
                                 color: Colors.purple,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 5,
                           ),
                           IconButton(
@@ -117,7 +118,7 @@ class _ChatListState extends State<ChatList> {
                                   _isShowBanner = false;
                                 });
                               },
-                              icon: Icon(
+                              icon: const Icon(
                                 Icons.cancel,
                                 color: Colors.purple,
                               ))
@@ -134,20 +135,28 @@ class _ChatListState extends State<ChatList> {
                 },
                 itemCount: testMapList.length,
                 itemBuilder: (context, index) {
-                  final post = testMapList[index];
+                  final room = testMapList[index];
                   return ListTile(
                     leading: SizedBox(
                       width: 30,
                       height: 30,
-                      child: Placeholder(),
+                      child: ClipOval(
+                        clipBehavior: Clip.hardEdge,
+                        child: Image.asset(
+                          "assets/logo.png",
+                          height: 10,
+                          width: 10,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                     title: Text(
-                      post["name"],
+                      room["name"],
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      post["lastMsg"],
-                      style: TextStyle(fontSize: 12),
+                      room["lastMsg"],
+                      style: const TextStyle(fontSize: 12),
                     ),
                     trailing: Container(
                       width: 10,
@@ -158,7 +167,10 @@ class _ChatListState extends State<ChatList> {
                       ),
                     ),
                     onTap: () {
-                      Navigator.pushNamed(context, "/", arguments: post);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ChatDetail(room: room)));
                     },
                   );
                 }),
@@ -180,7 +192,7 @@ class _ChatListState extends State<ChatList> {
               side: BorderSide(color: Colors.grey[300]!)),
           backgroundColor:
               _selectedButtonId == id ? Colors.black87 : Colors.white,
-          minimumSize: Size(10, 10)),
+          minimumSize: const Size(10, 10)),
       child: Text(
         style: TextStyle(
             color: _selectedButtonId == id ? Colors.white : Colors.black,
