@@ -202,8 +202,7 @@ class _ChatDetailState extends State<ChatDetail> {
               onPressed: () {
                 SnackBarUtil.showSuccess(context, "테스트");
               },
-              splashColor:
-                  CustomColor.getCustomRed(bright: "FC", intensity: "DD"),
+              splashColor: CustomColor.transparent,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30)),
             ),
