@@ -2,17 +2,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_popup.dart';
 
-import '../../detail_page/detail_page.dart';
+import '../../detail_page/community_detail_page.dart';
 
-class ProductListItem extends StatefulWidget {
+class CommunityListItem extends StatefulWidget {
   final bool _isFilterVisible;
-  const ProductListItem(this._isFilterVisible, {super.key});
+  const CommunityListItem(this._isFilterVisible, {super.key});
 
   @override
-  State<ProductListItem> createState() => _ProductListItemState();
+  State<CommunityListItem> createState() => _CommunityListItemState();
 }
 
-class _ProductListItemState extends State<ProductListItem> {
+class _CommunityListItemState extends State<CommunityListItem> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -21,7 +21,8 @@ class _ProductListItemState extends State<ProductListItem> {
           context,
           // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
-            builder: (context) => DetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
+            builder: (context) =>
+                CommunityDetailPageDetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
           ),
         );
       },
