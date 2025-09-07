@@ -2,50 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 
-// DetailItem 위젯이 이 페이지에 포함되어 있다고 가정합니다.
-// 실제 프로젝트에서는 DetailItem.dart 파일을 import해야 합니다.
-class DetailItem extends StatelessWidget {
-  @override
-  Widget build(BuildContext) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CustomWidget.buildTitle(
-            "상품 상세 정보",
-            size: 20,
-          ),
-          CustomWidget.buildTitle(
-            "50,000원",
-            size: 20,
-          ),
-          CustomWidget.buildTitle(
-            "50,000원",
-            size: 20,
-          ),
-          SizedBox(height: 8),
-          Text(
-            "이 상품은 아주 좋은 상품입니다. 상세한 내용은 아래와 같습니다.",
-            style: TextStyle(fontSize: 16),
-          ),
-          SizedBox(height: 16),
-          Text(
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. 이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다.",
-          ),
-          SizedBox(height: 200),
-          Text("스크롤 끝"),
-        ],
-      ),
-    );
-  }
-}
+import 'detail_item.dart';
+import 'detail_item_image.dart';
 
 class DetailBody extends StatefulWidget {
   const DetailBody({super.key});
@@ -55,12 +13,40 @@ class DetailBody extends StatefulWidget {
 }
 
 class _DetailBodyState extends State<DetailBody> {
+  final ScrollController _scrollController = ScrollController(); //스크롤 위치 설정
+  Color _appBarColor = Colors.transparent; // 동적으로 색상 변경(스클로에 따라)
+  Color _iconColor = Colors.white;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    double offset = _scrollController.offset.clamp(0, 100);
+    double t = offset / 100;
+
+    setState(() {
+      _appBarColor = Color.lerp(Colors.transparent, Colors.white, t)!;
+      _iconColor = Color.lerp(Colors.white, Colors.black, t)!;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // body가 앱바 뒤로 확장되게 설정
       appBar: AppBar(
         automaticallyImplyLeading: false, // 기본 뒤로가기 버튼 제거
-        backgroundColor: Colors.transparent, // 앱바 배경을 투명하게 만듭니다.
+        backgroundColor: _appBarColor, // 앱바 배경을 투명하게 만듭니다.
         elevation: 0, // 앱바 아래 그림자 제거
         actions: [
           // 왼쪽 아이콘 그룹 (AppBar의 leading 속성과 비슷하게 사용)
@@ -70,27 +56,16 @@ class _DetailBodyState extends State<DetailBody> {
           _buildRightAppBarIcon(),
         ],
       ),
-      extendBodyBehindAppBar: true, // body를 앱바 뒤까지 확장합니다.
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           children: [
-            // 이미지가 화면 절반을 차지하는 부분
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.5,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: InkWell(
-                      onTap: () {},
-                      child: Image.asset(
-                        "assets/product.jpg",
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  // AppBar 아이콘들을 이미지 위에 겹쳐서 표시
-                ],
-              ),
+            DetailItemImage(
+              imagePaths: [
+                "assets/product.jpg",
+                "assets/product2.jpg",
+                "assets/product3.jpg",
+              ],
             ),
             // 이미지가 스크롤되면 함께 올라가는 상품 정보
             DetailItem(),
@@ -126,7 +101,7 @@ class _DetailBodyState extends State<DetailBody> {
                 decoration: InputDecoration(
                   hintText: "메시지를 입력하세요...",
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24.0),
+                    borderRadius: BorderRadius.circular(16.0),
                     borderSide: BorderSide.none,
                   ),
                   fillColor: Colors.grey[200],
@@ -149,8 +124,17 @@ class _DetailBodyState extends State<DetailBody> {
     return SafeArea(
       child: Row(
         children: [
-          _buildIcon(const Icon(CupertinoIcons.back)),
-          _buildTitle("커뮤니티", color: Colors.black),
+          _buildIcon(
+              Icon(
+                CupertinoIcons.back,
+                color: _iconColor,
+              ), onPressed: () {
+            Navigator.pop(context);
+          }),
+          _buildTitle(
+            "커뮤니티",
+            color: _iconColor,
+          ),
         ],
       ),
     );
@@ -161,9 +145,23 @@ class _DetailBodyState extends State<DetailBody> {
     return SafeArea(
       child: Row(
         children: [
-          _buildIcon(const Icon(CupertinoIcons.profile_circled)),
-          _buildIcon(const Icon(CupertinoIcons.heart)),
-          _buildIcon(const Icon(Icons.more_vert))
+          _buildIcon(Icon(
+            CupertinoIcons.profile_circled,
+            color: Colors.black,
+          )),
+          _buildIcon(Icon(CupertinoIcons.heart, color: Colors.black)),
+          _buildIcon(
+            const Icon(Icons.more_vert),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                builder: (context) => _buildAppBarPopUp(context),
+              );
+            },
+          )
         ],
       ),
     );
@@ -196,6 +194,29 @@ class _DetailBodyState extends State<DetailBody> {
         size: size ?? icon.size,
         color: color ?? icon.color,
       ),
+    );
+  }
+
+  // 앱바에 list 버튼을 눌렸을 때 팝업
+  Widget _buildAppBarPopUp(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.report, color: Colors.red),
+          title: const Text("신고하기"),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.close, color: Colors.grey),
+          title: const Text("닫기"),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+      ],
     );
   }
 }

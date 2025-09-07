@@ -4,22 +4,36 @@ class FilterItemWidget extends StatefulWidget {
   final String title;
   final bool initialValue;
   final ValueChanged<bool> onChanged;
+
   const FilterItemWidget({
     super.key,
     required this.title,
     required this.initialValue,
     required this.onChanged,
   });
+
   @override
   State<FilterItemWidget> createState() => _FilterItemWidgetState();
 }
 
 class _FilterItemWidgetState extends State<FilterItemWidget> {
   late bool _isChecked;
+
   @override
   void initState() {
     super.initState();
     _isChecked = widget.initialValue;
+  }
+
+  // 부모 상태가 바뀌면 내부 _isChecked도 업데이트
+  @override
+  void didUpdateWidget(covariant FilterItemWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue) {
+      setState(() {
+        _isChecked = widget.initialValue;
+      });
+    }
   }
 
   @override
