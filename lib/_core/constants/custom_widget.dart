@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class CustomWidget {
   static Text buildTitle(String title,
-      {double? size, Color? color, FontWeight? weight}) {
+      {double? size, Color? color, FontWeight? weight,TextDecoration? decoration}) {
     return Text(
       title,
       style: TextStyle(
@@ -10,6 +10,7 @@ class CustomWidget {
         fontFamily: "CookieRun",
         fontWeight: weight ?? FontWeight.w700,
         color: color ?? Colors.black,
+        decoration: decoration ?? TextDecoration.none,
       ),
     );
   }
