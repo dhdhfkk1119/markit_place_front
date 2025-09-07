@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 
-import 'fullscreen_gallery.dart';
+import 'community_fullscreen_gallery.dart';
 
-class DetailItemImage extends StatefulWidget {
+class CommunityDetailItemImage extends StatefulWidget {
   final List<String> imagePaths;
 
-  const DetailItemImage({
+  const CommunityDetailItemImage({
     super.key,
     required this.imagePaths,
   });
 
   @override
-  State<DetailItemImage> createState() => _DetailItemImageState();
+  State<CommunityDetailItemImage> createState() =>
+      _CommunityDetailItemImageState();
 }
 
-class _DetailItemImageState extends State<DetailItemImage> {
+class _CommunityDetailItemImageState extends State<CommunityDetailItemImage> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
 
@@ -42,7 +43,7 @@ class _DetailItemImageState extends State<DetailItemImage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => FullScreenGallery(
+                      builder: (_) => CommunityFullscreenGallery(
                         imagePaths: widget.imagePaths,
                         initialIndex: _currentIndex,
                       ),

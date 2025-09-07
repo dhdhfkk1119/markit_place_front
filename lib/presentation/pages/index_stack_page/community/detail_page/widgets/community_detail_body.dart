@@ -1,19 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-
 import '../../../../../../_core/constants/custom_popup.dart';
-import 'detail_item.dart';
-import 'detail_item_image.dart';
+import 'community_detail_item.dart';
+import 'community_detail_item_image.dart';
 
-class DetailBody extends StatefulWidget {
-  const DetailBody({super.key});
+class CommunityDetailBody extends StatefulWidget {
+  const CommunityDetailBody({super.key});
 
   @override
-  State<DetailBody> createState() => _DetailBodyState();
+  State<CommunityDetailBody> createState() => _CommunityDetailBodyState();
 }
 
-class _DetailBodyState extends State<DetailBody> {
+class _CommunityDetailBodyState extends State<CommunityDetailBody> {
   final ScrollController _scrollController = ScrollController(); //스크롤 위치 설정
   Color _appBarColor = Colors.transparent; // 동적으로 색상 변경(스클로에 따라)
   Color _iconColor = Colors.white;
@@ -61,7 +59,7 @@ class _DetailBodyState extends State<DetailBody> {
         controller: _scrollController,
         child: Column(
           children: [
-            DetailItemImage(
+            CommunityDetailItemImage(
               imagePaths: [
                 "assets/product.jpg",
                 "assets/product2.jpg",
@@ -69,7 +67,7 @@ class _DetailBodyState extends State<DetailBody> {
               ],
             ),
             // 이미지가 스크롤되면 함께 올라가는 상품 정보
-            DetailItem(),
+            CommunityDetailItem(),
           ],
         ),
       ),
