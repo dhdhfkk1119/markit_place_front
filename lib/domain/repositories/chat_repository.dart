@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import '../../_core/utils/my_http.dart';
 import '../models/chat.dart';
 
