@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_item.dart';
 
-class ProductWriteBody extends StatefulWidget {
+class CommunityWriteBody extends StatefulWidget {
   // final Product? product; // 수정할 상품 정보 (nullable)
 
-  const ProductWriteBody({super.key});
+  const CommunityWriteBody({super.key});
 
   @override
-  State<ProductWriteBody> createState() => _ProductWriteBodyState();
+  State<CommunityWriteBody> createState() => _CommunityWriteBodyState();
 }
 
-class _ProductWriteBodyState extends State<ProductWriteBody> {
+class _CommunityWriteBodyState extends State<CommunityWriteBody> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
