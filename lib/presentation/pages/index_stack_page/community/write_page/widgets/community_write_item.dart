@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 
-class ProductWriteItem extends StatefulWidget {
-  const ProductWriteItem({super.key});
+class CommunityWriteItem extends StatefulWidget {
+  const CommunityWriteItem({super.key});
 
   @override
-  State<ProductWriteItem> createState() => _ProductWriteItemState();
+  State<CommunityWriteItem> createState() => _CommunityWriteItemState();
 }
 
-class _ProductWriteItemState extends State<ProductWriteItem> {
+class _CommunityWriteItemState extends State<CommunityWriteItem> {
   bool _isOn = false;
   int _imageIndex = 0;
   int _maxImageUpload = 10;
