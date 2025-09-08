@@ -16,6 +16,13 @@ class CustomAuthTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // CustomAuthTextFormField가 사용할 독립적인 테두리 색상을 정의합니다.
+    // 이는 theme.dart의 InputDecorationTheme과 다를 수 있습니다.
+    final Color defaultBorderColor = Colors.grey.shade600; // 일반 상태 테두리 색
+    final Color focusedBorderColor =
+        Theme.of(context).primaryColor; // 포커스 시 테두리 (예: 기본 파란색 계열)
+    final Color errorBorderColor = Colors.red; // 에러 시 테두리 색 (기본 빨간색)
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -27,22 +34,24 @@ class CustomAuthTextFormField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: "Enter $title",
             errorText: errorText.isEmpty ? null : errorText,
+            // === 테두리 스타일 완전 복원 시작 ===
             enabledBorder: OutlineInputBorder(
-              // 3. 기본 TextFormField 디자인
               borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: defaultBorderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              // 4. 손가락 터치시 TextFormField 디자인
               borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: focusedBorderColor, width: 2.0),
             ),
             errorBorder: OutlineInputBorder(
-              // 5. 에러발생시 TextFormField 디자인
               borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: errorBorderColor),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              // 6. 에러가 발생 후 손가락을 터치했을 때 TextFormField 디자인
               borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide(color: errorBorderColor, width: 2.0),
             ),
+            // === 테두리 스타일 완전 복원 끝 ===
           ),
         ),
       ],
