@@ -52,7 +52,7 @@ class _ProductListItemState extends State<ProductListItem> {
     );
   }
 
-  // 조건부에 따라 오른쪽 (list-button,bottom Icon ) 위치 조정
+  // 조건부에 따라 오른쪽 (list-button,bottom Icon) 위치 조정
   Widget _buildConditionalActions() {
     if (widget._isFilterVisible) {
       return const SizedBox.shrink();
@@ -130,6 +130,9 @@ class _ProductListItemState extends State<ProductListItem> {
       children: [
         _buildIcon(CupertinoIcons.profile_circled),
         _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
+        const SizedBox(
+          width: 5,
+        ),
         _buildIcon(CupertinoIcons.heart_fill),
         _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
       ],

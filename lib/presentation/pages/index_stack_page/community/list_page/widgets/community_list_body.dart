@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/community_list_page.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/widgets/community_list_item.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_filter_list.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_item.dart';
 
@@ -155,7 +157,7 @@ class _CommunityListBodyState extends State<CommunityListBody>
                   itemCount: 10,
                   itemBuilder: (BuildContext context, int index) {
                     // ProductListItem 자체는 순수한 아이템 정보만 담고 있습니다.
-                    return ProductListItem(_isFilterVisible);
+                    return CommunityListItem(_isFilterVisible);
                   },
                   separatorBuilder: (BuildContext context, int index) {
                     // 각 아이템 사이에 Divider를 자동으로 추가합니다.

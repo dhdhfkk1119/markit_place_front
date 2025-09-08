@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_filter_list.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_item.dart';
 
@@ -122,52 +123,70 @@ class _ProductListBodyState extends State<ProductListBody>
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Row(
+        child: Stack(
+          // ✨ Stack 추가
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                final offsetAnimation = Tween<Offset>(
-                  begin: const Offset(-1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(animation);
-                return ClipRect(
-                  child: SlideTransition(
-                    position: offsetAnimation,
-                    child: child,
-                  ),
-                );
-              },
-              child: _isFilterVisible
-                  ? ConstrainedBox(
-                      key: ValueKey(true),
-                      constraints: BoxConstraints(maxWidth: 155),
-                      child: ProductFilterList(),
-                    )
-                  : const SizedBox.shrink(key: ValueKey(false)),
-            ),
-            // 상품 리스트
-            Expanded(
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: ListView.separated(
-                  itemCount: 10,
-                  itemBuilder: (BuildContext context, int index) {
-                    // ProductListItem 자체는 순수한 아이템 정보만 담고 있습니다.
-                    return ProductListItem(_isFilterVisible);
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    // 각 아이템 사이에 Divider를 자동으로 추가합니다.
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
-                      child: Divider(
-                        height: 1, // 선의 높이
-                        thickness: 1, // 선의 두께
-                        color: Colors.grey, // 선의 색상
+            Row(
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    final offsetAnimation = Tween<Offset>(
+                      begin: const Offset(-1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation);
+                    return ClipRect(
+                      child: SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
                       ),
                     );
                   },
+                  child: _isFilterVisible
+                      ? ConstrainedBox(
+                          key: ValueKey(true),
+                          constraints: BoxConstraints(maxWidth: 155),
+                          child: ProductFilterList(),
+                        )
+                      : const SizedBox.shrink(key: ValueKey(false)),
+                ),
+                Expanded(
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: ListView.separated(
+                      itemCount: 10,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ProductListItem(_isFilterVisible);
+                      },
+                      separatorBuilder: (BuildContext context, int index) {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
+                          child: Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              left: 0,
+              child: Center(
+                child: Container(
+                  child: CustomWidget.buildIcon(
+                    onPressed: () {},
+                    size: 50,
+                    color: Colors.deepPurpleAccent,
+                    Icon(CupertinoIcons.plus_circle_fill),
+                  ),
                 ),
               ),
             ),
