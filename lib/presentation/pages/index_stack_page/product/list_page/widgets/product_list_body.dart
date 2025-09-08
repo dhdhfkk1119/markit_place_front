@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_filter_list.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_item.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/product_write_page.dart';
 
 // 재사용 가능한 스타일 정의
 const _titleTextStyle =
@@ -175,55 +176,7 @@ class _ProductListBodyState extends State<ProductListBody>
                 ),
               ],
             ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  // 타원형 디자인 설정
-                  decoration: BoxDecoration(
-                    color: Colors.white, // 배경색
-                    borderRadius:
-                        BorderRadius.circular(30.0), // 타원형을 만들기 위해 둥근 모서리 설정
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 3), // 그림자 위치
-                      ),
-                    ],
-                  ),
-                  padding: EdgeInsets.symmetric(
-                      horizontal: 10.0, vertical: 10.0), // 내부 여백
-                  child: InkWell(
-                    onTap: () {
-                      print("클릭되면 글쓰기 사이트로 이동");
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 위젯에 맞춤
-                      children: [
-                        Icon(
-                          CupertinoIcons.plus,
-                          size: 20,
-                          color: Colors.deepPurpleAccent,
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        CustomWidget.buildTitle(
-                          "글쓰기",
-                          color: Colors.deepPurpleAccent,
-                        ),
-                        SizedBox(
-                          width: 10,
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            )
+            _buildWriteButton(),
           ],
         ),
       ),
@@ -253,6 +206,58 @@ class _ProductListBodyState extends State<ProductListBody>
             style: const TextStyle(
               fontFamily: "CookieRun",
               fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWriteButton() {
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      child: Center(
+        child: Container(
+          // 타원형 디자인 설정
+          decoration: BoxDecoration(
+            color: Colors.white, // 배경색
+            borderRadius: BorderRadius.circular(30.0), // 타원형을 만들기 위해 둥근 모서리 설정
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3), // 그림자 위치
+              ),
+            ],
+          ),
+          padding:
+              EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0), // 내부 여백
+          child: InkWell(
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => ProductWritePage()));
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 위젯에 맞춤
+              children: [
+                Icon(
+                  CupertinoIcons.plus,
+                  size: 20,
+                  color: Colors.deepPurpleAccent,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                CustomWidget.buildTitle(
+                  "글쓰기",
+                  color: Colors.deepPurpleAccent,
+                ),
+                SizedBox(
+                  width: 10,
+                )
+              ],
             ),
           ),
         ),
