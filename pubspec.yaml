@@ -47,6 +47,7 @@ dependencies:
   location: ^8.0.1
   flutter_client_sse: ^2.0.3
   flutter_dotenv: ^6.0.0
+  photo_view: ^0.15.0
 
 
 dev_dependencies:
