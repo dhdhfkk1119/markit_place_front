@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class InputForm extends StatefulWidget {
-  const InputForm({super.key});
+class AccounLoginForm extends StatefulWidget {
+  const AccounLoginForm({super.key});
 
   @override
-  State<InputForm> createState() => _InputFormState();
+  State<AccounLoginForm> createState() => _AccounLoginFormState();
 }
 
-class _InputFormState extends State<InputForm> {
+class _AccounLoginFormState extends State<AccounLoginForm> {
   bool _autoLogin = false;
   final _formKey = GlobalKey<FormState>();
 

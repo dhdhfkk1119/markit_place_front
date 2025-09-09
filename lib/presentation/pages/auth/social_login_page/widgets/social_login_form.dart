@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:markit_place_front/presentation/pages/auth/account_login_page/account_login_page.dart';
 
-class LoginForm extends StatelessWidget {
-  const LoginForm({super.key});
+class SocialLoginForm extends StatelessWidget {
+  const SocialLoginForm({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,17 +82,14 @@ class LoginForm extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        if (title == "네이버 로그인") {
+        if (title == "구글 로그인" || title == "네이버 로그인" || title == "카카오 로그인") {
           Navigator.pushNamed(context, "product/list");
         } else if (title == "일반 회원 로그인") {
-          Navigator.pushNamed(context, "/input"); // 일반 회원 로그인 시 /input 페이지로 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AccountLoginPage()),
+          );
         }
-        // 여기에 구글, 카카오 로그인 시의 동작을 추가할 수 있습니다.
-        // else if (title == "구글 로그인") {
-        //   // 구글 로그인 로직
-        // } else if (title == "카카오 로그인") {
-        //   // 카카오 로그인 로직
-        // }
       },
       child: Container(
         width: double.infinity,

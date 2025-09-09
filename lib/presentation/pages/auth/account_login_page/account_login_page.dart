@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/auth/input_page/widgets/input_body.dart';
 
-class InputPage extends StatelessWidget {
-  const InputPage({super.key});
+import 'widgets/account_login_body.dart';
+
+class AccountLoginPage extends StatelessWidget {
+  const AccountLoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class InputPage extends StatelessWidget {
           },
         ),
       ),
-      body: const InputBody(),
+      body: const AccounLoginBody(),
     );
   }
 }

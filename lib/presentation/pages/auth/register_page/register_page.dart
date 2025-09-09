@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/auth/login_page/login_page.dart'; // LoginPage 임포트 추가
 import 'package:markit_place_front/presentation/pages/auth/register_page/widgets/register_body.dart';
+
+import '../social_login_page/social_login_page.dart';
 
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
@@ -15,7 +16,7 @@ class RegisterPage extends StatelessWidget {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
+              MaterialPageRoute(builder: (context) => const SocialLoginPage()),
             );
           },
         ),

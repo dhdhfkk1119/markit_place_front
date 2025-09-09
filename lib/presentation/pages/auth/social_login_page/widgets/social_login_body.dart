@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/auth/login_page/widgets/login_form.dart';
 import 'package:markit_place_front/presentation/widgets/custom_logo.dart';
 
-class LoginBody extends StatelessWidget {
-  const LoginBody({super.key});
+import 'social_login_form.dart';
+
+class SocialLoginBody extends StatelessWidget {
+  const SocialLoginBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +15,7 @@ class LoginBody extends StatelessWidget {
         child: ListView(
           children: [
             const CustomLogo("Markit Place", "언제 어디서나 즐겁게 거래해요", "CookieRun"),
-            LoginForm()
+            SocialLoginForm()
           ],
         ),
       ),
