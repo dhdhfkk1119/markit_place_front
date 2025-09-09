@@ -1,4 +1,3 @@
-import '../../_core/utils/my_http.dart';
 import '../models/chat.dart';
 
 class ChatRepository {

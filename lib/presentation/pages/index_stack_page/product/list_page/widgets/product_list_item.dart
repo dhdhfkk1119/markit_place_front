@@ -21,7 +21,7 @@ class _ProductListItemState extends State<ProductListItem> {
           context,
           // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
-            builder: (context) => DetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
+            builder: (context) => const DetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
           ),
         );
       },

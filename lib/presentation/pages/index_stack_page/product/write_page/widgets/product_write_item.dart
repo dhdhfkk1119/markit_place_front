@@ -2,44 +2,58 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
 
-class ProductWriteItem extends StatefulWidget {
+class ProductWriteItem extends ConsumerStatefulWidget {
   const ProductWriteItem({super.key});
 
   @override
-  State<ProductWriteItem> createState() => _ProductWriteItemState();
+  ConsumerState<ProductWriteItem> createState() => _ProductWriteItemState();
 }
 
-class _ProductWriteItemState extends State<ProductWriteItem> {
+class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
   bool _isOn = false;
-  int _imageIndex = 0;
-  int _maxImageUpload = 10;
-  List<String?> imageList = [];
+  final int _imageIndex = 0;
+  final int _maxImageUpload = 10;
+  List<XFile> imageList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(productItemProvider.notifier).subscribe(userId: 1);
+  }
 
   Future<void> _uploadImage() async {
     if (_imageIndex >= _maxImageUpload) return; // 최대 이미지 수 초과 시 종료
 
     final picker = ImagePicker();
     final pickedFile =
-        await picker.pickImage(source: ImageSource.gallery); // 갤러리에서 이미지 선택
+        await picker.pickMultiImage(); // 갤러리에서 이미지 선택
 
-    if (pickedFile != null) {
+    if (pickedFile.isNotEmpty) {
       setState(() {
-        imageList.add(pickedFile.path);
-        _imageIndex = imageList.length;
+        for(int i = 0; i < pickedFile.length; i++) {
+          if(pickedFile[i].path.isNotEmpty) imageList.add(pickedFile[i]);
+        }
+        ref.read(productItemProvider.notifier).uploadImages(images: pickedFile, isOn: _isOn);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // ref.watch를 build 메소드 최상단에서 한 번만 호출합니다.
+    final productItemModel = ref.watch(productItemProvider);
+
     return ListView(
       children: [
         _buildAiController(),
-        _buildImageUpload(),
-        _buildProductInfo(),
+        // watch한 결과를 아래 위젯들에 파라미터로 전달합니다.
+        _buildImageUpload(productItemModel),
+        _buildProductInfo(productItemModel),
       ],
     );
   }
@@ -50,7 +64,7 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
         color: Colors.deepPurpleAccent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 8.0,
@@ -63,9 +77,9 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
             children: [
               Row(
                 children: [
-                  Icon(CupertinoIcons.staroflife_fill,
+                  const Icon(CupertinoIcons.staroflife_fill,
                       size: 14, color: Colors.deepPurpleAccent),
-                  SizedBox(
+                  const SizedBox(
                     width: 4,
                   ),
                   CustomWidget.buildTitle("AI로 작성하기",
@@ -98,7 +112,8 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
     );
   }
 
-  Widget _buildImageUpload() {
+  // ProductItemModel을 파라미터로 받도록 수정합니다.
+  Widget _buildImageUpload(ProductItemModel productItemModel) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -117,14 +132,14 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       CupertinoIcons.camera_fill,
                       size: 24,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      "$_imageIndex/$_maxImageUpload",
-                      style: TextStyle(
+                      "${productItemModel.imageCount}/$_maxImageUpload",
+                      style: const TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
                         color: Colors.black,
@@ -140,16 +155,26 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
           ...imageList.map((imagePath) {
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  image: DecorationImage(
-                    image: FileImage(File(imagePath!)),
-                    fit: BoxFit.cover,
+              child: Stack(
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: FileImage(File(imagePath.path)),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(left: 30, bottom: 30, child: IconButton(onPressed: () {
+                    setState(() {
+                      imageList.remove(imagePath);
+                      ref.read(productItemProvider.notifier).cancelUploadImages(images: imageList);
+                    });
+                  }, icon: const Icon(Icons.cancel, color: Colors.white,)))
+                ]
               ),
             );
           }).toList(),
@@ -158,7 +183,8 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
     );
   }
 
-  Widget _buildProductInfo() {
+  // ProductItemModel을 파라미터로 받도록 수정합니다.
+  Widget _buildProductInfo(ProductItemModel productItemModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -168,7 +194,7 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
         ),
         TextField(
           decoration: InputDecoration(
-              hintText: '제목',
+              hintText: productItemModel.title ?? '제목',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
@@ -181,7 +207,7 @@ class _ProductWriteItemState extends State<ProductWriteItem> {
           minLines: 5,
           decoration: InputDecoration(
               hintText:
-                  '여기는 상품에 대한 정보가 담기느 부분입니다 판매 금지 된 물품이나 등록 선정에 부적절한 물픔은 등록을 삼가 해주시기바랍니다 ',
+                  productItemModel.description ?? '여기는 상품에 대한 정보가 담기느 부분입니다 판매 금지 된 물품이나 등록 선정에 부적절한 물픔은 등록을 삼가 해주시기바랍니다 ',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),

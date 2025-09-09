@@ -20,7 +20,7 @@ class RegisterBody extends StatelessWidget {
           const SizedBox(height: twenGap),
           Expanded(
             child: ListView(
-              children: [
+              children: const [
                 RegisterForm(),
               ],
             ),

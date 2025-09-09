@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
 class CommunityDetailItem extends StatefulWidget {
+  const CommunityDetailItem({super.key});
+
   @override
   State<CommunityDetailItem> createState() => _CommunityDetailItemState();
 }
@@ -10,45 +12,33 @@ class CommunityDetailItem extends StatefulWidget {
 class _CommunityDetailItemState extends State<CommunityDetailItem> {
   @override
   Widget build(BuildContext) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildProfile(),
-          _buildDivider(),
-          CustomWidget.buildTitle(
-            "상품 상세 정보",
-            size: 20,
-          ),
-          CustomWidget.buildTitle(
-            "50,000원",
-            size: 20,
-          ),
-          CustomWidget.buildTitle(
-            "카테고리",
-            size: 16,
-            color: Colors.grey,
-          ),
-          SizedBox(height: 8),
-          Text(
-            "이 상품은 아주 좋은 상품입니다. 상세한 내용은 아래와 같습니다.",
-            style: TextStyle(fontSize: 16),
-          ),
-          SizedBox(height: 16),
-          Text(
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. 이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다.",
-          ),
-          SizedBox(height: 200),
-          Text("스크롤 끝"),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildProfile(),
+        const SizedBox(
+          height: 16,
+        ),
+        CustomWidget.buildTitle(
+          "상품 상세 정보",
+          size: 20,
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "이 상품은 아주 좋은 상품입니다. 상세한 내용은 아래와 같습니다.",
+          style: TextStyle(fontSize: 16),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          "조정우 바보 멍청이 똥깨 말미잘 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. 이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
+          "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
+          "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
+          "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
+          "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
+          "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
+          "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다.",
+        ),
+      ],
     );
   }
 
@@ -82,90 +72,7 @@ class _CommunityDetailItemState extends State<CommunityDetailItem> {
               ),
             ],
           ),
-
-          // 2. 점수 Column을 오른쪽 끝으로 보냅니다.
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end, // Column 내부 텍스트를 오른쪽 정렬
-            children: [
-              CustomWidget.buildTitle("4.5", size: 16, weight: FontWeight.w500),
-              InkWell(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(16)),
-                    ),
-                    builder: (context) {
-                      return _buildBottomPopUp(context);
-                    },
-                  );
-                },
-                child: CustomWidget.buildTitle("평균점수",
-                    size: 12,
-                    weight: FontWeight.w200,
-                    color: Colors.grey,
-                    decoration: TextDecoration.underline),
-              ),
-            ],
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Padding(
-      padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
-      child: Divider(
-        height: 1, // 선의 높이
-        thickness: 1, // 선의 두께
-        color: Colors.grey, // 선의 색상
-      ),
-    );
-  }
-
-  // 바텀 팝업에 대한 내용을 나태내는 함수
-  Widget _buildBottomPopUp(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 20),
-              child: CustomWidget.buildTitle("평균 점수 란?"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CustomWidget.buildTitle(
-                  "당신이 사용자로부터 상품을 판매하고 받은 리뷰 점수를 바탕으로 통계를 내린 매너 지표입니다",
-                  weight: FontWeight.w100,
-                  color: Colors.black54),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                  ),
-                  child: CustomWidget.buildTitle("확인",
-                      size: 16, weight: FontWeight.w500, color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

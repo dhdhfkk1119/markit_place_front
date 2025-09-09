@@ -2,8 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 
 class CustomPopUp {
-  static buildAppBarPopUp(BuildContext context, String userName,
-      String productName, int productId) {
+  static buildAppUpdatePop(BuildContext context, String? title) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.update, color: Colors.deepPurpleAccent),
+          title: CustomWidget.buildTitle("$title", weight: FontWeight.w200),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.close, color: Colors.grey),
+          title: const Text("닫기"),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+      ],
+    );
+  }
+
+  static buildAppBarPopUp(
+      BuildContext context, String userName, String productName, int productId,
+      {String? title}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -28,7 +51,7 @@ class CustomPopUp {
 
   static showReportPopUp(BuildContext context, String userName,
       String productName, int productId) {
-    final TextEditingController _reasonController = TextEditingController();
+    final TextEditingController reasonController = TextEditingController();
 
     showDialog(
       context: context,
@@ -48,7 +71,7 @@ class CustomPopUp {
                     "사용자 이름 : ",
                   ),
                   CustomWidget.buildTitle(
-                    "$userName",
+                    userName,
                     weight: FontWeight.w200,
                   )
                 ],
@@ -59,7 +82,7 @@ class CustomPopUp {
                     "상품 이름 : ",
                   ),
                   CustomWidget.buildTitle(
-                    "$productName",
+                    productName,
                     weight: FontWeight.w200,
                   ),
                   CustomWidget.buildTitle(
@@ -74,7 +97,7 @@ class CustomPopUp {
                 child: CustomWidget.buildTitle("신고 사유 :", size: 14),
               ),
               TextField(
-                controller: _reasonController,
+                controller: reasonController,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   hintText: "신고 사유를 입력하세요",
@@ -92,7 +115,7 @@ class CustomPopUp {
             ),
             ElevatedButton(
               onPressed: () {
-                String reason = _reasonController.text;
+                String reason = reasonController.text;
                 if (reason.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("신고 사유를 입력하세요.")),

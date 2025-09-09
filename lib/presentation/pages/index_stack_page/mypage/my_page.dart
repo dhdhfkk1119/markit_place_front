@@ -5,7 +5,7 @@ class MyPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [Text("나의 정보")],
     );
   }
