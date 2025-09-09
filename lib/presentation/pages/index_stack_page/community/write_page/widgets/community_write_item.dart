@@ -213,13 +213,13 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                         BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   builder: (context) {
-                    return _buildAppUpdatePop(context, "$_categoryTitle");
+                    return _buildAppUpdatePop(context, "카테고리를 선택해주시기바랍니다");
                   },
                 );
               },
               child: Row(
                 children: [
-                  CustomWidget.buildTitle("카테고리 선택",
+                  CustomWidget.buildTitle("$_categoryTitle",
                       size: 16, weight: FontWeight.w500),
                   SizedBox(
                     width: 8,
@@ -245,11 +245,14 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
         mainAxisSize: MainAxisSize.min,
         children: [
           // 카테고리 정보
-          Row(
-            children: [
-              Icon(Icons.title, size: 20, color: Colors.deepPurpleAccent),
-              CustomWidget.buildTitle("$title", size: 18),
-            ],
+          Padding(
+            padding: const EdgeInsets.only(bottom: 32.0),
+            child: Row(
+              children: [
+                Icon(Icons.title, size: 24, color: Colors.deepPurpleAccent),
+                CustomWidget.buildTitle("$title", size: 18),
+              ],
+            ),
           ),
           // 카테고리를 나타내는 영역 위에서 부터 1, 2, 3
           _buildFilterCategory(
@@ -257,13 +260,28 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
           _buildFilterCategory(Icons.people, "이웃과 함께", _neighborFilters),
           _buildFilterCategory(
               CupertinoIcons.speaker_zzz_fill, "공지사항", _noticeFilters),
-          ListTile(
-            leading: const Icon(Icons.close, color: Colors.grey),
-            title: const Text("닫기"),
+          // 직접 만든 닫기 버튼
+          InkWell(
             onTap: () {
               Navigator.pop(context); // 바텀시트 닫기
             },
-          ),
+            child: Padding(
+              // 이 부분을 원하는 패딩 값으로 조절하세요.
+              padding: EdgeInsets.zero,
+              child: Row(
+                children: [
+                  // 아이콘과 텍스트의 간격을 조절
+                  Icon(
+                    Icons.close,
+                    color: Colors.grey,
+                    weight: 20,
+                  ),
+                  const SizedBox(width: 32), // leading 위젯과의 기본 간격과 유사
+                  CustomWidget.buildTitle("닫기"),
+                ],
+              ),
+            ),
+          )
         ],
       ),
     );
@@ -298,7 +316,12 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
   // 각 필터 항목(버튼)
   Widget _buildListItem(String text) {
     return TextButton(
-      onPressed: () {},
+      onPressed: () {
+        setState(() {
+          _categoryTitle = text;
+          Navigator.pop(context);
+        });
+      },
       child: CustomWidget.buildTitle(text,
           color: Colors.white, weight: FontWeight.w200, size: 14),
       style: TextButton.styleFrom(
