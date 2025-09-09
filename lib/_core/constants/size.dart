@@ -15,14 +15,14 @@ import 'package:flutter/material.dart';
 /// ### 화면 크기 유틸리티 (getScreenWidth, getScreenHeight 등)
 /// - Drawer의 너비를 화면 너비의 일정 비율로 설정할 때 (예: getDrawerWidth 함수)
 
-// 공통 간격 상수
-const double fiveGap = 5.0;
-const double tenGap = 10.0;
-const double twenGap = 20.0;
-const double thiGap = 30.0;
-const double fortGap = 40.0;
-const double fifGap = 50.0;
-const double hundredGap = 100.0;
+// 공통 상수
+const double tiny = 4.0;
+const double small = 8.0;
+const double middle = 16.0;
+const double quarter = 24.0;
+const double third = 32.0;
+const double half = 48.0;
+//const double big = 100.0;
 
 // 현재 화면 너비 반환 유틸리티
 double getScreenWidth(BuildContext context) {

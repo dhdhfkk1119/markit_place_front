@@ -1,4 +1,4 @@
-// 사용자 회원가입을 위한 입력 폼 제공.
+// 사용자 회원가입 입력 폼
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
@@ -7,7 +7,7 @@ import 'package:markit_place_front/presentation/widgets/custom_small_action_butt
 import '../../../../../_core/constants/size.dart';
 import '../../../index_stack_page/mypage/my_page.dart';
 
-// 회원가입 폼을 정의하는 StatefulWidget.
+// 회원가입 폼 StatefulWidget
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
 
@@ -15,31 +15,31 @@ class RegisterForm extends StatefulWidget {
   State<RegisterForm> createState() => _RegisterFormState();
 }
 
-// RegisterForm 위젯의 상태 관리 클래스.
+// RegisterForm 상태 관리 클래스
 class _RegisterFormState extends State<RegisterForm> {
-  final _formKey = GlobalKey<FormState>(); // 폼 유효성 검사를 위한 글로벌 키.
+  final _formKey = GlobalKey<FormState>(); // 폼 유효성 검사 글로벌 키
 
-  // 입력 필드 컨트롤러.
+  // 입력 필드 컨트롤러
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
   final _emailController = TextEditingController();
   final _verificationCodeController = TextEditingController();
 
-  // 입력 필드 포커스 노드.
+  // 입력 필드 포커스 노드
   final _idFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
   final _passwordConfirmFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _verificationCodeFocusNode = FocusNode();
 
-  final _scrollController = ScrollController(); // 키보드 표시 시 스크롤 제어.
+  final _scrollController = ScrollController(); // 키보드 표시 스크롤 제어
 
-  // 컨트롤러 및 포커스 노드 리스트 (리소스 관리용).
+  // 컨트롤러 및 포커스 노드 리스트 (리소스 관리용)
   late final List<TextEditingController> _allControllers;
   late final List<FocusNode> _allFocusNodes;
 
-  // 이메일 도메인 제안 목록.
+  // 이메일 도메인 제안 목록
   final List<String> _suggestedDomains = [
     'gmail.com',
     'naver.com',
@@ -49,7 +49,7 @@ class _RegisterFormState extends State<RegisterForm> {
     'nate.com'
   ];
 
-  // 위젯 초기화.
+  // 위젯 초기화
   @override
   void initState() {
     super.initState();
@@ -70,16 +70,15 @@ class _RegisterFormState extends State<RegisterForm> {
       _verificationCodeFocusNode,
     ];
 
-    // 각 포커스 노드에 스크롤 리스너 추가.
+    // 각 포커스 노드 스크롤 리스너 추가
     void addEnsureVisibleListener(FocusNode node) {
       node.addListener(() {
         if (node.hasFocus) {
           Future.delayed(const Duration(milliseconds: 300), () {
-            // const Duration
             if (mounted && node.context != null) {
               Scrollable.ensureVisible(
                 node.context!,
-                duration: const Duration(milliseconds: 250), // const Duration
+                duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
                 alignment: 0.1,
               );
@@ -94,7 +93,7 @@ class _RegisterFormState extends State<RegisterForm> {
     }
   }
 
-  // 위젯 리소스 해제.
+  // 위젯 리소스 해제
   @override
   void dispose() {
     for (final controller in _allControllers) {
@@ -107,7 +106,7 @@ class _RegisterFormState extends State<RegisterForm> {
     super.dispose();
   }
 
-  // 공통 TextFormField 위젯 생성 헬퍼.
+  // 공통 TextFormField 위젯 생성
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
@@ -123,12 +122,11 @@ class _RegisterFormState extends State<RegisterForm> {
       focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: const TextStyle(fontFamily: "CookieRun"), // const TextStyle
+        labelStyle: const TextStyle(fontFamily: "CookieRun"),
         suffixIcon: suffixIcon,
         helperText: helperText,
-        helperStyle:
-            const TextStyle(fontFamily: "CookieRun"), // const TextStyle
-        errorStyle: const TextStyle(fontFamily: "CookieRun"), // const TextStyle
+        helperStyle: const TextStyle(fontFamily: "CookieRun"),
+        errorStyle: const TextStyle(fontFamily: "CookieRun"),
       ),
       obscureText: obscureText,
       keyboardType: keyboardType,
@@ -136,7 +134,7 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  // 이메일 도메인 제안 선택 시 처리.
+  // 이메일 도메인 제안 선택 처리
   void _onDomainSuggestionTap(String domain) {
     String currentText = _emailController.text;
     int atSignIndex = currentText.indexOf('@');
@@ -150,7 +148,7 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  // 회원가입 폼 UI 빌드.
+  // 회원가입 폼 UI 빌드
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -158,11 +156,11 @@ class _RegisterFormState extends State<RegisterForm> {
       child: Form(
         key: _formKey,
         child: Padding(
-          padding: const EdgeInsets.all(16.0), // const EdgeInsets
+          padding: const EdgeInsets.all(middle),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 아이디 입력 필드 및 중복확인 버튼.
+              // 아이디 입력 필드 및 중복확인 버튼
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -171,15 +169,11 @@ class _RegisterFormState extends State<RegisterForm> {
                       controller: _idController,
                       focusNode: _idFocusNode,
                       decoration: const InputDecoration(
-                        // const InputDecoration
                         labelText: '아이디',
-                        labelStyle: const TextStyle(
-                            fontFamily: "CookieRun"), // const TextStyle
+                        labelStyle: TextStyle(fontFamily: "CookieRun"),
                         helperText: '아이디는 4자 이상 20자 이하로 입력해주세요.',
-                        helperStyle: const TextStyle(
-                            fontFamily: "CookieRun"), // const TextStyle
-                        errorStyle: const TextStyle(
-                            fontFamily: "CookieRun"), // const TextStyle
+                        helperStyle: TextStyle(fontFamily: "CookieRun"),
+                        errorStyle: TextStyle(fontFamily: "CookieRun"),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -197,15 +191,11 @@ class _RegisterFormState extends State<RegisterForm> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(
-                        // const EdgeInsets
-                        left: tenGap,
-                        top: tenGap,
-                        right: 4),
+                        left: small, top: small, right: tiny),
                     child: CustomSmallActionButton(
-                      // CustomSmallActionButton is not const due to onPressed
                       text: '중복확인',
                       onPressed: () {
-                        // TODO: 아이디 중복 확인 로직.
+                        // TODO: 아이디 중복 확인 로직
                         if (kDebugMode) {
                           print('아이디 중복 확인: ${_idController.text}');
                         }
@@ -214,8 +204,8 @@ class _RegisterFormState extends State<RegisterForm> {
                   ),
                 ],
               ),
-              const SizedBox(height: twenGap), // const SizedBox
-              // 비밀번호 입력 필드.
+              const SizedBox(height: middle),
+              // 비밀번호 입력 필드
               _buildTextFormField(
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
@@ -232,8 +222,8 @@ class _RegisterFormState extends State<RegisterForm> {
                 },
                 helperText: '비밀번호는 8자 이상 20자 이하로 입력해주세요.',
               ),
-              const SizedBox(height: twenGap), // const SizedBox
-              // 비밀번호 확인 필드.
+              const SizedBox(height: middle),
+              // 비밀번호 확인 필드
               _buildTextFormField(
                 controller: _passwordConfirmController,
                 focusNode: _passwordConfirmFocusNode,
@@ -249,12 +239,11 @@ class _RegisterFormState extends State<RegisterForm> {
                   return null;
                 },
               ),
-              const SizedBox(height: twenGap), // const SizedBox
-              // 이메일 인증 섹션 타이틀.
-              CustomWidget.buildTitle(
-                  "이메일 인증하기"), // This method call cannot be const
-              const SizedBox(height: tenGap), // const SizedBox
-              // 이메일 입력 필드 및 인증번호 전송 버튼.
+              const SizedBox(height: middle),
+              // 이메일 인증 섹션 타이틀
+              CustomWidget.buildTitle("이메일 인증하기"),
+              const SizedBox(height: small),
+              // 이메일 입력 필드 및 인증번호 전송 버튼
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -278,15 +267,11 @@ class _RegisterFormState extends State<RegisterForm> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(
-                        // const EdgeInsets
-                        left: tenGap,
-                        top: tenGap,
-                        right: 4),
+                        left: small, top: small, right: tiny),
                     child: CustomSmallActionButton(
-                      // Not const due to onPressed
                       text: '인증번호 전송',
                       onPressed: () {
-                        // TODO: 인증번호 전송 로직.
+                        // TODO: 인증번호 전송 로직
                         if (kDebugMode) {
                           print('인증번호 전송: ${_emailController.text}');
                         }
@@ -295,41 +280,32 @@ class _RegisterFormState extends State<RegisterForm> {
                   ),
                 ],
               ),
-              // 이메일 도메인 제안 버튼.
+              // 이메일 도메인 제안 버튼
               Padding(
-                padding:
-                    const EdgeInsets.only(top: fiveGap), // const EdgeInsets
+                padding: const EdgeInsets.only(top: tiny),
                 child: Wrap(
-                  // Wrap cannot be const because its children are dynamically generated
-                  spacing: 8.0,
-                  runSpacing: 4.0,
+                  spacing: small,
+                  runSpacing: tiny,
                   children: _suggestedDomains.map((domain) {
                     return OutlinedButton(
-                      // Not const due to onPressed
                       onPressed: () => _onDomainSuggestionTap(domain),
-                      child: Text(
-                          domain, // Text is not const because 'domain' is a variable
-                          style: const TextStyle(
-                              fontFamily: "CookieRun")), // const TextStyle
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            // const EdgeInsets
-                            horizontal: 10,
-                            vertical: 2),
-                        side: BorderSide(
-                            color: Colors.grey.shade400,
-                            width: 1.0), // BorderSide can be const
+                            horizontal: small, vertical: tiny),
+                        side:
+                            BorderSide(color: Colors.grey.shade400, width: 1.0),
                         shape: RoundedRectangleBorder(
-                          // RoundedRectangleBorder can be const
-                          borderRadius: BorderRadius.circular(4.0),
+                          borderRadius: BorderRadius.circular(tiny),
                         ),
                       ),
+                      child: Text(domain,
+                          style: const TextStyle(fontFamily: "CookieRun")),
                     );
                   }).toList(),
                 ),
               ),
-              const SizedBox(height: twenGap), // const SizedBox
-              // 인증번호 입력 필드.
+              const SizedBox(height: middle),
+              // 인증번호 입력 필드
               _buildTextFormField(
                 controller: _verificationCodeController,
                 focusNode: _verificationCodeFocusNode,
@@ -339,25 +315,23 @@ class _RegisterFormState extends State<RegisterForm> {
                   if (value == null || value.isEmpty) {
                     return '인증번호를 입력해주세요.';
                   }
-                  return null; // TODO: 인증번호 유효성 검사.
+                  return null; // TODO: 인증번호 유효성 검사
                 },
                 helperText: '이메일로 전송된 인증번호를 입력해주세요.',
               ),
-              const SizedBox(height: thiGap), // const SizedBox
-              // 가입하기 버튼.
+              const SizedBox(height: third),
+              // 가입하기 버튼
               ElevatedButton(
-                // Not const due to onPressed
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC8BFE7), // const Color
-                  minimumSize: const Size(double.infinity, 50), // const Size
+                  backgroundColor: const Color(0xFFC8BFE7),
+                  minimumSize: const Size(double.infinity, half),
                   shape: RoundedRectangleBorder(
-                    // RoundedRectangleBorder can be const
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(small),
                   ),
                 ),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // TODO: 회원가입 로직 및 성공/실패 처리.
+                    // TODO: 회원가입 로직 및 성공/실패 처리
                     final id = _idController.text;
                     final password = _passwordController.text;
                     final email = _emailController.text;
@@ -368,18 +342,15 @@ class _RegisterFormState extends State<RegisterForm> {
                     }
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => const MyPage()), // const MyPage
+                      MaterialPageRoute(builder: (context) => const MyPage()),
                     );
                   }
                 },
                 child: const Text(
-                  // const Text
                   '가입하기',
-                  style: const TextStyle(
-                      // const TextStyle
+                  style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: middle,
                       fontFamily: "CookieRun"),
                 ),
               ),
