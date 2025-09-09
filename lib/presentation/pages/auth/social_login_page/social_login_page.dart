@@ -7,7 +7,7 @@ class SocialLoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       resizeToAvoidBottomInset: false, // 키보드 표시 시 UI 자동 조절 비활성화
       body: SocialLoginBody(), // 소셜 로그인 페이지 본문
     );

@@ -24,7 +24,7 @@ class _AccounLoginFormState extends State<AccounLoginForm> {
           const Center(
             child: Text(
               'Markit Place',
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   fontFamily: "CookieRun"),
@@ -34,7 +34,6 @@ class _AccounLoginFormState extends State<AccounLoginForm> {
           TextFormField(
             decoration: const InputDecoration(
               labelText: '아이디',
-              // labelStyle은 theme에서 CookieRun 상속
               border: OutlineInputBorder(),
             ),
             validator: (value) {
@@ -48,7 +47,6 @@ class _AccounLoginFormState extends State<AccounLoginForm> {
           TextFormField(
             decoration: const InputDecoration(
               labelText: '비밀번호',
-              // labelStyle은 theme에서 CookieRun 상속
               border: OutlineInputBorder(),
             ),
             obscureText: true,
@@ -70,7 +68,8 @@ class _AccounLoginFormState extends State<AccounLoginForm> {
                   });
                 },
               ),
-              const Text('자동 로그인', style: TextStyle(fontFamily: "CookieRun")),
+              const Text('자동 로그인',
+                  style: const TextStyle(fontFamily: "CookieRun")),
             ],
           ),
           const SizedBox(height: 20),
@@ -81,7 +80,6 @@ class _AccounLoginFormState extends State<AccounLoginForm> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              // textStyle은 theme에서 CookieRun 상속되지만, child Text에서 명시적으로 지정 가능
             ),
             onPressed: () {
               if (_formKey.currentState!.validate()) {
@@ -90,7 +88,7 @@ class _AccounLoginFormState extends State<AccounLoginForm> {
             },
             child: const Text(
               '로그인',
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 16, color: Colors.white, fontFamily: "CookieRun"),
             ),
           ),

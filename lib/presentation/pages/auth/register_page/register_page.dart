@@ -12,7 +12,7 @@ class RegisterPage extends StatelessWidget {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.close),
+          icon: const Icon(Icons.close),
           onPressed: () {
             Navigator.pushReplacement(
               context,
@@ -20,10 +20,10 @@ class RegisterPage extends StatelessWidget {
             );
           },
         ),
-        title: Text('회원 가입', style: TextStyle(fontFamily: "CookieRun")),
+        title: const Text('회원 가입', style: TextStyle(fontFamily: "CookieRun")),
         centerTitle: false,
       ),
-      body: RegisterBody(),
+      body: const RegisterBody(),
     );
   }
 }

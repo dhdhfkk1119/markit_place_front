@@ -9,11 +9,12 @@ class AccountLoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('로그인', style: TextStyle(fontFamily: "CookieRun")),
+        title:
+            const Text('로그인', style: const TextStyle(fontFamily: "CookieRun")),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
-            color: Colors.grey[300],
+            color: Colors.grey.shade300,
             height: 1.0,
           ),
         ),
@@ -24,7 +25,7 @@ class AccountLoginPage extends StatelessWidget {
           },
         ),
       ),
-      body: const AccounLoginBody(), // 계정 로그인 페이지 본문
+      body: const AccounLoginBody(),
     );
   }
 }
