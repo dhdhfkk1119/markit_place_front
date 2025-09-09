@@ -2,8 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/community_list_page.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/widgets/community_list_item.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/community/write_page/community_write_page.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_filter_list.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_item.dart';
+
+import '../../../../../../_core/constants/custom_widget.dart';
 
 // 재사용 가능한 스타일 정의
 const _titleTextStyle =
@@ -124,55 +127,59 @@ class _CommunityListBodyState extends State<CommunityListBody>
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(24.0),
-        child: Row(
+        child: Stack(
+          // ✨ Stack 추가
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                final offsetAnimation = Tween<Offset>(
-                  begin: const Offset(-1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(animation);
-                return ClipRect(
-                  child: SlideTransition(
-                    position: offsetAnimation,
-                    child: child,
-                  ),
-                );
-              },
-              child: _isFilterVisible
-                  ? ConstrainedBox(
-                      key: ValueKey(true),
-                      constraints: BoxConstraints(maxWidth: 155),
-                      child: ProductFilterList(),
-                    )
-                  : const SizedBox.shrink(key: ValueKey(false)),
-            ),
-            // 상품 리스트
-            Expanded(
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: ListView.separated(
-                  itemCount: 10,
-                  itemBuilder: (BuildContext context, int index) {
-                    // ProductListItem 자체는 순수한 아이템 정보만 담고 있습니다.
-                    return CommunityListItem(_isFilterVisible);
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    // 각 아이템 사이에 Divider를 자동으로 추가합니다.
-                    return const Padding(
-                      padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
-                      child: Divider(
-                        height: 1, // 선의 높이
-                        thickness: 1, // 선의 두께
-                        color: Colors.grey, // 선의 색상
+            Row(
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    final offsetAnimation = Tween<Offset>(
+                      begin: const Offset(-1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation);
+                    return ClipRect(
+                      child: SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
                       ),
                     );
                   },
+                  child: _isFilterVisible
+                      ? ConstrainedBox(
+                          key: ValueKey(true),
+                          constraints: BoxConstraints(maxWidth: 155),
+                          child: ProductFilterList(),
+                        )
+                      : const SizedBox.shrink(key: ValueKey(false)),
                 ),
-              ),
+                Expanded(
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: ListView.separated(
+                      itemCount: 10,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ProductListItem(_isFilterVisible);
+                      },
+                      separatorBuilder: (BuildContext context, int index) {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
+                          child: Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
+            _buildWriteButton(),
           ],
         ),
       ),
@@ -202,6 +209,60 @@ class _CommunityListBodyState extends State<CommunityListBody>
             style: const TextStyle(
               fontFamily: "CookieRun",
               fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWriteButton() {
+    return Positioned(
+      bottom: 0,
+      right: 0,
+      child: Center(
+        child: Container(
+          // 타원형 디자인 설정
+          decoration: BoxDecoration(
+            color: Colors.white, // 배경색
+            borderRadius: BorderRadius.circular(30.0), // 타원형을 만들기 위해 둥근 모서리 설정
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3), // 그림자 위치
+              ),
+            ],
+          ),
+          padding:
+              EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0), // 내부 여백
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CommunityWritePage()));
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 위젯에 맞춤
+              children: [
+                Icon(
+                  CupertinoIcons.plus,
+                  size: 20,
+                  color: Colors.deepPurpleAccent,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                CustomWidget.buildTitle(
+                  "글쓰기",
+                  color: Colors.deepPurpleAccent,
+                ),
+                SizedBox(
+                  width: 10,
+                )
+              ],
             ),
           ),
         ),
