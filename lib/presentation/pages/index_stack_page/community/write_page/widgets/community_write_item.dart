@@ -13,6 +13,9 @@ class CommunityWriteItem extends StatefulWidget {
 }
 
 class _CommunityWriteItemState extends State<CommunityWriteItem> {
+  Color Backcolors = Colors.white;
+  Color Fontcolors = Colors.black;
+
   String _categoryTitle = "게시글 주제를 선택해주세여";
   int _imageIndex = 0;
   int _maxImageUpload = 10;
@@ -315,6 +318,8 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
 
   // 각 필터 항목(버튼)
   Widget _buildListItem(String text) {
+    bool isSelected = _categoryTitle == text;
+
     return TextButton(
       onPressed: () {
         setState(() {
@@ -323,9 +328,11 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
         });
       },
       child: CustomWidget.buildTitle(text,
-          color: Colors.white, weight: FontWeight.w200, size: 14),
+          color: isSelected ? Colors.white : Colors.black,
+          weight: FontWeight.w200,
+          size: 14),
       style: TextButton.styleFrom(
-        backgroundColor: Colors.black,
+        backgroundColor: isSelected ? Colors.black : Colors.white,
         padding: EdgeInsets.only(top: 8, bottom: 8, left: 12, right: 12),
         // 버튼의 최소 크기를 자식 위젯에 맞게 줄입니다.
         minimumSize: Size.zero,

@@ -23,8 +23,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: const SocialLoginPage(), // home을 SocialLoginPage로 변경
+      home: MainScreen(), // home을 SocialLoginPage로 변경
       routes: {
+        "/main": (context) => const MainScreen(),
         "/register": (context) => const RegisterPage(),
         "/social-login": (context) => const SocialLoginPage(),
         "/account-login": (context) => const AccountLoginPage(),

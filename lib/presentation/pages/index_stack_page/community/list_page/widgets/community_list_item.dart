@@ -72,12 +72,20 @@ class _CommunityListItemState extends State<CommunityListItem> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "운동",
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            softWrap: false,
+          Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 8, vertical: 4), // 텍스트 주변 여백
+            decoration: BoxDecoration(
+              color: Colors.grey.shade200, // 회색 배경
+              borderRadius: BorderRadius.circular(8), // 모서리 둥글게
+            ),
+            child: const Text(
+              "운동",
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              softWrap: false,
+            ),
           ),
           _buildTitle("러닝 같이 하실분 구합니다 ", 16),
           _buildTitle(
