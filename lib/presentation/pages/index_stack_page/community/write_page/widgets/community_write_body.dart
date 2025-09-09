@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/community/write_page/widgets/community_write_item.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_item.dart';
 
 class CommunityWriteBody extends StatefulWidget {
@@ -43,14 +44,19 @@ class _CommunityWriteBodyState extends State<CommunityWriteBody> {
           },
           Icon(CupertinoIcons.back),
         ),
-        title: CustomWidget.buildTitle("내 게시물 작성하기"),
+        title: CustomWidget.buildTitle("내 게시물 작성하기",
+            color: Colors.deepPurpleAccent),
         actions: [
           // 오른쪽에 붙이는 아이콘
+          CustomWidget.buildIcon(Icon(
+            CupertinoIcons.photo,
+            color: Colors.deepPurpleAccent.withOpacity(0.7),
+          ))
         ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ProductWriteItem(),
+        child: CommunityWriteItem(),
       ),
       bottomNavigationBar: _buildSubmitButton(),
     );
