@@ -53,8 +53,8 @@ class _CommunityDetailItemImageState extends State<CommunityDetailItemImage> {
                 // 경로에 있는 이미지 보여주기(index 리스트 형식으로)
                 child: Image.asset(
                   widget.imagePaths[index],
-                  fit: BoxFit.cover,
-                  width: double.infinity,
+                  // 이 부분을 BoxFit.cover에서 BoxFit.contain으로 변경했습니다.
+                  fit: BoxFit.contain,
                 ),
               );
             },

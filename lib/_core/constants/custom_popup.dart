@@ -2,8 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 
 class CustomPopUp {
-  static buildAppBarPopUp(BuildContext context, String userName,
-      String productName, int productId) {
+  static buildAppUpdatePop(BuildContext context, String? title) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.update, color: Colors.deepPurpleAccent),
+          title: CustomWidget.buildTitle("$title", weight: FontWeight.w200),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.close, color: Colors.grey),
+          title: const Text("닫기"),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+      ],
+    );
+  }
+
+  static buildAppBarPopUp(
+      BuildContext context, String userName, String productName, int productId,
+      {String? title}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

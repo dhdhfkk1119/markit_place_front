@@ -43,7 +43,7 @@ class _CommunityWriteBodyState extends State<CommunityWriteBody> {
           },
           Icon(CupertinoIcons.back),
         ),
-        title: CustomWidget.buildTitle("내 상품등록하기"),
+        title: CustomWidget.buildTitle("내 게시물 작성하기"),
         actions: [
           // 오른쪽에 붙이는 아이콘
         ],
