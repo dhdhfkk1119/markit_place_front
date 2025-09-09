@@ -48,10 +48,6 @@ class _CommunityWriteBodyState extends State<CommunityWriteBody> {
             color: Colors.deepPurpleAccent),
         actions: [
           // 오른쪽에 붙이는 아이콘
-          CustomWidget.buildIcon(Icon(
-            CupertinoIcons.photo,
-            color: Colors.deepPurpleAccent.withOpacity(0.7),
-          ))
         ],
       ),
       body: Padding(
