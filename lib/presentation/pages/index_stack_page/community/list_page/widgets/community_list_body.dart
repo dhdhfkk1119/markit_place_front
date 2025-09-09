@@ -1,12 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/community_list_page.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/widgets/community_list_item.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/widgets/community_filter_list.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/community/write_page/community_write_page.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_filter_list.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_item.dart';
 
 import '../../../../../../_core/constants/custom_widget.dart';
+import 'community_list_item.dart';
 
 // 재사용 가능한 스타일 정의
 const _titleTextStyle =
@@ -151,7 +149,7 @@ class _CommunityListBodyState extends State<CommunityListBody>
                       ? ConstrainedBox(
                           key: ValueKey(true),
                           constraints: BoxConstraints(maxWidth: 155),
-                          child: ProductFilterList(),
+                          child: CommunityFilterList(),
                         )
                       : const SizedBox.shrink(key: ValueKey(false)),
                 ),
@@ -162,7 +160,7 @@ class _CommunityListBodyState extends State<CommunityListBody>
                     child: ListView.separated(
                       itemCount: 10,
                       itemBuilder: (BuildContext context, int index) {
-                        return ProductListItem(_isFilterVisible);
+                        return CommunityListItem(_isFilterVisible);
                       },
                       separatorBuilder: (BuildContext context, int index) {
                         return const Padding(

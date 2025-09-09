@@ -27,14 +27,27 @@ class _CommunityListItemState extends State<CommunityListItem> {
         );
       },
       child: SizedBox(
-        height: 100,
+        height: 120,
         child: Row(
           children: [
-            _buildProductImage(),
-            const SizedBox(width: 16),
             Expanded(child: _buildProductInfo()),
             const SizedBox(width: 8),
-            _buildConditionalActions(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  children: [
+                    _buildProductImage(),
+                  ],
+                ),
+                Column(
+                  children: [
+                    _buildBottomIcon(),
+                  ],
+                )
+              ],
+            )
           ],
         ),
       ),
@@ -46,49 +59,12 @@ class _CommunityListItemState extends State<CommunityListItem> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.asset(
-        "assets/product.jpg",
-        width: 100,
-        height: 100,
+        "assets/lun.jpg",
+        width: 75,
+        height: 75,
+        scale: 1,
       ),
     );
-  }
-
-  // 조건부에 따라 오른쪽 (list-button,bottom Icon ) 위치 조정
-  Widget _buildConditionalActions() {
-    if (widget._isFilterVisible) {
-      return const SizedBox.shrink();
-    } else {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  builder: (context) {
-                    return CustomPopUp.buildAppBarPopUp(
-                        context, "조정우", "상품제목을입력", 1);
-                  },
-                );
-              },
-              child: const Icon(
-                Icons.more_vert,
-                size: 20,
-                color: Colors.grey,
-              ),
-            ),
-          ),
-          _buildBottomIcon(),
-        ],
-      );
-    }
   }
 
   // 상품에 대한 정보를 담음 함수(제목, 위치,가격)
@@ -97,15 +73,26 @@ class _CommunityListItemState extends State<CommunityListItem> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTitle("그래픽 카드 판매 합니다", 16),
-          const Text(
-            "부전제2동 / 디지털",
+          Text(
+            "운동",
             style: TextStyle(fontSize: 14, color: Colors.grey),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             softWrap: false,
           ),
-          _buildTitle("가격 : 1,000,000원", 14, font: FontWeight.w200),
+          _buildTitle("러닝 같이 하실분 구합니다 ", 16),
+          _buildTitle(
+              "러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다",
+              12,
+              font: FontWeight.w200,
+              color: Colors.grey),
+          const Spacer(),
+          _buildTitle(
+            "등록위치 º 조회수 158",
+            12,
+            font: FontWeight.w100,
+            color: Colors.grey,
+          ),
         ],
       ),
     );
@@ -128,10 +115,14 @@ class _CommunityListItemState extends State<CommunityListItem> {
 
   Widget _buildBottomIcon() {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        _buildIcon(CupertinoIcons.profile_circled),
+        _buildIcon(CupertinoIcons.heart),
         _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
-        _buildIcon(CupertinoIcons.heart_fill),
+        const SizedBox(
+          width: 8,
+        ),
+        _buildIcon(Icons.comment),
         _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
       ],
     );

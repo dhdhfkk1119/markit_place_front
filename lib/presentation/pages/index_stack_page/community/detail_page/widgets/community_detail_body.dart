@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import '../../../../../../_core/constants/custom_popup.dart';
 import 'community_detail_item.dart';
 import 'community_detail_item_image.dart';
+import 'community_detail_reply.dart';
 
 class CommunityDetailBody extends StatefulWidget {
   const CommunityDetailBody({super.key});
@@ -12,62 +14,55 @@ class CommunityDetailBody extends StatefulWidget {
 }
 
 class _CommunityDetailBodyState extends State<CommunityDetailBody> {
-  final ScrollController _scrollController = ScrollController(); //스크롤 위치 설정
-  Color _appBarColor = Colors.transparent; // 동적으로 색상 변경(스클로에 따라)
-  Color _iconColor = Colors.white;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    double offset = _scrollController.offset.clamp(0, 100);
-    double t = offset / 100;
-
-    setState(() {
-      _appBarColor = Color.lerp(Colors.transparent, Colors.white, t)!;
-      _iconColor = Color.lerp(Colors.white, Colors.black, t)!;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // body가 앱바 뒤로 확장되게 설정
       appBar: AppBar(
         automaticallyImplyLeading: false, // 기본 뒤로가기 버튼 제거
-        backgroundColor: _appBarColor, // 앱바 배경을 투명하게 만듭니다.
-        elevation: 0, // 앱바 아래 그림자 제거
         actions: [
-          // 왼쪽 아이콘 그룹 (AppBar의 leading 속성과 비슷하게 사용)
           _buildLeftAppBarIcon(),
           const Spacer(), // Spacer를 사용하여 양쪽 끝으로 밀어냅니다.
-          // 오른쪽 아이콘 그룹
           _buildRightAppBarIcon(),
         ],
       ),
       body: SingleChildScrollView(
-        controller: _scrollController,
         child: Column(
           children: [
-            CommunityDetailItemImage(
-              imagePaths: [
-                "assets/product.jpg",
-                "assets/product2.jpg",
-                "assets/product3.jpg",
-              ],
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  CommunityDetailItem(),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: CommunityDetailItemImage(
+                      imagePaths: [
+                        "assets/product.jpg",
+                        "assets/product2.jpg",
+                        "assets/product3.jpg",
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            // 이미지가 스크롤되면 함께 올라가는 상품 정보
-            CommunityDetailItem(),
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+              child: Column(
+                children: [_buildSide()],
+              ),
+            ),
+            Divider(
+              thickness: 5,
+              color: Colors.grey.withOpacity(0.3),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0),
+              child: CommunityDetailReply(3),
+            ),
+            SizedBox(
+              height: 100,
+            ),
           ],
         ),
       ),
@@ -126,13 +121,11 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
           _buildIcon(
               Icon(
                 CupertinoIcons.back,
-                color: _iconColor,
               ), onPressed: () {
             Navigator.pop(context);
           }),
           _buildTitle(
             "커뮤니티",
-            color: _iconColor,
           ),
         ],
       ),
@@ -164,6 +157,45 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
           )
         ],
       ),
+    );
+  }
+
+  // 조회수 및 좋아요 누르기
+  Widget _buildSide() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.remove_red_eye_outlined,
+              color: Colors.grey,
+              size: 16,
+            ),
+            const SizedBox(
+              width: 4,
+            ),
+            CustomWidget.buildTitle("135명이나 봤어요",
+                size: 12, color: Colors.grey, weight: FontWeight.w200)
+          ],
+        ),
+        Row(
+          children: [
+            InkWell(
+              onTap: () {
+                // 아이콘을 탭했을 때 수행할 동작
+              },
+              // 탭 효과를 보기 위해 원형으로 자를 수 있습니다.
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                // 아이콘 주변에 원하는 만큼 패딩을 줄 수 있습니다.
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(CupertinoIcons.heart),
+              ),
+            ),
+          ],
+        )
+      ],
     );
   }
 
