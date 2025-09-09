@@ -7,7 +7,7 @@ class FullScreenGallery extends StatefulWidget {
   final List<String> imagePaths;
   final int initialIndex;
 
-  const FullScreenGallery({
+  const FullScreenGallery({super.key, 
     required this.imagePaths,
     this.initialIndex = 0,
   });

@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
 
 import '../../../../../../_core/constants/custom_popup.dart';
 import 'detail_item.dart';
@@ -59,7 +58,7 @@ class _DetailBodyState extends State<DetailBody> {
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
-        child: Column(
+        child: const Column(
           children: [
             DetailItemImage(
               imagePaths: [
@@ -146,11 +145,11 @@ class _DetailBodyState extends State<DetailBody> {
     return SafeArea(
       child: Row(
         children: [
-          _buildIcon(Icon(
+          _buildIcon(const Icon(
             CupertinoIcons.profile_circled,
             color: Colors.black,
           )),
-          _buildIcon(Icon(CupertinoIcons.heart, color: Colors.black)),
+          _buildIcon(const Icon(CupertinoIcons.heart, color: Colors.black)),
           _buildIcon(
             const Icon(Icons.more_vert),
             onPressed: () {

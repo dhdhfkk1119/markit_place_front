@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_popup.dart';
 
 import '../../detail_page/community_detail_page.dart';
 
@@ -22,7 +21,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
           // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
             builder: (context) =>
-                CommunityDetailPageDetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
+                const CommunityDetailPageDetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
           ),
         );
       },
@@ -73,7 +72,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "운동",
             style: TextStyle(fontSize: 14, color: Colors.grey),
             overflow: TextOverflow.ellipsis,

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
 class DetailItem extends StatefulWidget {
+  const DetailItem({super.key});
+
   @override
   State<DetailItem> createState() => _DetailItemState();
 }
@@ -30,13 +32,13 @@ class _DetailItemState extends State<DetailItem> {
             size: 16,
             color: Colors.grey,
           ),
-          SizedBox(height: 8),
-          Text(
+          const SizedBox(height: 8),
+          const Text(
             "이 상품은 아주 좋은 상품입니다. 상세한 내용은 아래와 같습니다.",
             style: TextStyle(fontSize: 16),
           ),
-          SizedBox(height: 16),
-          Text(
+          const SizedBox(height: 16),
+          const Text(
             "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. 이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
             "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
             "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
@@ -45,8 +47,8 @@ class _DetailItemState extends State<DetailItem> {
             "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
             "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다.",
           ),
-          SizedBox(height: 200),
-          Text("스크롤 끝"),
+          const SizedBox(height: 200),
+          const Text("스크롤 끝"),
         ],
       ),
     );
@@ -115,7 +117,7 @@ class _DetailItemState extends State<DetailItem> {
   }
 
   Widget _buildDivider() {
-    return Padding(
+    return const Padding(
       padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
       child: Divider(
         height: 1, // 선의 높이

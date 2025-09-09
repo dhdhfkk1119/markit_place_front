@@ -149,7 +149,7 @@ class _RegisterFormState extends State<RegisterForm> {
           const SizedBox(height: twenGap),
 
           // 이메일 인증 섹션
-          Text('이메일 인증하기', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text('이메일 인증하기', style: TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: tenGap),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,12 +191,12 @@ class _RegisterFormState extends State<RegisterForm> {
               children: _suggestedDomains.map((domain) {
                 return OutlinedButton(
                   onPressed: () => _onDomainSuggestionTap(domain),
-                  child: Text(domain),
                   style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     // textStyle: TextStyle(fontSize: 12), // 필요시 폰트 크기 조절
                     // minimumSize: Size(0, 30), // 버튼 최소 크기 조절
                   ),
+                  child: Text(domain),
                 );
               }).toList(),
             ),

@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: MainScreen(),
+      home: const SocialLoginPage(), // home을 SocialLoginPage로 변경
       routes: {
         "/register": (context) => const RegisterPage(),
         "/social-login": (context) => const SocialLoginPage(),

@@ -147,15 +147,15 @@ class _CommunityListBodyState extends State<CommunityListBody>
                   },
                   child: _isFilterVisible
                       ? ConstrainedBox(
-                          key: ValueKey(true),
-                          constraints: BoxConstraints(maxWidth: 155),
-                          child: CommunityFilterList(),
+                          key: const ValueKey(true),
+                          constraints: const BoxConstraints(maxWidth: 155),
+                          child: const CommunityFilterList(),
                         )
                       : const SizedBox.shrink(key: ValueKey(false)),
                 ),
                 Expanded(
                   child: AnimatedContainer(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     curve: Curves.easeInOut,
                     child: ListView.separated(
                       itemCount: 10,
@@ -229,23 +229,23 @@ class _CommunityListBodyState extends State<CommunityListBody>
                 color: Colors.black.withOpacity(0.2),
                 spreadRadius: 2,
                 blurRadius: 5,
-                offset: Offset(0, 3), // 그림자 위치
+                offset: const Offset(0, 3), // 그림자 위치
               ),
             ],
           ),
           padding:
-              EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0), // 내부 여백
+              const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0), // 내부 여백
           child: InkWell(
             onTap: () {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => CommunityWritePage()));
+                      builder: (context) => const CommunityWritePage()));
             },
             child: Row(
               mainAxisSize: MainAxisSize.min, // Row의 크기를 자식 위젯에 맞춤
               children: [
-                Icon(
+                const Icon(
                   CupertinoIcons.plus,
                   size: 20,
                   color: Colors.deepPurpleAccent,
@@ -257,7 +257,7 @@ class _CommunityListBodyState extends State<CommunityListBody>
                   "글쓰기",
                   color: Colors.deepPurpleAccent,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 10,
                 )
               ],

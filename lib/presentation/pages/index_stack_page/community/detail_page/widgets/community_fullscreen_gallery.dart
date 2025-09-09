@@ -7,7 +7,7 @@ class CommunityFullscreenGallery extends StatefulWidget {
   final List<String> imagePaths;
   final int initialIndex;
 
-  const CommunityFullscreenGallery({
+  const CommunityFullscreenGallery({super.key, 
     required this.imagePaths,
     this.initialIndex = 0,
   });

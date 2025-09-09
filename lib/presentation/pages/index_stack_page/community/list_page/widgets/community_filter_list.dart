@@ -61,11 +61,11 @@ class _CommunityFilterListState extends State<CommunityFilterList> {
         ),
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.keyboard,
               color: Colors.deepPurpleAccent,
             ),
-            SizedBox(
+            const SizedBox(
               width: 8,
             ),
             getTitle('동네 정보'),
@@ -88,11 +88,11 @@ class _CommunityFilterListState extends State<CommunityFilterList> {
         ),
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.night_shelter,
               color: Colors.deepPurpleAccent,
             ),
-            SizedBox(
+            const SizedBox(
               width: 8,
             ),
             getTitle('이웃과 함께'),
@@ -115,11 +115,11 @@ class _CommunityFilterListState extends State<CommunityFilterList> {
         ),
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.notifications_active_sharp,
               color: Colors.deepPurpleAccent,
             ),
-            SizedBox(
+            const SizedBox(
               width: 8,
             ),
             getTitle('소식'),
