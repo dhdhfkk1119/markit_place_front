@@ -16,8 +16,8 @@ class ProductWriteItem extends ConsumerStatefulWidget {
 
 class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
   bool _isOn = false;
-  int _imageIndex = 0;
-  int _maxImageUpload = 10;
+  final int _imageIndex = 0;
+  final int _maxImageUpload = 10;
   List<XFile> imageList = [];
 
   @override
@@ -64,7 +64,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
         color: Colors.deepPurpleAccent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 8.0,
@@ -77,9 +77,9 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
             children: [
               Row(
                 children: [
-                  Icon(CupertinoIcons.staroflife_fill,
+                  const Icon(CupertinoIcons.staroflife_fill,
                       size: 14, color: Colors.deepPurpleAccent),
-                  SizedBox(
+                  const SizedBox(
                     width: 4,
                   ),
                   CustomWidget.buildTitle("AI로 작성하기",
@@ -132,14 +132,14 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       CupertinoIcons.camera_fill,
                       size: 24,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       "${productItemModel.imageCount}/$_maxImageUpload",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
                         color: Colors.black,
@@ -173,7 +173,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
                       imageList.remove(imagePath);
                       ref.read(productItemProvider.notifier).cancelUploadImages(images: imageList);
                     });
-                  }, icon: Icon(Icons.cancel, color: Colors.white,)))
+                  }, icon: const Icon(Icons.cancel, color: Colors.white,)))
                 ]
               ),
             );

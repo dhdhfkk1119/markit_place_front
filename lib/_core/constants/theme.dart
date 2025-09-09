@@ -87,7 +87,7 @@ InputDecorationTheme _inputDecorationTheme() {
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(20.0),
-      borderSide: BorderSide(color: kAppButtonSolidColor, width: 2.0),
+      borderSide: const BorderSide(color: kAppButtonSolidColor, width: 2.0),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(20.0),

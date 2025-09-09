@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
 class CommunityDetailItem extends StatefulWidget {
+  const CommunityDetailItem({super.key});
+
   @override
   State<CommunityDetailItem> createState() => _CommunityDetailItemState();
 }
@@ -14,20 +16,20 @@ class _CommunityDetailItemState extends State<CommunityDetailItem> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildProfile(),
-        SizedBox(
+        const SizedBox(
           height: 16,
         ),
         CustomWidget.buildTitle(
           "상품 상세 정보",
           size: 20,
         ),
-        SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 8),
+        const Text(
           "이 상품은 아주 좋은 상품입니다. 상세한 내용은 아래와 같습니다.",
           style: TextStyle(fontSize: 16),
         ),
-        SizedBox(height: 16),
-        Text(
+        const SizedBox(height: 16),
+        const Text(
           "조정우 바보 멍청이 똥깨 말미잘 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. 이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
           "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
           "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "

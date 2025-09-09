@@ -15,7 +15,7 @@ class CommunityWriteItem extends StatefulWidget {
 class _CommunityWriteItemState extends State<CommunityWriteItem> {
   bool _isOn = false;
   int _imageIndex = 0;
-  int _maxImageUpload = 10;
+  final int _maxImageUpload = 10;
   List<String?> imageList = [];
 
   Future<void> _uploadImage() async {
@@ -50,7 +50,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
         color: Colors.deepPurpleAccent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.only(
           left: 8.0,
@@ -63,9 +63,9 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
             children: [
               Row(
                 children: [
-                  Icon(CupertinoIcons.staroflife_fill,
+                  const Icon(CupertinoIcons.staroflife_fill,
                       size: 14, color: Colors.deepPurpleAccent),
-                  SizedBox(
+                  const SizedBox(
                     width: 4,
                   ),
                   CustomWidget.buildTitle("AI로 작성하기",
@@ -117,14 +117,14 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       CupertinoIcons.camera_fill,
                       size: 24,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       "$_imageIndex/$_maxImageUpload",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
                         color: Colors.black,

@@ -51,7 +51,7 @@ class CustomPopUp {
 
   static showReportPopUp(BuildContext context, String userName,
       String productName, int productId) {
-    final TextEditingController _reasonController = TextEditingController();
+    final TextEditingController reasonController = TextEditingController();
 
     showDialog(
       context: context,
@@ -71,7 +71,7 @@ class CustomPopUp {
                     "사용자 이름 : ",
                   ),
                   CustomWidget.buildTitle(
-                    "$userName",
+                    userName,
                     weight: FontWeight.w200,
                   )
                 ],
@@ -82,7 +82,7 @@ class CustomPopUp {
                     "상품 이름 : ",
                   ),
                   CustomWidget.buildTitle(
-                    "$productName",
+                    productName,
                     weight: FontWeight.w200,
                   ),
                   CustomWidget.buildTitle(
@@ -97,7 +97,7 @@ class CustomPopUp {
                 child: CustomWidget.buildTitle("신고 사유 :", size: 14),
               ),
               TextField(
-                controller: _reasonController,
+                controller: reasonController,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   hintText: "신고 사유를 입력하세요",
@@ -115,7 +115,7 @@ class CustomPopUp {
             ),
             ElevatedButton(
               onPressed: () {
-                String reason = _reasonController.text;
+                String reason = reasonController.text;
                 if (reason.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("신고 사유를 입력하세요.")),

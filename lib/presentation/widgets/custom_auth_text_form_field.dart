@@ -7,7 +7,7 @@ class CustomAuthTextFormField extends StatelessWidget {
   final Function(String)? onChanged; // 사용자 입력값이 변경될 때 호출되는 콜백 함수
   final bool obscureText;
 
-  CustomAuthTextFormField({
+  const CustomAuthTextFormField({super.key, 
     required this.title,
     this.errorText = "",
     this.onChanged,
@@ -21,7 +21,7 @@ class CustomAuthTextFormField extends StatelessWidget {
     final Color defaultBorderColor = Colors.grey.shade600; // 일반 상태 테두리 색
     final Color focusedBorderColor =
         Theme.of(context).primaryColor; // 포커스 시 테두리 (예: 기본 파란색 계열)
-    final Color errorBorderColor = Colors.red; // 에러 시 테두리 색 (기본 빨간색)
+    const Color errorBorderColor = Colors.red; // 에러 시 테두리 색 (기본 빨간색)
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,11 +45,11 @@ class CustomAuthTextFormField extends StatelessWidget {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide(color: errorBorderColor),
+              borderSide: const BorderSide(color: errorBorderColor),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(20),
-              borderSide: BorderSide(color: errorBorderColor, width: 2.0),
+              borderSide: const BorderSide(color: errorBorderColor, width: 2.0),
             ),
             // === 테두리 스타일 완전 복원 끝 ===
           ),

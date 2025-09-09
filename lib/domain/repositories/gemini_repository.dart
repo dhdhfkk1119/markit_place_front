@@ -10,7 +10,7 @@ import 'package:path/path.dart' as path;
 import '../../_core/utils/my_http.dart';
 
 class GeminiRepository {
-  static final _baseUrl = "$baseUrl/ai-agent/gemini";
+  static const _baseUrl = "$baseUrl/ai-agent/gemini";
   StreamSubscription? _streamSubscription;
   String Function(String response)? onData;
 
@@ -48,9 +48,9 @@ class GeminiRepository {
   }
 
   Future<Map<String, dynamic>> sendImages({required List<XFile> images, required int userId}) async {
-    final List<Map<String, dynamic>> _base64Images = await _convertBase64Images(images);
+    final List<Map<String, dynamic>> base64Images = await _convertBase64Images(images);
 
-    final List<Map<String, dynamic>> imageParts = _base64Images.map((imgMap) {
+    final List<Map<String, dynamic>> imageParts = base64Images.map((imgMap) {
     // 서버 DTO의 Part 구조에 맞게 "inline_data"로 감싸준다
       return {
         "inline_data": {

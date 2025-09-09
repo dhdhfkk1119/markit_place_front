@@ -36,7 +36,7 @@ class CommunityDetailReply extends StatelessWidget {
                       CustomPopUp.buildAppUpdatePop(context, "수정하기"),
                 );
               },
-              child: Icon(Icons.more_vert),
+              child: const Icon(Icons.more_vert),
             ),
           ],
         )
@@ -51,11 +51,11 @@ class CommunityDetailReply extends StatelessWidget {
           children: [
             TextButton(
               onPressed: () {},
-              child: Text("등록순"),
+              child: const Text("등록순"),
             ),
             TextButton(
               onPressed: () {},
-              child: Text("조회순"),
+              child: const Text("조회순"),
             )
           ],
         )
@@ -78,7 +78,7 @@ class CommunityDetailReply extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(
+        const SizedBox(
           width: 12,
         ),
         Row(
@@ -114,7 +114,7 @@ class CommunityDetailReply extends StatelessWidget {
             onTap: () {},
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.thumb_up_alt_outlined,
                   color: Colors.grey,
                   size: 16,
@@ -134,7 +134,7 @@ class CommunityDetailReply extends StatelessWidget {
             onTap: () {},
             child: Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.insert_comment_outlined,
                   color: Colors.grey,
                   size: 16,

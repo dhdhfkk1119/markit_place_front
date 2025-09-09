@@ -22,7 +22,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: [
+        children: const [
           ProductListPage(),
           CommunityListPage(),
           NearPage(),
@@ -38,16 +38,16 @@ class _MainScreenState extends State<MainScreen> {
               _selectedIndex = index;
             });
           },
-          items: [
-            const BottomNavigationBarItem(
+          items: const [
+            BottomNavigationBarItem(
                 label: '상품', icon: Icon(CupertinoIcons.cart)),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
                 label: '켜뮤니티', icon: Icon(CupertinoIcons.square_on_circle)),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
                 label: '주변위치', icon: Icon(Icons.place)),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
                 label: '채팅', icon: Icon(CupertinoIcons.chat_bubble_text_fill)),
-            const BottomNavigationBarItem(
+            BottomNavigationBarItem(
                 label: '나의 MP', icon: Icon(CupertinoIcons.profile_circled))
           ]),
     );

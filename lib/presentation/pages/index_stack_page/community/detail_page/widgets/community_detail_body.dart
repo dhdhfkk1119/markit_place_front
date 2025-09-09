@@ -32,10 +32,10 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  CommunityDetailItem(),
+                  const CommunityDetailItem(),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: CommunityDetailItemImage(
+                    child: const CommunityDetailItemImage(
                       imagePaths: [
                         "assets/product.jpg",
                         "assets/product2.jpg",
@@ -60,7 +60,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               padding: const EdgeInsets.only(left: 16.0, right: 16.0),
               child: CommunityDetailReply(3),
             ),
-            SizedBox(
+            const SizedBox(
               height: 100,
             ),
           ],
@@ -119,7 +119,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
       child: Row(
         children: [
           _buildIcon(
-              Icon(
+              const Icon(
                 CupertinoIcons.back,
               ), onPressed: () {
             Navigator.pop(context);
@@ -137,11 +137,11 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
     return SafeArea(
       child: Row(
         children: [
-          _buildIcon(Icon(
+          _buildIcon(const Icon(
             CupertinoIcons.profile_circled,
             color: Colors.black,
           )),
-          _buildIcon(Icon(CupertinoIcons.heart, color: Colors.black)),
+          _buildIcon(const Icon(CupertinoIcons.heart, color: Colors.black)),
           _buildIcon(
             const Icon(Icons.more_vert),
             onPressed: () {
@@ -167,7 +167,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
       children: [
         Row(
           children: [
-            Icon(
+            const Icon(
               Icons.remove_red_eye_outlined,
               color: Colors.grey,
               size: 16,
@@ -187,9 +187,9 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               },
               // 탭 효과를 보기 위해 원형으로 자를 수 있습니다.
               borderRadius: BorderRadius.circular(20),
-              child: Padding(
+              child: const Padding(
                 // 아이콘 주변에 원하는 만큼 패딩을 줄 수 있습니다.
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(8.0),
                 child: Icon(CupertinoIcons.heart),
               ),
             ),
