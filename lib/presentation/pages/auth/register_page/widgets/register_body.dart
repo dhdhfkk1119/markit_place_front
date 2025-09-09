@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart'; // 간격 사용을 위해 추가
+import 'package:markit_place_front/_core/constants/size.dart';
 import 'register_form.dart';
 
+// 회원가입 페이지의 주요 레이아웃을 담당하는 위젯입니다.
 class RegisterBody extends StatelessWidget {
   const RegisterBody({super.key});
 
@@ -12,7 +13,6 @@ class RegisterBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Align 위젯으로 감싸인 Text('회원 가입')과 아래 SizedBox(height: tenGap) 제거됨
           const Divider(
             color: Colors.grey,
             thickness: 1,

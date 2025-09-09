@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'widgets/account_login_body.dart';
 
+// 일반 계정 로그인 페이지를 정의하는 위젯.
 class AccountLoginPage extends StatelessWidget {
   const AccountLoginPage({super.key});
 
@@ -9,24 +9,22 @@ class AccountLoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('로그인'), // 시안에 따른 제목
+        title: const Text('로그인', style: TextStyle(fontFamily: "CookieRun")),
         bottom: PreferredSize(
-          // 밑줄 효과
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
-            color: Colors.grey[300], // 밑줄 색상
+            color: Colors.grey[300],
             height: 1.0,
           ),
         ),
         leading: IconButton(
-          // 뒤로가기 버튼
-          icon: const Icon(Icons.arrow_back_ios), // iOS 스타일 뒤로가기 아이콘 (변경 가능)
+          icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
       ),
-      body: const AccounLoginBody(),
+      body: const AccounLoginBody(), // 계정 로그인 페이지 본문
     );
   }
 }

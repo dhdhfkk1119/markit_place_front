@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/presentation/pages/auth/register_page/widgets/register_body.dart';
-
 import '../social_login_page/social_login_page.dart';
 
+// 회원가입 페이지를 정의하는 위젯입니다.
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
@@ -20,8 +20,8 @@ class RegisterPage extends StatelessWidget {
             );
           },
         ),
-        title: Text('회원 가입'), // 제목 유지
-        centerTitle: false, // 중앙 정렬 해제하여 왼쪽으로 이동
+        title: Text('회원 가입', style: TextStyle(fontFamily: "CookieRun")),
+        centerTitle: false,
       ),
       body: RegisterBody(),
     );

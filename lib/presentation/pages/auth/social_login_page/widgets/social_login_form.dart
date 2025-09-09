@@ -3,9 +3,11 @@ import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:markit_place_front/presentation/pages/auth/account_login_page/account_login_page.dart';
 
+// 소셜 로그인 및 기타 인증 관련 액션 버튼들을 포함하는 폼 위젯
 class SocialLoginForm extends StatelessWidget {
   const SocialLoginForm({super.key});
 
+  // 소셜 로그인 폼의 UI를 빌드
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -51,7 +53,8 @@ class SocialLoginForm extends StatelessWidget {
     );
   }
 
-  getInkWell(String title, BuildContext context) {
+  // 각 로그인 옵션에 대한 버튼 UI를 생성하고 네비게이션을 처리하는 헬퍼 메소드
+  Widget getInkWell(String title, BuildContext context) {
     String? iconAssetPath;
     if (title == "구글 로그인") {
       iconAssetPath = "assets/social/google.svg";

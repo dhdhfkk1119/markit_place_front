@@ -1,8 +1,12 @@
+// 사용자 회원가입을 위한 입력 폼 제공.
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart'; // 간격 상수 사용을 위해 import
-// theme.dart에서 kAppButtonSolidColor를 가져오기 위해 import 필요시 추가
-// 예: import 'package:markit_place_front/_core/constants/theme.dart';
+import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import 'package:markit_place_front/presentation/widgets/custom_small_action_button.dart';
 
+import '../../../../../_core/constants/size.dart';
+import '../../../index_stack_page/mypage/my_page.dart';
+
+// 회원가입 폼을 정의하는 StatefulWidget.
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
 
@@ -10,47 +14,118 @@ class RegisterForm extends StatefulWidget {
   State<RegisterForm> createState() => _RegisterFormState();
 }
 
+// RegisterForm 위젯의 상태 관리 클래스.
 class _RegisterFormState extends State<RegisterForm> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>(); // 폼 유효성 검사를 위한 글로벌 키.
 
+  // 입력 필드 컨트롤러.
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
   final _emailController = TextEditingController();
   final _verificationCodeController = TextEditingController();
 
+  // 입력 필드 포커스 노드.
+  final _idFocusNode = FocusNode();
+  final _passwordFocusNode = FocusNode();
+  final _passwordConfirmFocusNode = FocusNode();
+  final _emailFocusNode = FocusNode();
+  final _verificationCodeFocusNode = FocusNode();
+
+  final _scrollController = ScrollController(); // 키보드 표시 시 스크롤 제어.
+
+  // 컨트롤러 및 포커스 노드 리스트 (리소스 관리용).
+  late final List<TextEditingController> _allControllers;
+  late final List<FocusNode> _allFocusNodes;
+
+  // 이메일 도메인 제안 목록.
   final List<String> _suggestedDomains = [
     'gmail.com',
     'naver.com',
     'kakao.com',
-    'hanmail.net'
+    'hanmail.net',
+    'daum.net', // 추가된 도메인
+    'nate.com' // 추가된 도메인
   ];
 
+  // 위젯 초기화.
+  @override
+  void initState() {
+    super.initState();
+
+    _allControllers = [
+      _idController,
+      _passwordController,
+      _passwordConfirmController,
+      _emailController,
+      _verificationCodeController,
+    ];
+
+    _allFocusNodes = [
+      _idFocusNode,
+      _passwordFocusNode,
+      _passwordConfirmFocusNode,
+      _emailFocusNode,
+      _verificationCodeFocusNode,
+    ];
+
+    // 각 포커스 노드에 스크롤 리스너 추가.
+    void addEnsureVisibleListener(FocusNode node) {
+      node.addListener(() {
+        if (node.hasFocus) {
+          Future.delayed(const Duration(milliseconds: 300), () {
+            if (mounted && node.context != null) {
+              Scrollable.ensureVisible(
+                node.context!,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                alignment: 0.1,
+              );
+            }
+          });
+        }
+      });
+    }
+
+    for (final node in _allFocusNodes) {
+      addEnsureVisibleListener(node);
+    }
+  }
+
+  // 위젯 리소스 해제.
   @override
   void dispose() {
-    _idController.dispose();
-    _passwordController.dispose();
-    _passwordConfirmController.dispose();
-    _emailController.dispose();
-    _verificationCodeController.dispose();
+    for (final controller in _allControllers) {
+      controller.dispose();
+    }
+    for (final node in _allFocusNodes) {
+      node.dispose();
+    }
+    _scrollController.dispose();
     super.dispose();
   }
 
+  // 공통 TextFormField 위젯 생성 헬퍼.
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
     required FormFieldValidator<String> validator,
+    FocusNode? focusNode,
     bool obscureText = false,
     TextInputType? keyboardType,
-    Widget? suffixIcon,
+    Widget? suffixIcon, // suffixIcon은 이제 ID 필드에서 직접 사용하지 않음
     String? helperText,
   }) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
+        labelStyle: const TextStyle(fontFamily: "CookieRun"),
         suffixIcon: suffixIcon,
         helperText: helperText,
+        helperStyle: const TextStyle(fontFamily: "CookieRun"),
+        errorStyle: const TextStyle(fontFamily: "CookieRun"),
       ),
       obscureText: obscureText,
       keyboardType: keyboardType,
@@ -58,186 +133,223 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
+  // 이메일 도메인 제안 선택 시 처리.
   void _onDomainSuggestionTap(String domain) {
     String currentText = _emailController.text;
     int atSignIndex = currentText.indexOf('@');
 
     if (atSignIndex != -1) {
-      // @가 이미 있다면, @ 앞부분만 유지하고 새 도메인 추가
       currentText = currentText.substring(0, atSignIndex);
     }
-    // @가 없거나, @ 앞부분만 남긴 상태에서 새 도메인 결합
     _emailController.text = '$currentText@$domain';
-    // 커서를 텍스트 끝으로 이동
     _emailController.selection = TextSelection.fromPosition(
       TextPosition(offset: _emailController.text.length),
     );
   }
 
+  // 회원가입 폼 UI 빌드.
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 아이디 입력 필드
-          TextFormField(
-            controller: _idController,
-            decoration: InputDecoration(
-              labelText: '아이디',
-              helperText: '아이디는 4자 이상 20자 이하로 입력해주세요.',
-              suffixIcon: Padding(
-                padding: const EdgeInsets.only(left: tenGap),
-                child: ElevatedButton(
-                  onPressed: () {
-                    print('아이디 중복 확인: ${_idController.text}');
-                  },
-                  child: const Text('중복확인'),
-                ),
-              ),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '아이디를 입력해주세요.';
-              }
-              if (value.length < 4 || value.length > 20) {
-                return '아이디는 4자 이상 20자 이하로 입력해주세요.';
-              }
-              if (value.contains(' ')) {
-                return '아이디에 공백을 포함할 수 없습니다.';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: twenGap),
-
-          // 비밀번호 입력 필드
-          _buildTextFormField(
-            controller: _passwordController,
-            labelText: '비밀번호',
-            obscureText: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '비밀번호를 입력해주세요.';
-              }
-              if (value.length < 8 || value.length > 20) {
-                return '비밀번호는 8자 이상 20자 이하이어야 합니다.';
-              }
-              return null;
-            },
-            helperText: '비밀번호는 8자 이상 20자 이하로 입력해주세요.',
-          ),
-          const SizedBox(height: twenGap),
-
-          // 비밀번호 확인 입력 필드
-          _buildTextFormField(
-            controller: _passwordConfirmController,
-            labelText: '비밀번호 확인',
-            obscureText: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '비밀번호를 다시 한번 입력해주세요.';
-              }
-              if (value != _passwordController.text) {
-                return '비밀번호가 일치하지 않습니다.';
-              }
-              return null;
-            },
-            helperText: '비밀번호는 8자 이상 20자 이하로 입력해주세요.',
-          ),
-          const SizedBox(height: twenGap),
-
-          // 이메일 인증 섹션
-          Text('이메일 인증하기', style: TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: tenGap),
-          Row(
+    return SingleChildScrollView(
+      controller: _scrollController,
+      child: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildTextFormField(
-                  controller: _emailController,
-                  labelText: '이메일 주소',
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '이메일 주소를 입력해주세요.';
-                    }
-                    if (!value.contains('@') || !value.contains('.')) {
-                      return '유효한 이메일 형식이 아닙니다.';
-                    }
-                    return null;
-                  },
-                  helperText: '예: example@markit.com',
+              // 아이디 입력 필드 및 중복확인 버튼.
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _idController,
+                      focusNode: _idFocusNode,
+                      decoration: InputDecoration(
+                        labelText: '아이디',
+                        labelStyle: const TextStyle(fontFamily: "CookieRun"),
+                        helperText: '아이디는 4자 이상 20자 이하로 입력해주세요.',
+                        helperStyle: const TextStyle(fontFamily: "CookieRun"),
+                        errorStyle: const TextStyle(fontFamily: "CookieRun"),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '아이디를 입력해주세요.';
+                        }
+                        if (value.length < 4 || value.length > 20) {
+                          return '아이디는 4자 이상 20자 이하로 입력해주세요.';
+                        }
+                        if (value.contains(' ')) {
+                          return '아이디에 공백을 포함할 수 없습니다.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: tenGap, top: tenGap, right: 4),
+                    child: CustomSmallActionButton(
+                      text: '중복확인',
+                      onPressed: () {
+                        // TODO: 아이디 중복 확인 로직.
+                        print('아이디 중복 확인: ${_idController.text}');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: twenGap),
+              // 비밀번호 입력 필드.
+              _buildTextFormField(
+                controller: _passwordController,
+                focusNode: _passwordFocusNode,
+                labelText: '비밀번호',
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '비밀번호를 입력해주세요.';
+                  }
+                  if (value.length < 8 || value.length > 20) {
+                    return '비밀번호는 8자 이상 20자 이하이어야 합니다.';
+                  }
+                  return null;
+                },
+                helperText: '비밀번호는 8자 이상 20자 이하로 입력해주세요.',
+              ),
+              const SizedBox(height: twenGap),
+              // 비밀번호 확인 필드.
+              _buildTextFormField(
+                controller: _passwordConfirmController,
+                focusNode: _passwordConfirmFocusNode,
+                labelText: '비밀번호 확인',
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '비밀번호를 다시 한번 입력해주세요.';
+                  }
+                  if (value != _passwordController.text) {
+                    return '비밀번호가 일치하지 않습니다.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: twenGap),
+              // 이메일 인증 섹션 타이틀.
+              CustomWidget.buildTitle("이메일 인증하기"),
+              const SizedBox(height: tenGap),
+              // 이메일 입력 필드 및 인증번호 전송 버튼.
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildTextFormField(
+                      controller: _emailController,
+                      focusNode: _emailFocusNode,
+                      labelText: '이메일 주소',
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return '이메일 주소를 입력해주세요.';
+                        }
+                        if (!value.contains('@') || !value.contains('.')) {
+                          return '유효한 이메일 형식이 아닙니다.';
+                        }
+                        return null;
+                      },
+                      helperText: '예: example@markit.com',
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: tenGap, top: tenGap, right: 4),
+                    child: CustomSmallActionButton(
+                      text: '인증번호 전송',
+                      onPressed: () {
+                        // TODO: 인증번호 전송 로직.
+                        print('인증번호 전송: ${_emailController.text}');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              // 이메일 도메인 제안 버튼.
+              Padding(
+                padding: const EdgeInsets.only(top: fiveGap),
+                child: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: _suggestedDomains.map((domain) {
+                    return OutlinedButton(
+                      onPressed: () => _onDomainSuggestionTap(domain),
+                      child: Text(domain,
+                          style: const TextStyle(fontFamily: "CookieRun")),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 2),
+                        side:
+                            BorderSide(color: Colors.grey.shade400, width: 1.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: tenGap, top: tenGap),
-                child: ElevatedButton(
-                  onPressed: () {
-                    print('인증번호 전송: ${_emailController.text}');
-                  },
-                  child: const Text('인증번호 전송'),
+              const SizedBox(height: twenGap),
+              // 인증번호 입력 필드.
+              _buildTextFormField(
+                controller: _verificationCodeController,
+                focusNode: _verificationCodeFocusNode,
+                labelText: '인증번호',
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '인증번호를 입력해주세요.';
+                  }
+                  return null; // TODO: 인증번호 유효성 검사.
+                },
+                helperText: '이메일로 전송된 인증번호를 입력해주세요.',
+              ),
+              const SizedBox(height: thiGap),
+              // 가입하기 버튼.
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC8BFE7),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // TODO: 회원가입 로직 및 성공/실패 처리.
+                    final id = _idController.text;
+                    final password = _passwordController.text;
+                    final email = _emailController.text;
+                    final verificationCode = _verificationCodeController.text;
+                    print(
+                        '회원가입 시도: ID:$id, Email:$email, Code:$verificationCode');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyPage()),
+                    );
+                  }
+                },
+                child: const Text(
+                  '가입하기',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontFamily: "CookieRun"),
                 ),
               ),
             ],
           ),
-          // 도메인 제안 버튼 추가
-          Padding(
-            padding: const EdgeInsets.only(top: fiveGap), // 이메일 필드와 간격
-            child: Wrap(
-              spacing: 8.0, // 버튼 간 가로 간격
-              runSpacing: 4.0, // 줄 바꿈 시 세로 간격
-              children: _suggestedDomains.map((domain) {
-                return OutlinedButton(
-                  onPressed: () => _onDomainSuggestionTap(domain),
-                  child: Text(domain),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    // textStyle: TextStyle(fontSize: 12), // 필요시 폰트 크기 조절
-                    // minimumSize: Size(0, 30), // 버튼 최소 크기 조절
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: twenGap), // 도메인 버튼과 다음 필드 사이 간격
-
-          // 인증번호 입력 필드
-          _buildTextFormField(
-            controller: _verificationCodeController,
-            labelText: '인증번호',
-            keyboardType: TextInputType.number,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return '인증번호를 입력해주세요.';
-              }
-              return null;
-            },
-            helperText: '이메일로 전송된 인증번호를 입력해주세요.',
-          ),
-          const SizedBox(height: thiGap),
-
-          // 가입하기 버튼
-          ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                final id = _idController.text;
-                final password = _passwordController.text;
-                final email = _emailController.text;
-                final verificationCode = _verificationCodeController.text;
-                print('회원가입 시도: ID:$id, Email:$email, Code:$verificationCode');
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('회원가입 요청 중...'),
-                  ),
-                );
-              }
-            },
-            child: const Text('가입하기'),
-          ),
-        ],
+        ),
       ),
     );
   }
