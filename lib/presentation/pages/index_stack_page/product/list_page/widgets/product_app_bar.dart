@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 
 class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String currentTitle;
-  final ValueChanged<String> onTitleChanged; // 현재 위치 변경
-  final VoidCallback onFilterToggle; // 리스트 버튼 활성화
+  final ValueChanged<String> onTitleChanged;
+  final VoidCallback onFilterToggle;
+  final VoidCallback onSearchToggle;
 
   const ProductListAppBar({
     super.key,
     required this.currentTitle,
     required this.onTitleChanged,
     required this.onFilterToggle,
+    required this.onSearchToggle,
   });
 
   @override
@@ -48,7 +50,7 @@ class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(CupertinoIcons.search),
-          onPressed: () {},
+          onPressed: onSearchToggle,
         ),
         IconButton(
           icon: const Icon(CupertinoIcons.bell_fill),

@@ -6,12 +6,14 @@ class CommunityListAppBar extends StatelessWidget
   final String currentTitle;
   final ValueChanged<String> onTitleChanged;
   final VoidCallback onFilterToggle;
+  final VoidCallback onSearchToggle;
 
   const CommunityListAppBar({
     super.key,
     required this.currentTitle,
     required this.onTitleChanged,
     required this.onFilterToggle,
+    required this.onSearchToggle,
   });
 
   @override
@@ -46,7 +48,7 @@ class CommunityListAppBar extends StatelessWidget
         ),
         IconButton(
           icon: const Icon(CupertinoIcons.search),
-          onPressed: () {},
+          onPressed: onSearchToggle,
         ),
         IconButton(
           icon: const Icon(CupertinoIcons.bell_fill),

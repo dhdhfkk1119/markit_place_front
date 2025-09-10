@@ -14,6 +14,15 @@ class CommunityListPage extends StatefulWidget {
 class _CommunityListPageState extends State<CommunityListPage> {
   bool _isFilterVisible = false;
   String _currentTitle = "부전제2동";
+  bool isSearchVisible = false; // 검색창 표시 여부
+  final TextEditingController searchController = TextEditingController();
+
+  void toggleSearch() {
+    setState(() {
+      isSearchVisible = !isSearchVisible;
+      if (!isSearchVisible) searchController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +39,12 @@ class _CommunityListPageState extends State<CommunityListPage> {
             _isFilterVisible = !_isFilterVisible;
           });
         },
+        onSearchToggle: toggleSearch,
       ),
       body: CommunityListBody(
         isFilterVisible: _isFilterVisible,
+        isSearchVisible: isSearchVisible,
+        searchController: searchController,
         onWritePressed: () {
           Navigator.push(
             context,

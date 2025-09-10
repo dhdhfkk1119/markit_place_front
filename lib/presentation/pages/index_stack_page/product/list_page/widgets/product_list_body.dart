@@ -8,11 +8,15 @@ import 'package:markit_place_front/presentation/widgets/WriteButton.dart';
 class ProductListBody extends StatelessWidget {
   final bool isFilterVisible;
   final VoidCallback onWritePressed;
+  final TextEditingController searchController;
+  final bool isSearchVisible;
 
   const ProductListBody({
     super.key,
     required this.isFilterVisible,
     required this.onWritePressed,
+    required this.isSearchVisible,
+    required this.searchController,
   });
 
   @override
@@ -45,6 +49,29 @@ class ProductListBody extends StatelessWidget {
               ),
             ],
           ),
+          if (isSearchVisible)
+            Positioned(
+              top: 0,
+              left: isFilterVisible ? 170 : 0, // 필터 있을 때 위치 조정
+              right: 0,
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: searchController,
+                  decoration: InputDecoration(
+                    hintText: "검색어를 입력하세요",
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onSubmitted: (value) {
+                    print("검색: $value");
+                  },
+                ),
+              ),
+            ),
           WriteButton(
             onTap: onWritePressed,
             title: "상품등록",

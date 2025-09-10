@@ -13,7 +13,16 @@ class ProductListPage extends StatefulWidget {
 
 class _ProductListPageState extends State<ProductListPage> {
   bool _isFilterVisible = false;
+  bool isSearchVisible = false; // 검색창 표시 여부
+  final TextEditingController searchController = TextEditingController();
   String _currentTitle = "부전제2동";
+
+  void toggleSearch() {
+    setState(() {
+      isSearchVisible = !isSearchVisible;
+      if (!isSearchVisible) searchController.clear();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +39,12 @@ class _ProductListPageState extends State<ProductListPage> {
             _isFilterVisible = !_isFilterVisible;
           });
         },
+        onSearchToggle: toggleSearch,
       ),
       body: ProductListBody(
         isFilterVisible: _isFilterVisible,
+        isSearchVisible: isSearchVisible,
+        searchController: searchController,
         onWritePressed: () {
           Navigator.push(
             context,
