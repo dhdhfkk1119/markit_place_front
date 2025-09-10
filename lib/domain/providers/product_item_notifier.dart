@@ -31,15 +31,15 @@ class ProductItemModel {
 class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
   @override
   ProductItemModel build() {
-    return ProductItemModel(imageCount: 0, title: "고구마", description: "1kg 박스입니다.", price: 5000);
+    return ProductItemModel(imageCount: 0, title: "판매글의 제목을 입력해주세요.", description: "판매 상품의 자세한 설명을 적어주세요.", price: 0);
   }
 
   // 이미지 갯수 동기화
-  void uploadImages({required List<XFile> images, required bool isOn}) {
+  void uploadImages(Function(bool) onError, {required List<XFile> images, required bool isOn}) {
     state = state.copyWith(imageCount: images.length);
 
     if (isOn) {
-      _generateItemInfo(images: images);
+      _generateItemInfo(images: images, onError);
     }
   }
 
@@ -68,8 +68,8 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
   }
 
   // AI로 상품 설명 생성하기
-  Future<void> _generateItemInfo({required List<XFile> images}) async {
-    await GeminiRepository().sendImages(images: images, userId: 1);
+  Future<void> _generateItemInfo(Function(bool) onError, {required List<XFile> images}) async {
+    await GeminiRepository().sendImages(images: images, userId: 1, onError);
   }
 }
 
