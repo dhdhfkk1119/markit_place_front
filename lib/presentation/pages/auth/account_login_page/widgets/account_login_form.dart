@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart'; // 상수 파일 임포트
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/_core/constants/size.dart';
+import 'package:markit_place_front/domain/repositories/auth_repository/SessionNotifier.dart';
+import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
+
+import '../../../../widgets/snackbar_util.dart'; // 상수 파일 임포트
 
 // 계정 로그인을 위한 입력 폼 위젯 (StatefulWidget)
-class AccountLoginForm extends StatefulWidget {
+class AccountLoginForm extends ConsumerStatefulWidget {
   const AccountLoginForm({super.key});
 
   @override
-  State<AccountLoginForm> createState() => _AccountLoginFormState();
+  ConsumerState<AccountLoginForm> createState() => _AccountLoginFormState();
 }
 
-class _AccountLoginFormState extends State<AccountLoginForm> {
+class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
   final _formKey = GlobalKey<FormState>(); // 폼의 상태를 관리하고 유효성 검사를 위한 키
   bool _autoLogin = false; // '자동 로그인' 체크박스 상태
+  final _idController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   // TODO: 아이디, 비밀번호 컨트롤러 추가 (TextEditingController)
 
@@ -36,8 +43,8 @@ class _AccountLoginFormState extends State<AccountLoginForm> {
           const SizedBox(height: xLarge),
 
           // 아이디 입력 필드
-          TextFormField(
-            // controller: _idController, // TODO: 컨트롤러 연결
+          CustomTextFormField(
+            controller: _idController,
             decoration: const InputDecoration(
               labelText: '아이디',
               border: OutlineInputBorder(), // 모든 면에 테두리 적용
@@ -46,15 +53,14 @@ class _AccountLoginFormState extends State<AccountLoginForm> {
               if (value == null || value.isEmpty) {
                 return '아이디를 입력해주세요.'; // 유효성 검사 메시지
               }
-              // TODO: 아이디 형식 유효성 검사 추가 (예: 길이, 특수문자 등)
               return null; // 유효한 경우 null 반환
             },
           ),
           const SizedBox(height: medium),
 
           // 비밀번호 입력 필드
-          TextFormField(
-            // controller: _passwordController, // TODO: 컨트롤러 연결
+          CustomTextFormField(
+            controller: _passwordController,
             decoration: const InputDecoration(
               labelText: '비밀번호',
               border: OutlineInputBorder(),
@@ -64,7 +70,6 @@ class _AccountLoginFormState extends State<AccountLoginForm> {
               if (value == null || value.isEmpty) {
                 return '비밀번호를 입력해주세요.';
               }
-              // TODO: 비밀번호 정책 유효성 검사 추가
               return null;
             },
           ),
@@ -97,13 +102,20 @@ class _AccountLoginFormState extends State<AccountLoginForm> {
                 borderRadius: BorderRadius.circular(small),
               ),
             ),
-            onPressed: () {
+            onPressed: () async {
               // 폼 유효성 검사 실행
               if (_formKey.currentState!.validate()) {
-                // 유효성 검사 통과 시 로그인 로직 처리
-                // TODO: 실제 로그인 로직 구현 (예: API 호출)
-                print('로그인 시도: ID 입력값, PW 입력값');
-                Navigator.pushNamed(context, "product/list");
+                final sessionNotifier = ref.read(sessionProvider.notifier);
+                final result = await sessionNotifier.login(
+                    _idController.text, _passwordController.text,
+                    autoLogin: _autoLogin);
+
+                if (result["success"] == true) {
+                  SnackBarUtil.showSuccess(context, "성공했습니다");
+                  Navigator.pushReplacementNamed(context, "/main");
+                } else {
+                  SnackBarUtil.showError(context, "로그인 실패");
+                }
               }
             },
             child: const Text(

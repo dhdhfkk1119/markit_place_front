@@ -9,8 +9,7 @@ class UserRepository {
       "loginId": loginId,
       "password": password,
     };
-    Response response =
-        await dio.post("/api/members/register", data: requestBody);
+    Response response = await dio.post("/members/register", data: requestBody);
 
     final responseBody = response.data;
     Logger().d(responseBody);
@@ -23,7 +22,7 @@ class UserRepository {
       "loginId": loginId,
       "password": password,
     };
-    Response response = await dio.post("/api/members/login", data: requestBody);
+    Response response = await dio.post("/members/login", data: requestBody);
 
     Map<String, dynamic> responseBody = response.data;
     Logger().d(responseBody);

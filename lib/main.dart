@@ -1,6 +1,8 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/_core/utils/my_http.dart';
 import 'package:markit_place_front/presentation/pages/auth/register_page/register_page.dart';
 import 'package:markit_place_front/presentation/pages/auth/social_login_page/social_login_page.dart';
 import 'package:markit_place_front/presentation/pages/auth/terms_page/terms_page.dart'; // TermsPage 임포트 추가
@@ -13,6 +15,8 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   await dotenv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  setupInterceptors();
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -24,7 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: MainScreen(),
+      home: SocialLoginPage(),
       routes: {
         "/main": (context) => const MainScreen(),
         "/register": (context) => const RegisterPage(),
