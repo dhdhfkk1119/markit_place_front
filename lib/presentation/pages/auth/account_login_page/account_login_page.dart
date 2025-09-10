@@ -11,12 +11,13 @@ class AccountLoginPage extends StatelessWidget {
       appBar: AppBar(
         // AppBar 제목
         title: const Text('로그인', style: TextStyle(fontFamily: "CookieRun")),
-        // AppBar 하단 구분선
+        // AppBar 하단 구분선 (Divider 위젯으로 변경)
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
+          child: Divider(
             color: Colors.grey.shade300,
             height: 1.0,
+            thickness: 1.0,
           ),
         ),
         // AppBar 좌측 뒤로가기 버튼
@@ -28,7 +29,7 @@ class AccountLoginPage extends StatelessWidget {
         ),
       ),
       // 페이지 본문
-      body: const AccounLoginBody(),
+      body: const AccountLoginBody(), // 오타 수정: AccountLoginBody
     );
   }
 }

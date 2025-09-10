@@ -40,7 +40,7 @@ class CustomAuthTextFormField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title), // 제목
-        const SizedBox(height: tiny),
+        const SizedBox(height: xSmall),
         TextFormField(
           onChanged: onChanged, // 입력 변경 콜백
           obscureText: obscureText, // 입력값 숨김 처리
@@ -49,20 +49,20 @@ class CustomAuthTextFormField extends StatelessWidget {
             errorText: errorText.isEmpty ? null : errorText, // 에러 메시지
             // 테두리 스타일 정의 (인증 폼 고유 디자인)
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(middle),
+              borderRadius: BorderRadius.circular(medium),
               borderSide: BorderSide(color: defaultBorderColor),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(middle),
+              borderRadius: BorderRadius.circular(medium),
               borderSide: BorderSide(
                   color: focusedBorderColor, width: 2.0), // 포커스 시 테두리 두께 2.0
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(middle),
+              borderRadius: BorderRadius.circular(medium),
               borderSide: BorderSide(color: errorBorderColor),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(middle),
+              borderRadius: BorderRadius.circular(medium),
               borderSide: BorderSide(
                   color: errorBorderColor, width: 2.0), // 에러 + 포커스 시 테두리 두께 2.0
             ),

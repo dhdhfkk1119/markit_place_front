@@ -32,10 +32,10 @@ class CustomSmallActionButton extends StatelessWidget {
       style: baseStyle?.copyWith(
         padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
           const EdgeInsets.symmetric(
-              horizontal: middle, vertical: small), // 작은 버튼용 패딩
+              horizontal: medium, vertical: small), // 작은 버튼용 패딩
         ),
         minimumSize:
-            WidgetStateProperty.all<Size?>(const Size(0, third)), // 최소 높이
+            WidgetStateProperty.all<Size?>(const Size(0, xLarge)), // 최소 높이
         textStyle: WidgetStateProperty.resolveWith<TextStyle?>(
             (Set<WidgetState> states) {
           final TextStyle? existingThemeTextStyle =
@@ -44,7 +44,7 @@ class CustomSmallActionButton extends StatelessWidget {
               baseStyle?.foregroundColor?.resolve(states);
 
           // 작은 버튼용 폰트 크기
-          const double targetFontSize = middle;
+          const double targetFontSize = medium;
 
           // 기존 테마 폰트 크기 관련 로직 (현재는 targetFontSize로 고정됨)
           // final double? currentThemeFontSize = existingThemeTextStyle?.fontSize;

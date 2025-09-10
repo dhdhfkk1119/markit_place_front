@@ -22,7 +22,7 @@ class CustomLogo extends StatelessWidget {
           ),
         ),
         const SizedBox(
-          height: half,
+          height: xxLarge,
         ),
         Text(
           mTitle,
@@ -31,12 +31,12 @@ class CustomLogo extends StatelessWidget {
               fontFamily: fontFamily,
               fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: half),
+        const SizedBox(height: xxLarge),
         const Image(
           image: AssetImage('assets/logo.png'),
           width: 200,
         ),
-        const SizedBox(height: half)
+        const SizedBox(height: xxLarge)
       ],
     );
   }
