@@ -47,45 +47,50 @@ class GeminiRepository {
     );
   }
 
-  Future<Map<String, dynamic>> sendImages({required List<XFile> images, required int userId}) async {
-    final List<Map<String, dynamic>> base64Images = await _convertBase64Images(images);
-
-    final List<Map<String, dynamic>> imageParts = base64Images.map((imgMap) {
-    // 서버 DTO의 Part 구조에 맞게 "inline_data"로 감싸준다
-      return {
-        "inline_data": {
-          "mime_type": imgMap["mimeType"],
-          "data": imgMap["imageData"]
-        }
-      };
-    }).toList();
-
-    print(imageParts.length);
-
-    final textPart = {
-      "text": "이미지를 종합적으로 분석하고, 적절한 상품 설명을 작성해주면 돼. 이때 형식은 [title]: title / [description]: description 이런 식으로 만들어줘야 해. 절대로 형식을 벗어나지 말아줘."
-    };
-
-    final requestData = {
-      "contents": [
-          {
-            "parts": [
-              ...imageParts,
-              textPart,
-            ]
+  Future<Map<String, dynamic>> sendImages(Function(bool) onError, {required List<XFile> images, required int userId}) async {
+    try {
+      final List<Map<String, dynamic>> base64Images = await _convertBase64Images(images);
+      
+      final List<Map<String, dynamic>> imageParts = base64Images.map((imgMap) {
+      // 서버 DTO의 Part 구조에 맞게 "inline_data"로 감싸준다
+        return {
+          "inline_data": {
+            "mime_type": imgMap["mimeType"],
+            "data": imgMap["imageData"]
           }
-        ]
-    };
-
-    final requestJson = json.encode(requestData);
-    Logger().i(requestJson);
-    final response = await dio.post("$_baseUrl/image/$userId", data: requestJson);
-
-    if (response.statusCode != 200) {
-      throw Exception("통신 실패.....");
+        };
+      }).toList();
+      
+      print(imageParts.length);
+      
+      final textPart = {
+        "text": "이미지를 종합적으로 분석하고, 적절한 상품 설명을 작성해주면 돼. 이때 형식은 [title]: title / [description]: description 이런 식으로 만들어줘야 해. 절대로 형식을 벗어나지 말아줘."
+      };
+      
+      final requestData = {
+        "contents": [
+            {
+              "parts": [
+                ...imageParts,
+                textPart,
+              ]
+            }
+          ]
+      };
+      
+      final requestJson = json.encode(requestData);
+      Logger().i(requestJson);
+      final response = await dio.post("$_baseUrl/image/$userId", data: requestJson);
+      
+      if (response.statusCode != 200) {
+        throw Exception("통신 실패.....");
+      }
+      print(response.data);
+      return {};
+    } on Exception catch (e) {
+      onError(true);
+      return {};
     }
-    print(response.data);
-    return {};
   }
   
   Future<List<Map<String, dynamic>>> _convertBase64Images(List<XFile> images) async {

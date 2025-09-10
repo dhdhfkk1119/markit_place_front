@@ -59,6 +59,8 @@ class _NearPageState extends State<NearPage> {
 
   @override
   Widget build(BuildContext context) {
+    LocationData? _locationData = null;
+
     return Scaffold(
       body: Stack(children: [
         FutureBuilder<LocationData?>(
@@ -83,10 +85,10 @@ class _NearPageState extends State<NearPage> {
               );
             }
 
-            final locationData = snapshot.data!;
-            print("${locationData.latitude} / ${locationData.longitude}");
+            _locationData = snapshot.data!;
+            print("${_locationData!.latitude} / ${_locationData!.longitude}");
             _currentPosition =
-                NLatLng(locationData.latitude!, locationData.longitude!);
+                NLatLng(_locationData!.latitude!, _locationData!.longitude!);
 
             if (_currentPosition == null) {
               return const Placeholder();
@@ -95,7 +97,7 @@ class _NearPageState extends State<NearPage> {
             return NaverMap(
               options: NaverMapViewOptions(
                 initialCameraPosition:
-                    NCameraPosition(target: _currentPosition!, zoom: 15),
+                    NCameraPosition(target: _currentPosition!, zoom: 15, bearing: _locationData!.heading!),
               ),
               onMapReady: (controller) {
                 _mapController = controller;
@@ -115,7 +117,7 @@ class _NearPageState extends State<NearPage> {
         onPressed: () {
           if (_currentPosition != null) {
             final cameraUpdate =
-                NCameraUpdate.scrollAndZoomTo(target: _currentPosition!);
+                NCameraUpdate.withParams(target: _currentPosition!, zoom: 15, bearing: _locationData!.heading);
 
             cameraUpdate.setAnimation(
                 animation: NCameraAnimation.fly,

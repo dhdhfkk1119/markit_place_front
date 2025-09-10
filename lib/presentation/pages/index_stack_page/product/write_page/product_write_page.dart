@@ -4,11 +4,24 @@ import 'package:markit_place_front/presentation/pages/index_stack_page/product/w
 
 import '../../../../../_core/constants/custom_widget.dart';
 
-class ProductWritePage extends StatelessWidget {
+class ProductWritePage extends StatefulWidget {
   const ProductWritePage({super.key});
 
   @override
+  State<ProductWritePage> createState() => _ProductWritePageState();
+}
+
+class _ProductWritePageState extends State<ProductWritePage> {
+  bool _isLoading = false;
+  void _handleStatus(bool status) {
+    setState(() {
+      _isLoading = status;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -19,10 +32,10 @@ class ProductWritePage extends StatelessWidget {
         ),
         title: CustomWidget.buildTitle("내 상품등록하기"),
       ),
-      body: const SafeArea(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(16.0),
-          child: ProductWriteBody(),
+          child: ProductWriteBody(_handleStatus),
         ),
       ),
       bottomNavigationBar: _buildSubmitButton(),
@@ -43,7 +56,7 @@ class ProductWritePage extends StatelessWidget {
             ),
             padding: const EdgeInsets.symmetric(vertical: 12.0),
           ),
-          child: CustomWidget.buildTitle("작성완료", color: Colors.white, size: 20),
+          child: CustomWidget.buildTitle(_isLoading ? "작성 중..." : "작성완료", color: Colors.white, size: 20),
         ),
       ),
     );
