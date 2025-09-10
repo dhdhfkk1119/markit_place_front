@@ -21,7 +21,8 @@ class _ProductListItemState extends State<ProductListItem> {
           context,
           // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
-            builder: (context) => const DetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
+            builder: (context) =>
+                const DetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
           ),
         );
       },
@@ -92,21 +93,19 @@ class _ProductListItemState extends State<ProductListItem> {
 
   // 상품에 대한 정보를 담음 함수(제목, 위치,가격)
   Widget _buildProductInfo() {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildTitle("그래픽 카드 판매 합니다", 16),
-          const Text(
-            "부전제2동 / 디지털",
-            style: TextStyle(fontSize: 14, color: Colors.grey),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            softWrap: false,
-          ),
-          _buildTitle("가격 : 1,000,000원", 14, font: FontWeight.w200),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTitle("그래픽 카드 판매 합니다", 16),
+        const Text(
+          "부전제2동 / 디지털",
+          style: TextStyle(fontSize: 14, color: Colors.grey),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+          softWrap: false,
+        ),
+        _buildTitle("가격 : 1,000,000원", 14, font: FontWeight.w200),
+      ],
     );
   }
 
