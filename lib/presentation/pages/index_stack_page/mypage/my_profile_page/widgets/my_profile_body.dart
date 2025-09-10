@@ -324,7 +324,6 @@ class _MyProfileBodyState extends State<MyProfileBody> {
           const SizedBox(width: 12),
           CustomWidget.buildTitle(count.toString(), size: 16, weight: FontWeight.w700),
           const SizedBox(width: 12),
-          // '친절하고 매너가 좋아요' 박스
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
