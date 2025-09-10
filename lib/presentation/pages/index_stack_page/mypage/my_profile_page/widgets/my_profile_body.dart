@@ -9,12 +9,11 @@ class MyProfileBody extends StatefulWidget {
 }
 
 class _MyProfileBodyState extends State<MyProfileBody> {
-  // 공통 색상 및 여백 변수 정의
-  static const Color primaryColor = Color(0xFF5E2B96); // 보라색
-  static const Color profileAvatarColor = Color(0xFFFF9016); // 주황색
-  static const Color accentColor = Color(0xFFE7D9F8); // 연한 보라색
-  static const Color lightGrey = Color(0xFFF0F0F0); // 연한 회색
-  static const Color redHeartColor = Colors.red; // 빨간색 하트
+  static const Color primaryColor = Color(0xFF5E2B96);
+  static const Color profileAvatarColor = Color(0xFFFF9016);
+  static const Color accentColor = Color(0xFFE7D9F8);
+  static const Color lightGrey = Color(0xFFF0F0F0);
+  static const Color redHeartColor = Colors.red;
   static const double horizontalPadding = 20.0;
   static const double verticalSpacing = 24.0;
 
@@ -75,7 +74,7 @@ class _MyProfileBodyState extends State<MyProfileBody> {
               _buildMannerSection(),
               const SizedBox(height: verticalSpacing),
 
-              // 받은 거래 후기 섹션 추가
+              // 받은 거래 후기 섹션
               _buildListTile(
                 title: "받은 거래 후기",
                 subTitle: "32",
