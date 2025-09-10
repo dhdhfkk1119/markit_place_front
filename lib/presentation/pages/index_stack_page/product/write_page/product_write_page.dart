@@ -1,10 +1,51 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_body.dart';
+
+import '../../../../../_core/constants/custom_widget.dart';
 
 class ProductWritePage extends StatelessWidget {
   const ProductWritePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: CustomWidget.buildIcon(
+          onPressed: () => Navigator.pop(context),
+          const Icon(CupertinoIcons.back),
+        ),
+        title: CustomWidget.buildTitle("내 상품등록하기"),
+      ),
+      body: const SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: ProductWriteBody(),
+        ),
+      ),
+      bottomNavigationBar: _buildSubmitButton(),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      child: SizedBox(
+        width: double.infinity,
+        child: TextButton(
+          onPressed: () {},
+          style: TextButton.styleFrom(
+            backgroundColor: Colors.deepPurpleAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+          ),
+          child: CustomWidget.buildTitle("작성완료", color: Colors.white, size: 20),
+        ),
+      ),
+    );
   }
 }

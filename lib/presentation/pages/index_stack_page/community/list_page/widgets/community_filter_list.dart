@@ -6,30 +6,27 @@ class CommunityFilterList extends StatefulWidget {
   const CommunityFilterList({super.key});
 
   @override
-  State<CommunityFilterList> createState() => _ProductFilterListState();
+  State<CommunityFilterList> createState() => _CommunityFilterListState();
 }
 
-class _ProductFilterListState extends State<CommunityFilterList> {
-  final Map<String, bool> _filters = {
-    '거래 가능한 상품 보기': false,
-  };
+class _CommunityFilterListState extends State<CommunityFilterList> {
   final Map<String, bool> _placeFilters = {
-    '부전동': false,
-    '전포동': false,
-    '양정동': false,
-    '개금동': false,
+    '맛집': false,
+    '생활/편의': false,
+    '미용': false,
+    '병원/약구': false,
   };
   final Map<String, bool> _categoryFilters = {
-    '취미/게임/음반': false,
-    '도서': false,
-    '디지털': false,
-    '뷰티/미용': false,
+    '반려동물': false,
+    '운동': false,
+    '취미': false,
+    '고민/사연': false,
   };
   final Map<String, bool> _priceFilters = {
-    '나눔': false,
-    '5,000원 이하': false,
-    '10,000원 이하': false,
-    '20,000원 이하': false,
+    '동네행사': false,
+    '분실/실종': false,
+    '동네사건사고': false,
+    '공공소식': false,
   };
 
   @override
@@ -43,7 +40,6 @@ class _ProductFilterListState extends State<CommunityFilterList> {
               onPressed: () {
                 // 초기화 로직 구현 (모든 필터 상태를 false로)
                 setState(() {
-                  _filters.updateAll((key, value) => false);
                   _placeFilters.updateAll((key, value) => false);
                   _categoryFilters.updateAll((key, value) => false);
                   _priceFilters.updateAll((key, value) => false);
@@ -59,21 +55,22 @@ class _ProductFilterListState extends State<CommunityFilterList> {
             ),
           ],
         ),
-        FilterItemWidget(
-          title: _filters.keys.first,
-          initialValue: _filters[_filters.keys.first]!,
-          onChanged: (bool newValue) {
-            setState(() {
-              _filters[_filters.keys.first] = newValue;
-            });
-          },
-        ),
         Container(
           height: 2,
           color: Colors.grey,
         ),
-        getTitle('위치'),
-        getTitle('부산 광역시 부산 진구'),
+        Row(
+          children: [
+            const Icon(
+              Icons.keyboard,
+              color: Colors.deepPurpleAccent,
+            ),
+            const SizedBox(
+              width: 8,
+            ),
+            getTitle('동네 정보'),
+          ],
+        ),
         ..._placeFilters.keys.map((key) {
           return FilterItemWidget(
             title: key,
@@ -89,7 +86,18 @@ class _ProductFilterListState extends State<CommunityFilterList> {
           height: 2,
           color: Colors.grey,
         ),
-        getTitle('카테고리'),
+        Row(
+          children: [
+            const Icon(
+              Icons.night_shelter,
+              color: Colors.deepPurpleAccent,
+            ),
+            const SizedBox(
+              width: 8,
+            ),
+            getTitle('이웃과 함께'),
+          ],
+        ),
         ..._categoryFilters.keys.map((key) {
           return FilterItemWidget(
             title: key,
@@ -105,7 +113,18 @@ class _ProductFilterListState extends State<CommunityFilterList> {
           height: 2,
           color: Colors.grey,
         ),
-        getTitle('가격'),
+        Row(
+          children: [
+            const Icon(
+              Icons.notifications_active_sharp,
+              color: Colors.deepPurpleAccent,
+            ),
+            const SizedBox(
+              width: 8,
+            ),
+            getTitle('소식'),
+          ],
+        ),
         ..._priceFilters.keys.map((key) {
           return FilterItemWidget(
             title: key,

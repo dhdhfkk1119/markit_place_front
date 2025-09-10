@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
-final baseUrl = "http://192.168.0.128:8080";
+const baseUrl = "http://192.168.0.128:8080/api";
 
 //로그인 되면, dio에 jwt 추가하기
 //dio.options.headers['Authorization'] = 'Bearer $_accessToken';
