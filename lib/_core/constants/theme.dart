@@ -32,7 +32,7 @@ AppBarTheme _appBarTheme() {
   return const AppBarTheme(
     titleTextStyle: TextStyle(
       color: Colors.white, // 제목 텍스트 색상 (흰색)
-      fontSize: quarter, // 제목 텍스트 크기 (24)
+      fontSize: large, // 제목 텍스트 크기 (24)
     ),
     centerTitle: true, // 제목 중앙 정렬
     backgroundColor: Colors.black12, // 배경색 (투명도 있는 검정)
@@ -44,14 +44,14 @@ AppBarTheme _appBarTheme() {
 ElevatedButtonThemeData _elevatedButtonTheme() {
   return ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      minimumSize: const Size(double.infinity, half), // 최소 크기 (높이 48)
+      minimumSize: const Size(double.infinity, xxLarge), // 최소 크기 (높이 48)
       backgroundColor: kAppButtonSolidColor, // 배경색 (진보라)
       foregroundColor: Colors.white, // 전경색 (텍스트, 아이콘 - 흰색)
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(small), // 모서리 둥글기 (8)
       ),
       textStyle: const TextStyle(
-        fontSize: middle, // 텍스트 크기 (16)
+        fontSize: medium, // 텍스트 크기 (16)
         fontWeight: FontWeight.w700, // 텍스트 굵기 (볼드)
       ),
     ),
@@ -69,7 +69,7 @@ OutlinedButtonThemeData _outlinedButtonTheme() {
       ),
       side: BorderSide.none, // 테두리 없음
       textStyle: const TextStyle(
-        fontSize: middle, // 텍스트 크기 (16)
+        fontSize: medium, // 텍스트 크기 (16)
         fontWeight: FontWeight.w700, // 텍스트 굵기 (볼드)
       ),
     ),
@@ -80,25 +80,25 @@ OutlinedButtonThemeData _outlinedButtonTheme() {
 InputDecorationTheme _inputDecorationTheme() {
   return InputDecorationTheme(
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(middle), // 모서리 둥글기 (16)
+      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
       borderSide: const BorderSide(color: Colors.grey), // 테두리 색상 (회색)
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(middle), // 모서리 둥글기 (16)
+      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
       borderSide: BorderSide(color: Colors.grey.shade400), // 활성 테두리 색상 (연한 회색)
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(middle), // 모서리 둥글기 (16)
+      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
       borderSide: const BorderSide(
           color: kAppButtonSolidColor, width: 2.0), // 포커스 테두리 (진보라)
     ),
     errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(middle), // 모서리 둥글기 (16)
+      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
       borderSide:
           BorderSide(color: Colors.redAccent.shade200), // 오류 테두리 색상 (연빨강)
     ),
     focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(middle), // 모서리 둥글기 (16)
+      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
       borderSide: BorderSide(
           color: Colors.redAccent.shade700, // 포커스된 오류 테두리 (진빨강)
           width: 2.0),

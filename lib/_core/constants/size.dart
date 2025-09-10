@@ -16,13 +16,14 @@ import 'package:flutter/material.dart';
 /// - Drawer의 너비를 화면 너비의 일정 비율로 설정할 때 (예: getDrawerWidth 함수)
 
 // 공통 상수
-const double tiny = 4.0;
+const double xxSmall = 2.0;
+const double xSmall = 4.0;
 const double small = 8.0;
-const double middle = 16.0;
-const double quarter = 24.0;
-const double third = 32.0;
-const double half = 48.0;
-//const double big = 100.0;
+const double medium = 16.0;
+const double large = 24.0;
+const double xLarge = 32.0;
+const double xxLarge = 48.0;
+const double huge = 100.0;
 
 // 현재 화면 너비 반환 유틸리티
 double getScreenWidth(BuildContext context) {

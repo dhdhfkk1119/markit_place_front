@@ -2,29 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'register_form.dart';
 
-// 회원가입 페이지 주요 레이아웃 위젯
+// 회원가입 페이지의 본문 레이아웃을 담당하는 위젯
 class RegisterBody extends StatelessWidget {
   const RegisterBody({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // 전체 패딩 적용
+    // 페이지 전체 여백
     return Padding(
-      padding: const EdgeInsets.all(middle),
+      padding: const EdgeInsets.all(medium),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯 왼쪽 정렬
+        crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯들을 왼쪽으로 정렬
         children: [
-          // 상단 구분선
-          const Divider(
-            color: Colors.grey,
-            thickness: 1,
-          ),
-          const SizedBox(height: middle),
-          // 스크롤 가능한 영역 확장
+          // 스크롤 가능한 영역을 최대화하기 위해 Expanded 사용
           Expanded(
             child: ListView(
+              // 일반적으로 회원가입 폼은 내용이 길어질 수 있으므로 ListView 사용
               children: const [
-                // 회원가입 폼 위젯
+                // 회원가입 입력 필드 및 관련 로직을 포함하는 폼 위젯
                 RegisterForm(),
               ],
             ),
