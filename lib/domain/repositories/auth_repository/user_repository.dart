@@ -17,16 +17,16 @@ class UserRepository {
     return responseBody;
   }
 
-  Future<Map<String, dynamic>> login(String loginId, String password) async {
+  // 자동 로그인 유무를 체크 해주기 위해서 Response 를 반환
+  Future<Response> login(String loginId, String password) async {
     final requestBody = {
       "loginId": loginId,
       "password": password,
     };
     Response response = await dio.post("/members/login", data: requestBody);
 
-    Map<String, dynamic> responseBody = response.data;
-    Logger().d(responseBody);
-    return responseBody;
+    Logger().d(response.data); // 응답 데이터 로깅
+    return response; // Response 객체 전체 반환
   }
 
   Future<Map<String, dynamic>> autoLogin(String accessToken) async {

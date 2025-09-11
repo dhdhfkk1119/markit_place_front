@@ -8,6 +8,7 @@ import 'package:markit_place_front/presentation/pages/auth/social_login_page/soc
 import 'package:markit_place_front/presentation/pages/auth/terms_page/terms_page.dart'; // TermsPage 임포트 추가
 import 'package:markit_place_front/presentation/pages/index_stack_page/main_screen.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
+import 'package:markit_place_front/presentation/pages/splash/splash_page.dart';
 
 import 'presentation/pages/auth/account_login_page/account_login_page.dart';
 
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: SocialLoginPage(),
+      home: const SplashPage(),
       routes: {
         "/main": (context) => const MainScreen(),
         "/register": (context) => const RegisterPage(),

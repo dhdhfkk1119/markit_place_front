@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/domain/repositories/auth_repository/SessionNotifier.dart';
+import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
 
 import '../../../../widgets/snackbar_util.dart'; // 상수 파일 임포트
