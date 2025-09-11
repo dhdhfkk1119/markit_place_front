@@ -22,7 +22,7 @@ class CustomLogo extends StatelessWidget {
           ),
         ),
         const SizedBox(
-          height: xxLarge,
+          height: large,
         ),
         Text(
           mTitle,
