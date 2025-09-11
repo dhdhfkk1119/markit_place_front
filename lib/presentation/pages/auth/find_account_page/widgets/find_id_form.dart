@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_elevated_button.dart'; // 수정된 위젯 임포트
+import 'package:markit_place_front/presentation/widgets/custom_small_action_button.dart';
+import 'package:markit_place_front/presentation/widgets/custom_submit_button.dart';
 
 class FindIdForm extends ConsumerStatefulWidget {
   const FindIdForm({super.key});
@@ -32,8 +33,10 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
         _message = '';
         _maskedId = '';
       });
+      await Future.delayed(
+          const Duration(milliseconds: 500)); // Simulate API call
       _maskedId = "ide***********"; // 샘플 마스킹 아이디
-      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
       setState(() {
         _isLoadingShowMaskedId = false;
       });
@@ -45,27 +48,26 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
       setState(() {
         _isLoadingSendEmail = true;
         _message = '';
-        // _maskedId = ''; // 이메일 전송 시 마스킹 아이디를 지울지 여부 (UI 흐름에 따라 결정)
       });
-      await Future.delayed(const Duration(seconds: 1));
-      bool success = true;
+      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
+      bool success = true; // API 호출 결과에 따라 설정
+      if (!mounted) return;
       if (success) {
-        _message = '[샘플] 이메일로 아이디 정보가 발송되었습니다.';
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(_message)),
-          );
-        }
+        _message = '이메일로 아이디 정보가 발송되었습니다.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(_message,
+                  style: const TextStyle(fontFamily: "CookieRun"))),
+        );
       } else {
-        _message = '[샘플] 이메일 발송에 실패했습니다. 다시 시도해주세요.';
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(_message,
-                    style:
-                        TextStyle(color: Theme.of(context).colorScheme.error))),
-          );
-        }
+        _message = '이메일 발송에 실패했습니다. 다시 시도해주세요.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(_message,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontFamily: "CookieRun"))),
+        );
       }
       setState(() {
         _isLoadingSendEmail = false;
@@ -76,10 +78,8 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    // 로컬 ButtonStyle과 TextStyle 정의 제거
-    // final ButtonStyle loginPageButtonStyle = ... (제거)
-    // const TextStyle buttonTextStyle = ... (제거)
+    final cookieRunPrimaryColorTextStyle =
+        TextStyle(fontFamily: "CookieRun", color: theme.colorScheme.primary);
 
     return Padding(
       padding: const EdgeInsets.all(medium),
@@ -100,6 +100,7 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
               decoration: const InputDecoration(
                 hintText: '이메일 입력',
               ),
+              style: cookieRunPrimaryColorTextStyle,
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -139,27 +140,31 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
               ),
             const SizedBox(height: large),
             if (_maskedId.isEmpty)
-              CustomElevatedButton(
+              CustomSubmitButton(
                 text: '화면에 마스킹된 아이디 보기',
-                onPressed: _isLoadingSendEmail ? null : _handleShowMaskedId,
-                isLoading: _isLoadingShowMaskedId,
+                onPressed: _isLoadingShowMaskedId || _isLoadingSendEmail
+                    ? null
+                    : () {
+                        _handleShowMaskedId();
+                      }, // 변경됨
               )
             else
-              CustomElevatedButton(
+              CustomSubmitButton(
                 text: '아이디로 로그인하기',
-                onPressed: () {
-                  Navigator.pushNamed(context, '/account-login');
-                },
-                isLoading: _isLoadingShowMaskedId, // 이 버튼은 자체 로딩 상태가 거의 필요 없지만,
-                // _isLoadingShowMaskedId를 사용해 이전 버튼의 로딩 상태를 공유할 수 있음
-                // 또는 별도 로딩 상태 변수 사용 가능
+                onPressed: _isLoadingShowMaskedId
+                    ? null
+                    : () {
+                        Navigator.pushNamed(context, '/account-login');
+                      },
               ),
             const SizedBox(height: small),
-            CustomElevatedButton(
+            CustomSubmitButton(
               text: '이메일로 전체 아이디 전송',
-              onPressed:
-                  _isLoadingShowMaskedId ? null : _handleSendFullIdByEmail,
-              isLoading: _isLoadingSendEmail,
+              onPressed: _isLoadingSendEmail || _isLoadingShowMaskedId
+                  ? null
+                  : () {
+                      _handleSendFullIdByEmail();
+                    }, // 변경됨
             ),
           ],
         ),

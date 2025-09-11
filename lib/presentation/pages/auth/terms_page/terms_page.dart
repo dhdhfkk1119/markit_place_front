@@ -13,8 +13,7 @@ class TermsPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios_new), // 뒤로가기 아이콘
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-            '약관동의'), // AppBar 제목. CookieRun 폰트 적용은 여기서 제외하거나, 필요시 TextStyle 추가
+        title: const Text('약관동의', style: TextStyle(fontFamily: "CookieRun")),
         centerTitle: true,
         // AppBar 하단 구분선 추가
         bottom: PreferredSize(

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
-import 'package:markit_place_front/presentation/widgets/custom_elevated_button.dart'; // CustomElevatedButton 임포트
+import 'package:markit_place_front/presentation/widgets/custom_submit_button.dart'; // CustomSubmitButton 임포트
 import '../../../../widgets/snackbar_util.dart';
 
 class AccountLoginForm extends ConsumerStatefulWidget {
@@ -18,7 +18,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
   bool _autoLogin = false;
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoadingLogin = false; // 로그인 로딩 상태 변수 추가
+  bool _isLoadingLogin = false;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +80,8 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
             ],
           ),
           const SizedBox(height: medium),
-          CustomElevatedButton(
+          CustomSubmitButton(
+            // CustomElevatedButton을 CustomSubmitButton으로 변경
             text: '로그인',
             isLoading: _isLoadingLogin,
             onPressed: () async {
@@ -126,7 +127,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
                 onPressed: () {
                   Navigator.pushNamed(context, '/find-account');
                 },
-                child: const Text('아이디 / 비밀번호 찾기', // 텍스트 통합
+                child: const Text('아이디 / 비밀번호 찾기',
                     style: TextStyle(
                         color: Colors.black54, fontFamily: "CookieRun")),
               ),

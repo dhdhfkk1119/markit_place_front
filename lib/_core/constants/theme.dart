@@ -10,9 +10,14 @@ const Color kAppButtonSolidColor = Colors.deepPurpleAccent; // 진보라
 
 // 앱 전체 테마 데이터
 ThemeData theme() {
+  // 기본 TextTheme을 가져와서 CookieRun 폰트 적용
+  final TextTheme baseTextTheme = ThemeData.light().textTheme;
+  final TextTheme cookieRunTextTheme =
+      baseTextTheme.apply(fontFamily: "CookieRun");
+
   return ThemeData(
     useMaterial3: true, // Material 3 사용
-    fontFamily: "CookieRun", // 앱 전체 기본 폰트
+    fontFamily: "CookieRun", // 최상위 fontFamily도 유지 (혹시 모를 경우 대비)
     // 색상 구성표
     colorScheme: ColorScheme.fromSeed(
       seedColor: kAppButtonSolidColor, // 기준 색상 (진보라)
@@ -20,88 +25,97 @@ ThemeData theme() {
       secondary: kAppSecondaryColor, // 보조색 (연보라)
       error: Colors.redAccent, // 오류 표시색 (빨강 계열)
     ),
-    appBarTheme: _appBarTheme(), // AppBar 테마
-    elevatedButtonTheme: _elevatedButtonTheme(), // ElevatedButton 테마
-    outlinedButtonTheme: _outlinedButtonTheme(), // OutlinedButton 테마
-    inputDecorationTheme: _inputDecorationTheme(), // 입력 필드 테마
+    textTheme: cookieRunTextTheme, // 모든 Text 위젯에 CookieRun 폰트가 적용된 TextTheme 사용
+    appBarTheme: _appBarTheme(cookieRunTextTheme),
+    elevatedButtonTheme: _elevatedButtonTheme(cookieRunTextTheme),
+    outlinedButtonTheme: _outlinedButtonTheme(cookieRunTextTheme),
+    inputDecorationTheme:
+        _inputDecorationTheme(cookieRunTextTheme), // TextTheme 전달
   );
 }
 
 // AppBar 테마
-AppBarTheme _appBarTheme() {
-  return const AppBarTheme(
-    titleTextStyle: TextStyle(
-      color: Colors.white, // 제목 텍스트 색상 (흰색)
-      fontSize: large, // 제목 텍스트 크기 (24)
+AppBarTheme _appBarTheme(TextTheme textTheme) {
+  return AppBarTheme(
+    titleTextStyle: textTheme.titleLarge?.copyWith(
+      color: Colors.white,
     ),
-    centerTitle: true, // 제목 중앙 정렬
-    backgroundColor: Colors.black12, // 배경색 (투명도 있는 검정)
-    elevation: 0, // 그림자 깊이 없음
+    centerTitle: true,
+    backgroundColor: Colors.black12,
+    elevation: 0,
   );
 }
 
 // ElevatedButton 테마
-ElevatedButtonThemeData _elevatedButtonTheme() {
+ElevatedButtonThemeData _elevatedButtonTheme(TextTheme textTheme) {
   return ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      minimumSize: const Size(double.infinity, xxLarge), // 최소 크기 (높이 48)
-      backgroundColor: kAppButtonSolidColor, // 배경색 (진보라)
-      foregroundColor: Colors.white, // 전경색 (텍스트, 아이콘 - 흰색)
+      minimumSize: const Size(double.infinity, xxLarge),
+      backgroundColor: kAppButtonSolidColor,
+      foregroundColor: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(small), // 모서리 둥글기 (8)
+        borderRadius: BorderRadius.circular(small),
       ),
-      textStyle: const TextStyle(
-        fontSize: medium, // 텍스트 크기 (16)
-        fontWeight: FontWeight.w700, // 텍스트 굵기 (볼드)
-      ),
+      textStyle: textTheme.labelLarge
+          ?.copyWith(fontWeight: FontWeight.w700, color: Colors.white),
     ),
   );
 }
 
 // OutlinedButton 테마
-OutlinedButtonThemeData _outlinedButtonTheme() {
+OutlinedButtonThemeData _outlinedButtonTheme(TextTheme textTheme) {
   return OutlinedButtonThemeData(
     style: OutlinedButton.styleFrom(
-      backgroundColor: kAppSecondaryColor, // 배경색 (연보라)
-      foregroundColor: kAppButtonSolidColor, // 전경색 (텍스트, 아이콘 - 진보라)
+      backgroundColor: kAppSecondaryColor,
+      foregroundColor: kAppButtonSolidColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(small), // 모서리 둥글기 (8)
+        borderRadius: BorderRadius.circular(small),
       ),
-      side: BorderSide.none, // 테두리 없음
-      textStyle: const TextStyle(
-        fontSize: medium, // 텍스트 크기 (16)
-        fontWeight: FontWeight.w700, // 텍스트 굵기 (볼드)
-      ),
+      side: BorderSide.none,
+      textStyle: textTheme.labelLarge
+          ?.copyWith(fontWeight: FontWeight.w700, color: kAppButtonSolidColor),
     ),
   );
 }
 
 // InputDecoration (입력 필드) 테마
-InputDecorationTheme _inputDecorationTheme() {
+InputDecorationTheme _inputDecorationTheme(TextTheme textTheme) {
+  // TextTheme 인자 추가
   return InputDecorationTheme(
+    labelStyle: textTheme.bodyMedium
+        ?.copyWith(color: Colors.grey.shade600), // CookieRun 폰트 적용됨
+    hintStyle: textTheme.bodySmall
+        ?.copyWith(color: Colors.grey.shade500), // CookieRun 폰트 적용됨
+    errorStyle: textTheme.bodySmall
+        ?.copyWith(color: Colors.redAccent.shade700), // CookieRun 폰트 적용됨
+    // contentPadding: EdgeInsets.symmetric(vertical: small, horizontal: medium), // 필요에 따라 패딩 조절
+
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
-      borderSide: const BorderSide(color: Colors.grey), // 테두리 색상 (회색)
+      borderRadius: BorderRadius.circular(medium),
+      borderSide:
+          BorderSide(color: Colors.grey.shade400), // 테마의 colorScheme.outline 고려
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
-      borderSide: BorderSide(color: Colors.grey.shade400), // 활성 테두리 색상 (연한 회색)
+      borderRadius: BorderRadius.circular(medium),
+      borderSide:
+          BorderSide(color: Colors.grey.shade400), // 테마의 colorScheme.outline 고려
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
+      borderRadius: BorderRadius.circular(medium),
       borderSide: const BorderSide(
-          color: kAppButtonSolidColor, width: 2.0), // 포커스 테두리 (진보라)
+          color: kAppButtonSolidColor,
+          width: 2.0), // 테마의 colorScheme.primary 고려
     ),
     errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
-      borderSide:
-          BorderSide(color: Colors.redAccent.shade200), // 오류 테두리 색상 (연빨강)
+      borderRadius: BorderRadius.circular(medium),
+      borderSide: BorderSide(
+          color: Colors.redAccent.shade200), // 테마의 colorScheme.error 고려
     ),
     focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(medium), // 모서리 둥글기 (16)
+      borderRadius: BorderRadius.circular(medium),
       borderSide: BorderSide(
-          color: Colors.redAccent.shade700, // 포커스된 오류 테두리 (진빨강)
-          width: 2.0),
+          color: Colors.redAccent.shade700,
+          width: 2.0), // 테마의 colorScheme.error 고려
     ),
   );
 }
