@@ -327,6 +327,7 @@ $RECYCLE.BIN/
 .gradle/
 build/
 .idea/
+android/.kotlin/
 
 # 환경변수 무시
 .env

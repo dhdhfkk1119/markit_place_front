@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/utils/my_http.dart';
+import 'package:markit_place_front/presentation/pages/auth/find_account_page/find_account_page.dart'; // 추가된 임포트
 import 'package:markit_place_front/presentation/pages/auth/register_page/register_page.dart';
 import 'package:markit_place_front/presentation/pages/auth/social_login_page/social_login_page.dart';
 import 'package:markit_place_front/presentation/pages/auth/terms_page/terms_page.dart'; // TermsPage 임포트 추가
@@ -32,10 +33,11 @@ class MyApp extends StatelessWidget {
       home: const SplashPage(),
       routes: {
         "/main": (context) => const MainScreen(),
-        "/register": (context) => const RegisterPage(),
-        "/terms": (context) => const TermsPage(),
-        "/social-login": (context) => const SocialLoginPage(),
-        "/account-login": (context) => const AccountLoginPage(),
+        "/register": (context) => const RegisterPage(), // 회원가입
+        "/terms": (context) => const TermsPage(), // 약관동의
+        "/social-login": (context) => const SocialLoginPage(), // 소셜로긴(첫페이지)
+        "/account-login": (context) => const AccountLoginPage(), // 계정로긴
+        "/find-account": (context) => const FindAccountPage(), // 계정찾기
         "product/list": (context) => const ProductListPage(),
       },
     );
