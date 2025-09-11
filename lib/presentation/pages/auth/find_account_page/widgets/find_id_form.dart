@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_small_action_button.dart';
-import 'package:markit_place_front/presentation/widgets/custom_submit_button.dart';
+import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
+import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart'; // 새로운 위젯 임포트
 
 class FindIdForm extends ConsumerStatefulWidget {
   const FindIdForm({super.key});
@@ -140,16 +140,16 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
               ),
             const SizedBox(height: large),
             if (_maskedId.isEmpty)
-              CustomSubmitButton(
+              CustomButtonLarge(
                 text: '화면에 마스킹된 아이디 보기',
                 onPressed: _isLoadingShowMaskedId || _isLoadingSendEmail
                     ? null
                     : () {
                         _handleShowMaskedId();
-                      }, // 변경됨
+                      },
               )
             else
-              CustomSubmitButton(
+              CustomButtonLarge(
                 text: '아이디로 로그인하기',
                 onPressed: _isLoadingShowMaskedId
                     ? null
@@ -158,13 +158,14 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
                       },
               ),
             const SizedBox(height: small),
-            CustomSubmitButton(
-              text: '이메일로 전체 아이디 전송',
-              onPressed: _isLoadingSendEmail || _isLoadingShowMaskedId
-                  ? null
-                  : () {
-                      _handleSendFullIdByEmail();
-                    }, // 변경됨
+            Center(
+              child: CustomLInkGrey(
+                // StyledLinkTextButton으로 변경
+                text: '이메일로 전체 아이디 전송',
+                onPressed: _isLoadingSendEmail || _isLoadingShowMaskedId
+                    ? null
+                    : _handleSendFullIdByEmail,
+              ),
             ),
           ],
         ),

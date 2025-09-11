@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 
-class CustomSubmitButton extends StatelessWidget {
+/// 핵심 기능이 들어있는 최종 제출버튼이다.
+// 가입, 로그인
+class CustomButtonLarge extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  const CustomSubmitButton({
+  const CustomButtonLarge({
     super.key,
     required this.text,
     this.onPressed,

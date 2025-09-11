@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
-import 'package:markit_place_front/presentation/widgets/custom_submit_button.dart'; // CustomSubmitButton 임포트
+import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
+import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart'; // 새로운 위젯 임포트
 import '../../../../widgets/snackbar_util.dart';
 
 class AccountLoginForm extends ConsumerStatefulWidget {
@@ -80,8 +81,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
             ],
           ),
           const SizedBox(height: medium),
-          CustomSubmitButton(
-            // CustomElevatedButton을 CustomSubmitButton으로 변경
+          CustomButtonLarge(
             text: '로그인',
             isLoading: _isLoadingLogin,
             onPressed: () async {
@@ -112,24 +112,22 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextButton(
+              CustomLInkGrey(
+                text: '회원가입',
                 onPressed: () {
                   Navigator.pushNamed(context, '/register');
                 },
-                child: const Text('회원가입',
-                    style: TextStyle(
-                        color: Colors.black54, fontFamily: "CookieRun")),
               ),
+              const SizedBox(width: small), // 추가된 간격
               const Text('|',
                   style: TextStyle(
                       color: Colors.black54, fontFamily: "CookieRun")),
-              TextButton(
+              const SizedBox(width: small), // 추가된 간격
+              CustomLInkGrey(
+                text: '아이디 / 비밀번호 찾기',
                 onPressed: () {
                   Navigator.pushNamed(context, '/find-account');
                 },
-                child: const Text('아이디 / 비밀번호 찾기',
-                    style: TextStyle(
-                        color: Colors.black54, fontFamily: "CookieRun")),
               ),
             ],
           ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_submit_button.dart'; // import 문 추가/확인
+import 'package:markit_place_front/presentation/widgets/custom_button_large.dart'; // import 문 추가/확인
 
 // 비밀번호 초기화 폼 위젯
 class ResetPasswordForm extends StatefulWidget {
@@ -82,7 +82,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
             // },
           ),
           const SizedBox(height: xLarge),
-          CustomSubmitButton(
+          CustomButtonLarge(
             text: '비밀번호 재설정 메일 발송',
             isLoading: _isLoading, // isLoading prop 사용
             onPressed: () {

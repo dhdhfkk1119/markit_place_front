@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_elevated_button.dart';
-import 'package:markit_place_front/presentation/widgets/custom_small_action_button.dart';
-import 'package:markit_place_front/presentation/widgets/custom_submit_button.dart';
+import 'package:markit_place_front/presentation/widgets/custom_button_medium.dart';
+import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
 
 // 회원가입 폼 위젯
 class RegisterForm extends StatefulWidget {
@@ -104,25 +103,29 @@ class _RegisterFormState extends State<RegisterForm> {
     TextInputType? keyboardType,
     String? helperText,
     Widget? suffixIcon,
-    TextStyle? labelStyle, // 외부에서 스타일을 주입받을 수 있도록 추가
+    TextStyle? labelStyle,
     TextStyle? helperStyle,
     TextStyle? errorStyle,
   }) {
-    // context를 사용하여 Theme에 접근
-    final theme = Theme.of(context);
-    final defaultTextStyleWithPrimaryColor =
-        TextStyle(fontFamily: "CookieRun", color: theme.colorScheme.primary);
+    // 기본 스타일 정의 (검정색 계열 및 CookieRun 폰트)
+    const defaultLabelStyle =
+        TextStyle(fontFamily: "CookieRun", color: Colors.black87);
+    final defaultHelperStyle =
+        TextStyle(fontFamily: "CookieRun", color: Colors.grey.shade700);
+    const defaultErrorStyle = TextStyle(
+        fontFamily: "CookieRun",
+        color: Colors.redAccent,
+        fontWeight: FontWeight.bold);
 
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: labelStyle ??
-            defaultTextStyleWithPrimaryColor, // 주입받은 스타일 또는 기본 스타일 사용
+        labelStyle: labelStyle ?? defaultLabelStyle,
         helperText: helperText,
-        helperStyle: helperStyle ?? defaultTextStyleWithPrimaryColor,
-        errorStyle: errorStyle ?? defaultTextStyleWithPrimaryColor,
+        helperStyle: helperStyle ?? defaultHelperStyle,
+        errorStyle: errorStyle ?? defaultErrorStyle,
         suffixIcon: suffixIcon,
       ),
       obscureText: obscureText,
@@ -156,10 +159,10 @@ class _RegisterFormState extends State<RegisterForm> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context); // 테마 가져오기
-    // 기본 텍스트 스타일: CookieRun 폰트, primary 색상
-    final defaultTextStyle =
-        TextStyle(fontFamily: "CookieRun", color: theme.colorScheme.primary);
+    // SnackBar 및 OutlinedButton에 사용할 기본 CookieRun 폰트 스타일
+    const cookieRunTextStyle = TextStyle(fontFamily: "CookieRun");
+    const cookieRunBlackTextStyle =
+        TextStyle(fontFamily: "CookieRun", color: Colors.black87);
 
     return SingleChildScrollView(
       controller: _scrollController,
@@ -181,8 +184,6 @@ class _RegisterFormState extends State<RegisterForm> {
                       focusNode: _idFocusNode,
                       labelText: '아이디',
                       helperText: '아이디는 4자 이상 20자 이하로 입력해주세요.',
-                      // labelStyle, helperStyle, errorStyle을 명시적으로 defaultTextStyle로 전달하거나
-                      // _buildTextFormField 내부에서 처리하도록 위에서 수정함.
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return '아이디를 입력해주세요.';
@@ -200,14 +201,15 @@ class _RegisterFormState extends State<RegisterForm> {
                   Padding(
                     padding: const EdgeInsets.only(
                         left: small, top: small, right: xSmall),
-                    child: CustomElevatedButton(
+                    child: CustomButtonMedium(
                       text: '중복확인',
                       onPressed: () {
                         if (_idController.text.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                                 content: Text('아이디를 먼저 입력해주세요.',
-                                    style: defaultTextStyle)),
+                                    style:
+                                        cookieRunTextStyle)), // CookieRun 폰트 적용
                           );
                           return;
                         }
@@ -216,7 +218,8 @@ class _RegisterFormState extends State<RegisterForm> {
                           SnackBar(
                               content: Text(
                                   '${_idController.text} 중복확인 (서버 연동 필요)',
-                                  style: defaultTextStyle)),
+                                  style:
+                                      cookieRunTextStyle)), // CookieRun 폰트 적용
                         );
                       },
                     ),
@@ -257,8 +260,6 @@ class _RegisterFormState extends State<RegisterForm> {
                 },
               ),
               const SizedBox(height: medium),
-              // CustomWidget.buildTitle의 텍스트 색상은 해당 위젯 내부 구현에 따라 달라집니다.
-              // 필요시 해당 위젯도 수정하거나, 여기서 Text 위젯으로 직접 구성해야 합니다.
               CustomWidget.buildTitle("이메일 인증하기"),
               const SizedBox(height: small),
               Row(
@@ -287,7 +288,7 @@ class _RegisterFormState extends State<RegisterForm> {
                   Padding(
                     padding: const EdgeInsets.only(
                         left: small, top: small, right: xSmall),
-                    child: CustomSmallActionButton(
+                    child: CustomButtonMedium(
                       text: '인증번호 전송',
                       onPressed: () {
                         final email = _emailController.text;
@@ -295,7 +296,8 @@ class _RegisterFormState extends State<RegisterForm> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                                 content: Text('이메일 주소를 먼저 입력해주세요.',
-                                    style: defaultTextStyle)),
+                                    style:
+                                        cookieRunTextStyle)), // CookieRun 폰트 적용
                           );
                           return;
                         }
@@ -305,7 +307,8 @@ class _RegisterFormState extends State<RegisterForm> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                                 content: Text('유효한 이메일 형식이 아닙니다.',
-                                    style: defaultTextStyle)),
+                                    style:
+                                        cookieRunTextStyle)), // CookieRun 폰트 적용
                           );
                           return;
                         }
@@ -313,7 +316,8 @@ class _RegisterFormState extends State<RegisterForm> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content: Text('$email 로 인증번호 전송 (서버 연동 필요)',
-                                  style: defaultTextStyle)),
+                                  style:
+                                      cookieRunTextStyle)), // CookieRun 폰트 적용
                         );
                       },
                     ),
@@ -337,7 +341,8 @@ class _RegisterFormState extends State<RegisterForm> {
                             borderRadius: BorderRadius.circular(xSmall)),
                       ),
                       child: Text(domain,
-                          style: defaultTextStyle), // primary 색상 적용
+                          style:
+                              cookieRunBlackTextStyle), // CookieRun 폰트 및 검정 계열 색상 적용
                     );
                   }).toList(),
                 ),
@@ -357,7 +362,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 },
               ),
               const SizedBox(height: xLarge),
-              CustomSubmitButton(
+              CustomButtonLarge(
                 text: '가입하기',
                 onPressed: _onRegisterButtonPressed,
               ),
