@@ -1,7 +1,10 @@
-import 'package:dio/dio.dart';
-import 'package:logger/logger.dart';
+import 'dart:async';
 
-import '../../../_core/utils/my_http.dart';
+import 'package:dio/dio.dart';
+import 'package:markit_place_front/_core/utils/my_http.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:logger/logger.dart';
+import 'dart:convert';
 
 class UserRepository {
   Future<Map<String, dynamic>> join(String loginId, String password) async {
@@ -40,5 +43,37 @@ class UserRepository {
     Map<String, dynamic> responseBody = response.data;
     Logger().e(responseBody);
     return responseBody;
+  }
+
+  // 네이버 소셜 로그인용
+  Future<void> signInWithNaver() async {
+    final NaverLoginResult result = await FlutterNaverLogin.logIn();
+    Logger().i(result);
+
+    if (result.status == NaverLoginStatus.loggedIn) {
+      final NaverAccessToken res = await FlutterNaverLogin.currentAccessToken;
+      final String naverAccessToken = res.accessToken;
+      await _loginToServerWithNaverToken(result, naverAccessToken);
+    }
+  }
+
+  // 네이버 로그인 성공시 우리 서버와 통신하는 코드
+  Future<void> _loginToServerWithNaverToken(
+      NaverLoginResult result, String token) async {
+    try {
+      final requestData = {
+        "provider": "NAVER",
+        "providerId": result.account.id,
+        "email": result.account.email
+      };
+
+      final response = await dio.post(
+        "/members/login/social",
+        data: json.encode(requestData),
+      );
+      print("우리 서버로부터 로그인 성공! JWT: ${response.data}");
+    } catch (e) {
+      print("우리 서버 로그인 실패: $e");
+    }
   }
 }

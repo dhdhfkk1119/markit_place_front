@@ -1,4 +1,4 @@
-import '../../models/chat_model/chat_message.dart';
+import '../chat_model/chat_message.dart';
 
 class ChatMessageDto {
   final String content;

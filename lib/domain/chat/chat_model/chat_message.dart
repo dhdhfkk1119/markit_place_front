@@ -1,4 +1,4 @@
-import '../user.dart';
+import 'package:markit_place_front/domain/models/user.dart';
 
 enum MessageType { TEXT, IMAGE, FILE, SYSTEM }
 
