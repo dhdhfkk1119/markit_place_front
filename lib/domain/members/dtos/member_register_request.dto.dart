@@ -1,6 +1,4 @@
-// lib/members/dto_auth/member_register_request.dto.dart
-
-import '../domains/member.dart'; // MemberRegisterRequestUiModel 대신 Member import
+import 'package:markit_place_front/domain/members/models/member.dart';
 
 class MemberRegisterRequestDto {
   final String loginId;
