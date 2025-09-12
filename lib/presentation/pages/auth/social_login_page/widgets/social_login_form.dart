@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart'; // SVG 이미지를 사용하기 위한 임포트
 import 'package:markit_place_front/_core/constants/size.dart'; // 상수 파일 임포트
+import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:markit_place_front/_core/utils/my_http.dart';
+import 'package:markit_place_front/domain/repositories/auth_repository/user_repository.dart';
 // import 'package:markit_place_front/presentation/pages/auth/account_login_page/account_login_page.dart'; // 명명된 라우트 사용으로 직접 임포트 불필요
 
 // 소셜 로그인 버튼들과 일반 로그인/회원가입 네비게이션을 제공하는 StatelessWidget
@@ -75,7 +78,6 @@ class SocialLoginForm extends StatelessWidget {
           onPressed: () {
             // TODO: 구글 로그인 로직 구현
             print("구글 로그인 클릭");
-            Navigator.pushNamed(context, "product/list"); // 임시: 상품 목록으로 이동
           },
         ),
         const SizedBox(height: small), // 버튼 사이 간격 수정: medium -> small
@@ -88,7 +90,7 @@ class SocialLoginForm extends StatelessWidget {
           onPressed: () {
             // TODO: 네이버 로그인 로직 구현
             print("네이버 로그인 클릭");
-            Navigator.pushNamed(context, "product/list"); // 임시: 상품 목록으로 이동
+            UserRepository().signInWithNaver();
           },
         ),
         const SizedBox(height: small), // 버튼 사이 간격 수정: medium -> small
@@ -101,7 +103,6 @@ class SocialLoginForm extends StatelessWidget {
           onPressed: () {
             // TODO: 카카오 로그인 로직 구현
             print("카카오 로그인 클릭");
-            Navigator.pushNamed(context, "product/list"); // 임시: 상품 목록으로 이동
           },
         ),
         const SizedBox(height: small), // 버튼 사이 간격 수정: medium -> small
