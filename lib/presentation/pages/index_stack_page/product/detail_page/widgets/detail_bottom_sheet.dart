@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/providers/chat_form/chat_message_notifier.dart';
+import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
 
 class DetailBottomSheet extends ConsumerStatefulWidget {
@@ -66,29 +66,14 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
               onPressed: () async {
                 final message = _controller.text.trim();
                 if (message.isEmpty) {
-                  print("[Frontend Log] Message is empty. Aborting send.");
                   return;
                 }
-
-                // --- 여기부터 로그를 추가하세요 ---
-                print(
-                    "[Frontend Log] Send button pressed. Message: '$message'");
-
-                final tempRoomId = 1; // 임시로 0을 보냅니다.
+                final tempRoomId = 1;
                 final receiverId = widget.receiverId;
-
-                print("[Frontend Log] Preparing to send STOMP message.");
-                print(
-                    "[Frontend Log] Temp Room ID: $tempRoomId, Receiver ID: $receiverId");
-
-                // --- STOMP 메시지 전송 로직 ---
                 ref
                     .read(chatProvider(tempRoomId).notifier)
-                    .sendMessage(receiverId, message);
-
+                    .sendMessage(receiverId: receiverId, message: message);
                 _controller.clear();
-                print(
-                    "[Frontend Log] Message sent via STOMP. Text field cleared.");
               },
             ),
           ],

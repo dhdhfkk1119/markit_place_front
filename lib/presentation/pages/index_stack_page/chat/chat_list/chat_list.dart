@@ -1,64 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/domain/chat/chat_provider/chat_room_notifier.dart';
+import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/chat_datail.dart';
 
-class ChatList extends StatefulWidget {
+class ChatList extends ConsumerWidget {
   const ChatList({super.key});
 
   @override
-  State<ChatList> createState() => _ChatListState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chatRoomNotifier = ref.watch(chatRoomNotifierProvider);
+    final session = ref.read(sessionProvider);
+    if (chatRoomNotifier.chatRooms.isEmpty &&
+        !chatRoomNotifier.isLoading &&
+        chatRoomNotifier.errorMessage.isEmpty) {
+      Future.microtask(() => ref
+          .read(chatRoomNotifierProvider)
+          .fetchMyChatRooms(userId: session.user!.id));
+    }
 
-class _ChatListState extends State<ChatList> {
-  int? _roomCount;
+    // 로딩 중 상태 처리
+    if (chatRoomNotifier.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    // 에러 상태 처리
+    if (chatRoomNotifier.errorMessage.isNotEmpty) {
+      return Center(child: Text('에러 발생: ${chatRoomNotifier.errorMessage}'));
+    }
 
-  List<Map<String, dynamic>> testMapList = [
-    {"id": 1, "name": "익명의 유저", "lastMsg": "혹시 언제쯤 가능하세요?", "isRead": false},
-    {"id": 2, "name": "당근 사랑", "lastMsg": "감사합니다~", "isRead": true},
-    {"id": 3, "name": "중고 마스터", "lastMsg": "아직 안 팔린건가요?", "isRead": true},
-    {"id": 4, "name": "네고 안받음", "lastMsg": "생각보다 상태가 괜찮네요", "isRead": false}
-  ];
+    if (chatRoomNotifier.chatRooms.isEmpty) {
+      return const Center(child: Text('채팅방이 없습니다.'));
+    }
 
-  List<Map<String, dynamic>> buttonMapList = [
-    {"id": 1, "text": "전체"},
-    {"id": 2, "text": "판매"},
-    {"id": 3, "text": "구매"},
-    {"id": 4, "text": "읽지 않은 채팅"}
-  ];
-
-  int _selectedButtonId = 1;
-  bool _isShowBanner = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _roomCount = testMapList.length;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return SafeArea(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Row(
             children: [
-              const SizedBox(
-                width: 30,
-              ),
+              const SizedBox(width: 30),
               const Text(
                 "채팅 목록",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(
-                width: 10,
-              ),
+              const SizedBox(width: 10),
               Text(
-                "${_roomCount ?? 0}",
+                "${chatRoomNotifier.chatRooms.length}",
                 style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -73,20 +60,36 @@ class _ChatListState extends State<ChatList> {
             child: Row(
               children: [
                 _buildSelectButton(
-                    buttonMapList[0]["id"], buttonMapList[0]["text"]),
+                    ref,
+                    1,
+                    "전체",
+                    chatRoomNotifier.selectedButtonId,
+                    chatRoomNotifier.setSelectedButtonId),
                 const SizedBox(width: 15),
                 _buildSelectButton(
-                    buttonMapList[1]["id"], buttonMapList[1]["text"]),
+                    ref,
+                    2,
+                    "판매",
+                    chatRoomNotifier.selectedButtonId,
+                    chatRoomNotifier.setSelectedButtonId),
                 const SizedBox(width: 15),
                 _buildSelectButton(
-                    buttonMapList[2]["id"], buttonMapList[2]["text"]),
+                    ref,
+                    3,
+                    "구매",
+                    chatRoomNotifier.selectedButtonId,
+                    chatRoomNotifier.setSelectedButtonId),
                 const SizedBox(width: 15),
                 _buildSelectButton(
-                    buttonMapList[3]["id"], buttonMapList[3]["text"]),
+                    ref,
+                    4,
+                    "읽지 않은 채팅",
+                    chatRoomNotifier.selectedButtonId,
+                    chatRoomNotifier.setSelectedButtonId),
               ],
             ),
           ),
-          _isShowBanner
+          chatRoomNotifier.isShowBanner
               ? Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 15.0),
                   child: Container(
@@ -109,19 +112,16 @@ class _ChatListState extends State<ChatList> {
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12),
                           ),
-                          const SizedBox(
-                            width: 5,
-                          ),
+                          const SizedBox(width: 5),
                           IconButton(
                               onPressed: () {
-                                setState(() {
-                                  _isShowBanner = false;
-                                });
+                                // 'read()'를 사용하여 메서드 호출
+                                ref
+                                    .read(chatRoomNotifierProvider)
+                                    .toggleBanner(false);
                               },
-                              icon: const Icon(
-                                Icons.cancel,
-                                color: Colors.purple,
-                              ))
+                              icon: const Icon(Icons.cancel,
+                                  color: Colors.purple))
                         ],
                       ),
                     ),
@@ -133,9 +133,9 @@ class _ChatListState extends State<ChatList> {
                 separatorBuilder: (context, index) {
                   return const Divider(height: 0.5, thickness: 0.5);
                 },
-                itemCount: testMapList.length,
+                itemCount: chatRoomNotifier.chatRooms.length,
                 itemBuilder: (context, index) {
-                  final room = testMapList[index];
+                  final room = chatRoomNotifier.chatRooms[index];
                   return ListTile(
                     leading: SizedBox(
                       width: 30,
@@ -151,11 +151,11 @@ class _ChatListState extends State<ChatList> {
                       ),
                     ),
                     title: Text(
-                      room["name"],
+                      room.otherName,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      room["lastMsg"],
+                      room.lastMessage,
                       style: const TextStyle(fontSize: 12),
                     ),
                     trailing: Container(
@@ -180,25 +180,25 @@ class _ChatListState extends State<ChatList> {
     );
   }
 
-  Widget _buildSelectButton(int id, String text) {
+  Widget _buildSelectButton(WidgetRef ref, int id, String text, int selectedId,
+      Function(int) setSelectedId) {
     return TextButton(
       onPressed: () {
-        _selectedButtonId = id;
-        setState(() {});
+        // 'read()'를 사용하여 메서드 호출
+        ref.read(chatRoomNotifierProvider).setSelectedButtonId(id);
       },
       style: TextButton.styleFrom(
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(color: Colors.grey[300]!)),
-          backgroundColor:
-              _selectedButtonId == id ? Colors.black87 : Colors.white,
+          backgroundColor: selectedId == id ? Colors.black87 : Colors.white,
           minimumSize: const Size(10, 10)),
       child: Text(
+        text,
         style: TextStyle(
-            color: _selectedButtonId == id ? Colors.white : Colors.black,
+            color: selectedId == id ? Colors.white : Colors.black,
             fontSize: 14,
             fontWeight: FontWeight.bold),
-        text,
       ),
     );
   }
