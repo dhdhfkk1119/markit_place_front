@@ -60,7 +60,9 @@ class _DetailPageState extends State<DetailPage> {
         },
       ),
       body: DetailBody(scrollController: _scrollController),
-      bottomSheet: DetailBottomSheet(),
+      bottomSheet: DetailBottomSheet(
+        receiverId: 1,
+      ),
     );
   }
 }

@@ -6,16 +6,18 @@ class ChatRepository {
   final _storage = const FlutterSecureStorage();
   StompClient? _client;
 
-  Future<void> connect(Function(Map<String, dynamic>) onMessageReceived) async {
-    final token = await _storage.read(key: "accessToken"); // ✅ 저장된 JWT 불러오기
+  Future<void> connect(
+      int roomId, Function(Map<String, dynamic>) onMessageReceived) async {
+    final token = await _storage.read(key: "accessToken");
 
     _client = StompClient(
       config: StompConfig(
-        url: 'ws://192.168.0.128:8080/ws/chat', // 서버 WebSocket 주소
+        url: 'ws://192.168.0.128:8080/ws-stomp', // 서버 WebSocket 주소
         onConnect: (StompFrame frame) {
           print("STOMP connected!");
+          // 구독하는 받는 주소
           _client!.subscribe(
-            destination: '/topic/chat',
+            destination: '/topic/chat/room/$roomId',
             callback: (frame) {
               if (frame.body != null) {
                 final data = jsonDecode(frame.body!);
@@ -29,7 +31,7 @@ class ChatRepository {
           await Future.delayed(const Duration(milliseconds: 200));
         },
         onWebSocketError: (err) => print("WebSocket Error: $err"),
-        stompConnectHeaders: {"Authorization": "Bearer $token"}, // ✅ 토큰 헤더 추가
+        stompConnectHeaders: {"Authorization": "Bearer $token"},
         webSocketConnectHeaders: {"Authorization": "Bearer $token"},
       ),
     );
@@ -37,14 +39,16 @@ class ChatRepository {
     _client!.activate();
   }
 
-  void sendMessage(int receiverId, String message) {
+  // 보내는 주소
+  void sendMessage(int roomId, int receiverId, String message) {
     final payload = {
-      "receiverId": receiverId,
+      "roomId": roomId,
+      "receiveId": receiverId,
       "message": message,
     };
 
     _client?.send(
-      destination: "/app/chat.send", // 서버의 STOMP endpoint
+      destination: "/app/chat/sendMessage",
       body: jsonEncode(payload),
     );
   }

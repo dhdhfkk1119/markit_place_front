@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import '../../../../../../domain/providers/auth_form/SessionNotifier.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
 
-
-class MyPageBody extends StatefulWidget {
+class MyPageBody extends ConsumerStatefulWidget {
   const MyPageBody({super.key});
 
   @override
-  State<MyPageBody> createState() => _MyPageBodyState();
+  ConsumerState<MyPageBody> createState() => _MyPageBodyState();
 }
 
-class _MyPageBodyState extends State<MyPageBody> {
+class _MyPageBodyState extends ConsumerState<MyPageBody> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -34,7 +35,8 @@ class _MyPageBodyState extends State<MyPageBody> {
                         const CircleAvatar(
                           radius: 30,
                           backgroundColor: Colors.white,
-                          child: Icon(Icons.person, size: 40, color: Colors.grey),
+                          child:
+                              Icon(Icons.person, size: 40, color: Colors.grey),
                         ),
                         const SizedBox(width: 15),
                         Expanded(
@@ -114,11 +116,13 @@ class _MyPageBodyState extends State<MyPageBody> {
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 12.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const Icon(Icons.paid_outlined, size: 32, color: Color(0xFF5E2B96)),
+                      const Icon(Icons.paid_outlined,
+                          size: 32, color: Color(0xFF5E2B96)),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +149,7 @@ class _MyPageBodyState extends State<MyPageBody> {
               // Icon menu section
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -196,6 +200,19 @@ class _MyPageBodyState extends State<MyPageBody> {
                 icon: Icons.announcement_outlined,
                 text: "공지 사항",
                 showArrow: true,
+              ),
+              InkWell(
+                onTap: () async {
+                  await ref.read(sessionProvider.notifier).logout();
+                  if (mounted) {
+                    Navigator.pushReplacementNamed(context, "/social-login");
+                  }
+                },
+                child: _buildMenuTile(
+                  icon: Icons.logout,
+                  text: "로그아웃",
+                  showArrow: true,
+                ),
               ),
               const SizedBox(height: 80),
             ],
