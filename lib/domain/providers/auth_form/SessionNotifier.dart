@@ -2,11 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
 import 'package:markit_place_front/domain/models/user.dart';
 import 'package:markit_place_front/domain/repositories/auth_repository/user_repository.dart';
 
-// secure_storage 전역 인스턴스
+import '../../dtos/user_dto.dart';
+
 final secureStorage = FlutterSecureStorage();
 
 class SessionModel {
@@ -37,9 +37,12 @@ class SessionNotifier extends Notifier<SessionModel> {
         return body;
       }
 
-      // 서버 응답에서 사용자 정보 추출
       final userMap = body['response'];
-      final User user = User.fromMap(userMap);
+      // userDTO 로 변환 후
+      final UserDto userDto = UserDto.fromMap(userMap);
+
+      // 변환 된 DTO를 User 로 다시 변환
+      final User user = User.fromDto(userDto);
 
       state = SessionModel(user: user, isLogin: true);
       _logger.d("로그인 성공");
@@ -48,10 +51,9 @@ class SessionNotifier extends Notifier<SessionModel> {
         final accessToken = response.headers.value("Authorization");
         if (accessToken != null) {
           await secureStorage.write(key: "accessToken", value: accessToken);
-          _logger.d("토큰이 SecureStorage에 저장되었습니다.", accessToken);
+          _logger.d("토큰이 SecureStorage에 저장되었습니다.");
         }
       } else {
-        // 체크 하지 않으면 해당 토큰 삭제
         await secureStorage.delete(key: "accessToken");
       }
 

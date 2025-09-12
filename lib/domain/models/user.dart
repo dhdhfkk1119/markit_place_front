@@ -1,5 +1,7 @@
-// domain/models/user.dart 파일 수정
+// lib/domain/models/user.dart
+
 import 'package:logger/logger.dart';
+import 'package:markit_place_front/domain/dtos/user_dto.dart';
 
 enum MemberStatus {
   ACTIVE,
@@ -10,24 +12,24 @@ enum MemberStatus {
 class User {
   final int id;
   final String loginId;
-  final String? name;
+  final String name;
   final MemberStatus status;
 
   User({
     required this.id,
     required this.loginId,
-    this.name,
+    required this.name,
     required this.status,
   });
 
-  User.fromMap(Map<String, dynamic> data)
-      : id = data['id'],
-        // 서버 응답과 일치하도록 수정
-        loginId = data['loginId'],
-        // 서버 응답과 일치하도록 수정
-        name = data['name'],
-        // 문자열 상태값을 MemberStatus enum으로 변환
-        status = _parseStatus(data['status']);
+  factory User.fromDto(UserDto dto) {
+    return User(
+      id: dto.id,
+      loginId: dto.loginId,
+      name: dto.name,
+      status: _parseStatus(dto.status),
+    );
+  }
 
   static MemberStatus _parseStatus(String status) {
     final lowerStatus = status.toLowerCase();
