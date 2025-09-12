@@ -334,6 +334,7 @@ android/.kotlin/
 
 # Windows Flutter generated files
 windows/flutter/generated_plugin_registrant.cc
+windows/flutter/generated_plugin_registrant.h
 windows/flutter/generated_plugins.cmake
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij,windows,eclipse,visualstudiocode,macos,flutter
