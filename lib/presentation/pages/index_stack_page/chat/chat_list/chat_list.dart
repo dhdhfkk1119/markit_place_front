@@ -5,17 +5,29 @@ import 'package:markit_place_front/domain/chat/chat_provider/chat_room_notifier.
 import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/chat_datail.dart';
 
-class ChatList extends ConsumerWidget {
+class ChatList extends ConsumerStatefulWidget {
   const ChatList({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatList> createState() => _ChatListState();
+}
+
+class _ChatListState extends ConsumerState<ChatList> {
+  @override
+  void initState() {
+    super.initState();
+    // 위젯이 처음 생성될 때만 호출
+    Future.microtask(() {
+      ref.read(chatRoomNotifierProvider).fetchMyChatRooms();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final chatRoomNotifier = ref.watch(chatRoomNotifierProvider);
-    if (chatRoomNotifier.chatRooms.isEmpty &&
-        !chatRoomNotifier.isLoading &&
-        chatRoomNotifier.errorMessage.isEmpty) {
-      Future.microtask(
-          () => ref.read(chatRoomNotifierProvider).fetchMyChatRooms());
+
+    if (chatRoomNotifier.isLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
 
     // 로딩 중 상태 처리
