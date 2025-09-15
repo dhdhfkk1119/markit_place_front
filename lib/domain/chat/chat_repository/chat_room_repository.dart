@@ -31,30 +31,36 @@ class ChatRoomRepository {
     }
   }
 
-  Future<List<ChatRoomDTO>> getMyRoom({required int userId}) async {
+  Future<List<ChatRoomDTO>> getMyRoom() async {
     final token = await _storage.read(key: "accessToken");
     if (token == null) {
       throw Exception("토큰이 없어 채팅방을 불러올 수 없습니다");
     }
 
     try {
+      print("요청 URL: http://192.168.0.128:8080/api/chat/rooms");
+      print("Authorization 헤더: Bearer $token");
+
       final response = await dio.get(
         'http://192.168.0.128:8080/api/chat/rooms',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
       );
+
+      print("응답 코드: ${response.statusCode}");
+      print("응답 바디: ${response.data}");
+
       if (response.statusCode == 200) {
-        final List<dynamic> dataList = response.data;
-        final List<ChatRoomDTO> rooms = dataList.map((data) {
+        final List<dynamic> dataList = response.data["content"];
+        return dataList.map((data) {
           final chatRoomModel = ChatRoom.fromJson(data);
           return ChatRoomDTO.fromModel(chatRoomModel);
         }).toList();
-
-        return rooms;
       }
-      throw Exception("채팅방 목록을 가져오는데 실패 (HTTP ${response.statusCode})");
-    } catch (e) {
+      throw Exception("채팅방 목록 실패 (HTTP ${response.statusCode})");
+    } on DioError catch (e) {
+      print("DioError 발생: ${e.response?.statusCode}, ${e.response?.data}");
       throw Exception("채팅방 목록을 가져오는데 실패");
     }
   }

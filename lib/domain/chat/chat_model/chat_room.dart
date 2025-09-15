@@ -18,13 +18,13 @@ class ChatRoom {
     return ChatRoom(
       roomId: data['roomId'],
       otherUser: User(
-        id: data['receiverId'],
-        loginId: data['receiverName'],
-        name: data['receiverName'],
+        id: data['otherUserId'],
+        loginId: data['otherUserName'],
+        name: data['otherUserName'],
         status: MemberStatus.ACTIVE,
       ),
       lastMessage: data['lastMessage'],
-      createdAt: data['createdAt'],
+      createdAt: data['lastMessageCreatedAt'],
     );
   }
 }

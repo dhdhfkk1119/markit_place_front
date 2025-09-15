@@ -10,13 +10,11 @@ class ChatList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final chatRoomNotifier = ref.watch(chatRoomNotifierProvider);
-    final session = ref.read(sessionProvider);
     if (chatRoomNotifier.chatRooms.isEmpty &&
         !chatRoomNotifier.isLoading &&
         chatRoomNotifier.errorMessage.isEmpty) {
-      Future.microtask(() => ref
-          .read(chatRoomNotifierProvider)
-          .fetchMyChatRooms(userId: session.user!.id));
+      Future.microtask(
+          () => ref.read(chatRoomNotifierProvider).fetchMyChatRooms());
     }
 
     // 로딩 중 상태 처리
@@ -151,7 +149,7 @@ class ChatList extends ConsumerWidget {
                       ),
                     ),
                     title: Text(
-                      room.otherName,
+                      room.otherUserName,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
@@ -167,6 +165,7 @@ class ChatList extends ConsumerWidget {
                       ),
                     ),
                     onTap: () {
+                      print("해당 방의 번호는 ${room.roomId}");
                       Navigator.push(
                           context,
                           MaterialPageRoute(

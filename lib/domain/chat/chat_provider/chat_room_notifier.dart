@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_room_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_repository/chat_repository.dart';
 import 'package:markit_place_front/domain/chat/chat_repository/chat_room_repository.dart';
@@ -9,6 +10,7 @@ class ChatRoomNotifier extends ChangeNotifier {
   final ChatRepository _chatRepository = ChatRepository();
 
   List<ChatRoomDTO> chatRooms = [];
+
   bool isLoading = false;
   String errorMessage = '';
   int _selectedButtonId = 1;
@@ -27,11 +29,11 @@ class ChatRoomNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchMyChatRooms({required int userId}) async {
+  Future<void> fetchMyChatRooms() async {
     isLoading = true;
     notifyListeners();
     try {
-      chatRooms = await _chatRoomRepository.getMyRoom(userId: userId);
+      chatRooms = await _chatRoomRepository.getMyRoom();
       errorMessage = '';
     } catch (e) {
       errorMessage = e.toString();
@@ -52,7 +54,7 @@ class ChatRoomNotifier extends ChangeNotifier {
       receiverId: receiverId,
       message: message,
     );
-    await fetchMyChatRooms(userId: userId);
+    await fetchMyChatRooms();
   }
 }
 

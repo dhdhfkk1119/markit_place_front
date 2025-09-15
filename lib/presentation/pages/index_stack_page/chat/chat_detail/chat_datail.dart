@@ -1,76 +1,62 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
+import 'package:markit_place_front/domain/chat/chat_provider/chat_detail_notifier.dart';
+import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
 
+import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
 import '../../../../widgets/snackbar_util.dart';
 
-class ChatDetail extends StatefulWidget {
-  final room;
+class ChatDetail extends ConsumerStatefulWidget {
+  final ChatRoomDTO room;
 
   const ChatDetail({super.key, required this.room});
 
   @override
-  State<ChatDetail> createState() => _ChatDetailState();
+  ConsumerState<ChatDetail> createState() => _ChatDetailState();
 }
 
-class _ChatDetailState extends State<ChatDetail> {
-  final List<Map<String, dynamic>> _chatData = [
-    {
-      'type': 'date_separator', // 날짜 구분선 타입
-      'date': '2025년 9월 1일',
-    },
-    {
-      'type': 'message', // 일반 메시지 타입
-      'isMe': false, // 상대방 메시지
-      'text': '안녕하세요',
-      'time': '오후 7:51',
-    },
-    {
-      'type': 'message',
-      'isMe': true, // 내 메시지
-      'text': '혹시 판매 되었을까요?',
-      'time': '오후 7:51',
-    },
-    {
-      'type': 'message',
-      'isMe': false,
-      'text': '아직 판매 중이에요.',
-      'time': '오후 7:55',
-    },
-    {
-      'type': 'transaction', // 특별한 타입 (예: 송금)
-      'isMe': true,
-      'amount': '550,000원',
-      'recipient': 'MP페이',
-      'time': '오후 8:02',
-    },
-    {
-      'type': 'message',
-      'isMe': true,
-      'text': '지금 바로 입금 할게요',
-      'time': '오후 8:02',
-    },
-    {
-      'type': 'message',
-      'isMe': false,
-      'text': '네 알겠습니다',
-      'time': '오후 8:03',
-    },
-    {
-      'type': 'message',
-      'isMe': false,
-      'text': 'MP페이 송금해주시고 만나서 바로 직거래 하도록 해요',
-      'time': '오후 8:03',
-    },
-    {
-      'type': 'message',
-      'isMe': true,
-      'text': '네넵 알겠습니다',
-      'time': '오후 8:05',
-    }
-  ];
+class _ChatDetailState extends ConsumerState<ChatDetail> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      final session = ref.read(sessionProvider);
+      if (session.user != null) {
+        ref
+            .read(chatDetailNotifierProvider)
+            .fetchMessages(roomId: widget.room.roomId, myId: session.user!.id);
+      }
+    });
+
+    // ref.listen(chatProvider(widget.room.roomId), (previous, next) {
+    //   if (next.isNotEmpty && mounted) {
+    //     Future.delayed(const Duration(milliseconds: 100), () {
+    //       _scrollController.animateTo(
+    //         _scrollController.position.maxScrollExtent,
+    //         duration: const Duration(milliseconds: 300),
+    //         curve: Curves.easeOut,
+    //       );
+    //     });
+    //   }
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
+
+    if (chatDetailNotifier.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (chatDetailNotifier.errorMessage.isNotEmpty) {
+      return Center(child: Text(chatDetailNotifier.errorMessage));
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -82,7 +68,7 @@ class _ChatDetailState extends State<ChatDetail> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.room["name"],
+              widget.room.otherUserName,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
@@ -109,6 +95,7 @@ class _ChatDetailState extends State<ChatDetail> {
       body: SafeArea(
         child: Column(
           children: [
+            // 상품 정보 영역
             Container(
               height: 100,
               width: double.infinity,
@@ -129,9 +116,7 @@ class _ChatDetailState extends State<ChatDetail> {
                         fit: BoxFit.cover,
                       ),
                     ),
-                    const SizedBox(
-                      width: 10,
-                    ),
+                    const SizedBox(width: 10),
                     const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,19 +135,20 @@ class _ChatDetailState extends State<ChatDetail> {
                 ),
               ),
             ),
+            // 채팅 리스트
             Expanded(
               child: ListView.builder(
-                itemCount: _chatData.length,
+                controller: _scrollController,
+                itemCount: chatDetailNotifier.messages.length,
                 itemBuilder: (context, index) {
-                  final item = _chatData[index];
+                  final item = chatDetailNotifier.messages[index];
 
-                  if (item['type'] == 'date_separator') {
-                    return _buildDateSeparator(item['date']);
-                  } else if (item['type'] == 'transaction') {
+                  if (item.type == 'date_separator') {
+                    return _buildDateSeparator(item.content);
+                  } else if (item.type == 'transaction') {
                     return const SizedBox.shrink();
                   } else {
-                    final isMe = item['isMe'] as bool;
-                    if (isMe) {
+                    if (item.isMine) {
                       return _buildMyMessage(context, item);
                     } else {
                       return _buildOtherMessage(context, item);
@@ -188,8 +174,7 @@ class _ChatDetailState extends State<ChatDetail> {
     );
   }
 
-  Widget _buildOtherMessage(
-      BuildContext context, Map<String, dynamic> message) {
+  Widget _buildOtherMessage(BuildContext context, ChatMessageDto message) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Row(
@@ -216,25 +201,21 @@ class _ChatDetailState extends State<ChatDetail> {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Text(message['text']),
+              child: Text(message.content),
             ),
           ),
-          const SizedBox(width: 8),
-          Text(message['time']),
         ],
       ),
     );
   }
 
-  Widget _buildMyMessage(BuildContext context, Map<String, dynamic> message) {
+  Widget _buildMyMessage(BuildContext context, ChatMessageDto message) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Text(message['time']),
-          const SizedBox(width: 8),
           Container(
             constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.7),
@@ -243,7 +224,7 @@ class _ChatDetailState extends State<ChatDetail> {
               color: Colors.purple[100],
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Text(message['text']),
+            child: Text(message.content),
           ),
         ],
       ),
