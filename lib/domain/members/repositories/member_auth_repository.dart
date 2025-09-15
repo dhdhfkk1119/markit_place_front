@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
-import 'package:markit_place_front/_core/dtos/error_dto.dart'; // ErrorDto 임포트 추가
+import 'package:markit_place_front/_core/dtos/error_dto.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart';
 import 'package:markit_place_front/domain/members/models/member.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_request.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_response.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart';
+import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dart'; // 새 DTO 임포트
 
 class MemberAuthRepository {
   final Dio _dio;
@@ -17,16 +18,76 @@ class MemberAuthRepository {
         .add(LogInterceptor(requestBody: true, responseBody: true));
   }
 
+  // 아이디 중복 확인 메소드
+  Future<bool> checkIdAvailability(String loginId) async {
+    try {
+      final dioResponse = await _dio.get(
+        '/members/check-id',
+        queryParameters: {'loginId': loginId},
+      );
+
+      final apiResponse = ApiResponseDto<IdCheckResponseDataDto>.fromJson(
+        dioResponse.data as Map<String, dynamic>,
+        fromJsonT: IdCheckResponseDataDto.fromJson,
+      );
+
+      if (apiResponse.success && apiResponse.response != null) {
+        // 서버 응답: apiResponse.response.available
+        //   - true: 아이디 사용 가능 (존재하지 않음)
+        //   - false: 아이디 사용 불가 (이미 존재함)
+        // 이 메소드는 서버가 반환하는 'available' 값을 그대로 반환합니다.
+        return apiResponse.response!.available;
+      } else if (!apiResponse.success && apiResponse.error != null) {
+        throw Exception(
+            apiResponse.error!.message ?? '아이디 중복 확인 중 알 수 없는 서버 오류');
+      } else {
+        throw Exception('아이디 중복 확인 중 알 수 없는 오류 (서버 응답 형식 확인 필요)');
+      }
+    } on DioException catch (e) {
+      String finalErrorMessage;
+      ErrorDto? parsedErrorDto;
+
+      if (e.response?.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        final responseData = e.response!.data as Map<String, dynamic>;
+        if (responseData.containsKey('error') &&
+            responseData['error'] != null &&
+            responseData['error'] is Map<String, dynamic>) {
+          try {
+            parsedErrorDto = ErrorDto.fromJson(
+                responseData['error'] as Map<String, dynamic>);
+          } catch (parseError) {
+            print(
+                '[CheckIdAvailability Error - DioException] Failed to parse ErrorDto: $parseError');
+          }
+        }
+      }
+
+      if (parsedErrorDto?.message != null &&
+          parsedErrorDto!.message!.isNotEmpty) {
+        finalErrorMessage = parsedErrorDto.message!;
+      } else {
+        finalErrorMessage = extractErrorMessage(e);
+      }
+      print(
+          '[CheckIdAvailability Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
+      throw Exception(finalErrorMessage);
+    } catch (e) {
+      final errorMessage = extractErrorMessage(e);
+      print('[CheckIdAvailability Error - General] $errorMessage ($e)');
+      throw Exception(errorMessage);
+    }
+  }
+
   Future<Member?> register(Member memberToRegister) async {
     final requestDto = MemberRegisterRequestDto.fromModel(memberToRegister);
 
     try {
       final dioResponse = await _dio.post(
-        '/members/register', // 수정된 경로
+        '/members/register',
         data: requestDto.toJson(),
       );
 
-      // ApiResponseDto의 제네릭 타입을 명시적으로 지정
       final apiResponse =
           ApiResponseDto<MemberRegisterResponseDataDto>.fromJson(
         dioResponse.data as Map<String, dynamic>,
@@ -85,7 +146,7 @@ class MemberAuthRepository {
   Future<Map<String, dynamic>> login(String loginId, String password) async {
     try {
       final dioResponse = await _dio.post(
-        '/members/login', // 수정된 경로
+        '/members/login',
         data: {
           'loginId': loginId,
           'password': password,
@@ -157,7 +218,6 @@ class MemberAuthRepository {
     }
   }
 
-  // 회원가입용 이메일 인증 코드 발송 요청
   Future<void> requestEmailVerification(String email) async {
     try {
       final dioResponse = await _dio.post(
@@ -165,14 +225,12 @@ class MemberAuthRepository {
         data: {'email': email},
       );
 
-      // 서버 응답이 String이므로 ApiResponseDto<String>으로 파싱
       final apiResponse = ApiResponseDto<String>.fromJson(
         dioResponse.data as Map<String, dynamic>,
       );
 
       if (apiResponse.success) {
         print('인증 코드 발송 요청 성공: $email, 응답 메시지: ${apiResponse.response}');
-        // 성공 시 특별한 반환 값 없음 (void)
       } else {
         throw Exception(apiResponse.error?.message ?? '인증 코드 발송에 실패했습니다.');
       }
@@ -214,7 +272,6 @@ class MemberAuthRepository {
     }
   }
 
-  // 회원가입용 이메일 인증 코드 확인 요청
   Future<bool> confirmEmailVerification(String email, String code) async {
     try {
       final dioResponse = await _dio.post(
@@ -222,7 +279,6 @@ class MemberAuthRepository {
         data: {'email': email, 'code': code},
       );
 
-      // 서버 응답이 String이므로 ApiResponseDto<String>으로 파싱
       final apiResponse = ApiResponseDto<String>.fromJson(
         dioResponse.data as Map<String, dynamic>,
       );
@@ -231,7 +287,6 @@ class MemberAuthRepository {
         print('이메일 인증 성공: $email, 응답 메시지: ${apiResponse.response}');
         return true;
       } else {
-        // API 호출은 성공했으나 비즈니스 로직상 실패 (예: 코드가 틀림)
         throw Exception(apiResponse.error?.message ?? '인증 코드 확인에 실패했습니다.');
       }
     } on DioException catch (e) {
@@ -264,11 +319,11 @@ class MemberAuthRepository {
         print(
             '[ConfirmEmailVerification Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
       }
-      throw Exception(finalErrorMessage); // 여기서 false를 반환하는 대신 예외를 던짐
+      throw Exception(finalErrorMessage);
     } catch (e) {
       final errorMessage = extractErrorMessage(e);
       print('[ConfirmEmailVerification Error - General] $errorMessage ($e)');
-      throw Exception(errorMessage); // 여기서 false를 반환하는 대신 예외를 던짐
+      throw Exception(errorMessage);
     }
   }
 }
