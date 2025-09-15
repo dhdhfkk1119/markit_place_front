@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_client_sse/constants/sse_request_type_enum.dart';
 import 'package:flutter_client_sse/flutter_client_sse.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,9 +15,11 @@ class GeminiRepository {
   StreamSubscription? _streamSubscription;
   String Function(String response)? onData;
 
-  void subscribe(
-      {required int userId,
-      required void Function(String data) onDataReceived}) {
+  static Map<String, dynamic> response = {};
+
+  Stream<Map<String, dynamic>> subscribe({required int userId}) {
+    final controller = StreamController<Map<String, dynamic>>();
+
     _streamSubscription?.cancel();
 
     final url = "$_baseUrl/subscribe/$userId";
@@ -30,63 +33,68 @@ class GeminiRepository {
         final eventName = event.event ?? '';
 
         if (eventName == 'connect') {
-          // TODO 구독 성공시 로직 처리
+          controller.add(
+              {"eventName": eventName, "errorMessage": null, "data": null});
         } else if (eventName == 'AI Response') {
           if (event.data!.isNotEmpty) {
+            controller.add({
+              "eventName": eventName,
+              "errorMessage": null,
+              "data": event.data
+            });
             _streamSubscription?.cancel();
-            onDataReceived(event.data ?? '');
+            controller.close();
           }
         }
       },
       onError: (error) {
+        controller.addError({"errorMessage": "SSE 스트림 오류 발생: $error"});
         _streamSubscription?.cancel();
+        controller.close();
+      },
+      onDone: () {
+        if (!controller.isClosed) {
+          controller.close();
+        }
       },
     );
+
+    return controller.stream;
   }
 
-  Future<Map<String, dynamic>> sendImagesForGemini(Function(bool) onError,
+  Future<void> sendImagesForGemini(
       {required List<XFile> images, required int userId}) async {
-    try {
-      final List<Map<String, dynamic>> base64Images =
-          await _convertBase64Images(images);
+    final List<Map<String, dynamic>> base64Images =
+        await _convertBase64Images(images);
 
-      final List<Map<String, dynamic>> imageParts = base64Images.map((imgMap) {
-        return {
-          "inline_data": {
-            "mime_type": imgMap["mimeType"],
-            "data": imgMap["imageData"]
-          }
-        };
-      }).toList();
-
-      final textPart = {
-        "text":
-            "이미지를 종합적으로 분석하고, 적절한 상품 설명을 작성해주면 돼. 이때 형식은 [title]: title / [description]: description 이런 식으로 만들어줘야 해. 절대로 형식을 벗어나지 말아줘."
+    final List<Map<String, dynamic>> imageParts = base64Images.map((imgMap) {
+      return {
+        "inline_data": {
+          "mime_type": imgMap["mimeType"],
+          "data": imgMap["imageData"]
+        }
       };
+    }).toList();
 
-      final requestData = {
-        "contents": [
-          {
-            "parts": [
-              ...imageParts,
-              textPart,
-            ]
-          }
-        ]
-      };
+    final textPart = {
+      "text":
+          "제시된 상품 이미지를 종합적으로 분석하고, 판매할 상품의 설명을 적절하게 작성해주면 돼. 이때 형식은 [title]: title / [description]: description 이런 식으로 만들어줘야 해. 절대로 형식을 벗어나지 말아줘."
+    };
 
-      final requestJson = json.encode(requestData);
-      final response =
-          await dio.post("$_baseUrl/image/$userId", data: requestJson);
+    final requestData = {
+      "contents": [
+        {
+          "parts": [
+            ...imageParts,
+            textPart,
+          ]
+        }
+      ]
+    };
 
-      if (response.statusCode != 200) {
-        throw Exception("통신 실패.....");
-      }
-      return {};
-    } on Exception catch (e) {
-      onError(true);
-      return {};
-    }
+    final requestJson = json.encode(requestData);
+    final response =
+        await dio.post("$_baseUrl/image/$userId", data: requestJson);
   }
 
   Future<List<Map<String, dynamic>>> _convertBase64Images(

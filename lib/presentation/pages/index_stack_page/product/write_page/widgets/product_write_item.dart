@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,155 +11,152 @@ import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
 
 class ProductWriteItem extends ConsumerStatefulWidget {
-  final void Function(bool) onGetStatus;
-  const ProductWriteItem(this.onGetStatus, {super.key});
+  const ProductWriteItem({super.key});
 
   @override
   ConsumerState<ProductWriteItem> createState() => _ProductWriteItemState();
 }
 
-class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
+class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
+    with SingleTickerProviderStateMixin {
   bool _isOn = false;
-  bool _isLoading = false;
-  Timer? _animationTimer;
-  double _rotateValue = 0;
-  final int _imageIndex = 0;
   final int _maxImageUpload = 10;
-  List<XFile> imageList = [];
 
-  void Function(bool)? onError;
+  late final AnimationController _animationController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _priceController;
 
   @override
   void initState() {
     super.initState();
     ref.read(productItemProvider.notifier).subscribe(userId: 1);
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
+
+    final initialModel = ref.read(productItemProvider);
+    _titleController = TextEditingController(text: initialModel.title);
+    _descriptionController =
+        TextEditingController(text: initialModel.description);
+    _priceController =
+        TextEditingController(text: initialModel.price?.toString() ?? "");
   }
 
   @override
   void dispose() {
-    _animationTimer?.cancel();
+    _animationController.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
   Future<void> _uploadImage() async {
-    if (_imageIndex >= _maxImageUpload) return; // 최대 이미지 수 초과 시 종료
+    final currentImageCount = ref.read(productItemProvider).images.length;
+    if (currentImageCount >= _maxImageUpload) return;
 
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickMultiImage(); // 갤러리에서 이미지 선택
+    final pickedFiles = await ImagePicker().pickMultiImage();
 
-    if (pickedFile.isNotEmpty) {
-      setState(() {
-        for (int i = 0; i < pickedFile.length; i++) {
-          if (pickedFile[i].path.isNotEmpty) imageList.add(pickedFile[i]);
-        }
-        ref.read(productItemProvider.notifier).uploadImages(
-            images: pickedFile,
-            isOn: _isOn,
-            onError = (error) {
-              setState(() {
-                _isLoading = !error;
-              });
-            });
-        _isLoading = true;
-        widget.onGetStatus(_isLoading);
-        startLoadingAnimation();
-      });
+    if (pickedFiles.isNotEmpty) {
+      ref
+          .read(productItemProvider.notifier)
+          .uploadImages(images: pickedFiles, isOn: _isOn);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // ref.watch를 build 메소드 최상단에서 한 번만 호출합니다.
     final productItemModel = ref.watch(productItemProvider);
 
-    if (_isOn && _isLoading) {
-      return Stack(
-        children: [
-          ListView(
+    ref.listen(productItemProvider, (prev, next) {
+      if (prev?.title != next.title) {
+        _titleController.text = next.title ?? '';
+      }
+      if (prev?.description != next.description) {
+        _descriptionController.text = next.description ?? '';
+      }
+      if (prev?.price != next.price) {
+        _priceController.text = next.price?.toString() ?? '';
+      }
+    });
+
+    if (_isOn && productItemModel.isLoading) {
+      _animationController.repeat();
+    } else {
+      _animationController.stop();
+    }
+
+    return Stack(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
             children: [
               _buildAiController(),
+              const SizedBox(height: 16),
               _buildImageUpload(productItemModel),
               _buildProductInfo(productItemModel),
             ],
           ),
-          Positioned.fill(
-            child: Container(
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-          Center(
-            child: Container(
-              width: getScreenWidth(context) * 0.8,
-              height: getScreenHeight(context) * 0.5,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Transform(
-                        transform: Matrix4.rotationZ(_rotateValue),
-                        alignment: Alignment.center,
-                        child: Image.asset(
-                          Assets.Images.geminiLogo,
-                          height: 70,
-                          width: 70,
-                        )),
-                    SizedBox(height: 20),
-                    CustomWidget.buildTitle("AI가 분석 중입니다..."),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return ListView(
-      children: [
-        _buildAiController(),
-        _buildImageUpload(productItemModel),
-        _buildProductInfo(productItemModel),
+        ),
+        if (_isOn && productItemModel.isLoading) _buildLoadingOverlay(context),
       ],
     );
   }
 
-  void startLoadingAnimation() {
-    _handleLoadingAnimation();
-  }
-
-  void stopLoadingAnimation() {
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _handleLoadingAnimation() {
-    _animationTimer?.cancel();
-
-    if (_isLoading) {
-      _animationTimer =
-          Timer.periodic(const Duration(milliseconds: 50), (timer) {
-        if (!mounted) {
-          timer.cancel();
-          return;
-        }
-
-        if (!_isLoading) {
-          timer.cancel();
-          return;
-        }
-
-        setState(() {
-          _rotateValue += 0.1;
-        });
-      });
-    }
+  Widget _buildLoadingOverlay(BuildContext context) {
+    return Positioned.fill(
+      child: Container(
+        color: Colors.black.withOpacity(0.5),
+        child: Center(
+          child: Container(
+            width: getScreenWidth(context) * 0.8,
+            height: getScreenHeight(context) * 0.4,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      RotationTransition(
+                        turns: _animationController,
+                        child: Image.asset(
+                          Assets.Images.geminiLogo,
+                          height: 70,
+                          width: 70,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      CustomWidget.buildTitle("AI가 분석 중입니다..."),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: IconButton(
+                    icon:
+                        const Icon(Icons.cancel, color: Colors.black, size: 30),
+                    onPressed: () {
+                      ref
+                          .read(productItemProvider.notifier)
+                          .cancelSubscription();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAiController() {
@@ -217,41 +213,33 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
     );
   }
 
-  // ProductItemModel을 파라미터로 받도록 수정합니다.
   Widget _buildImageUpload(ProductItemModel productItemModel) {
+    final imageList = productItemModel.images;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          // Add image button (only shown if not at max)
-          if (_imageIndex < _maxImageUpload)
+          if (imageList.length < _maxImageUpload)
             InkWell(
               onTap: _uploadImage,
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.deepPurpleAccent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      CupertinoIcons.camera_fill,
-                      size: 24,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    CupertinoIcons.camera_fill,
+                    size: 24,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${productItemModel.images.length}/$_maxImageUpload",
+                    style: const TextStyle(
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${productItemModel.imageCount}/$_maxImageUpload",
-                      style: const TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           const SizedBox(
@@ -272,22 +260,18 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
                     ),
                   ),
                 ),
-                Positioned(
-                    left: 30,
-                    bottom: 30,
+                Positioned.fill(
+                  child: Center(
                     child: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            imageList.remove(imagePath);
-                            ref
-                                .read(productItemProvider.notifier)
-                                .cancelUploadImages(images: imageList);
-                          });
-                        },
-                        icon: const Icon(
-                          Icons.cancel,
-                          color: Colors.white,
-                        )))
+                      onPressed: () {
+                        ref
+                            .read(productItemProvider.notifier)
+                            .removeImage(imagePath);
+                      },
+                      icon: const Icon(Icons.cancel, color: Colors.white),
+                    ),
+                  ),
+                )
               ]),
             );
           }).toList(),
@@ -296,7 +280,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
     );
   }
 
-  // ProductItemModel을 파라미터로 받도록 수정합니다.
   Widget _buildProductInfo(ProductItemModel productItemModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,6 +289,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
           child: CustomWidget.buildTitle("제목", size: 14),
         ),
         TextField(
+          controller: _titleController,
           decoration: InputDecoration(
               hintText: productItemModel.title ?? '제목',
               border: OutlineInputBorder(
@@ -318,6 +302,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
         TextField(
           maxLines: null,
           minLines: 5,
+          controller: _descriptionController,
           decoration: InputDecoration(
               hintText: productItemModel.description ??
                   '여기는 상품에 대한 정보가 담기느 부분입니다 판매 금지 된 물품이나 등록 선정에 부적절한 물픔은 등록을 삼가 해주시기바랍니다 ',
@@ -329,6 +314,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
           child: CustomWidget.buildTitle("판매 가격", size: 14),
         ),
         TextField(
+          controller: _priceController,
           decoration: InputDecoration(
               hintText: productItemModel.price.toString() ?? 'W 상품 가격을 입력해주세요',
               border: OutlineInputBorder(

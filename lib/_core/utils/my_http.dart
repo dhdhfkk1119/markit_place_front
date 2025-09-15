@@ -2,7 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
-const baseUrl = "http://192.168.0.128:8080/api";
+/// 임시 로컬 서버 - http://192.168.0.128:8080/api
+/// 임시 클라우드 서버 - https://port-0-market-place-server-m9sgwbay02179a7c.sel4.cloudtype.app/api
+const baseUrl =
+    "https://port-0-market-place-server-m9sgwbay02179a7c.sel4.cloudtype.app/api";
 
 final dio = Dio(
   BaseOptions(
