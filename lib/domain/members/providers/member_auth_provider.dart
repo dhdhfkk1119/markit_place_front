@@ -228,6 +228,21 @@ class AuthNotifier extends Notifier<AuthState> {
   void resetEmailVerificationState() {
     state = state.copyWith(isEmailVerifiedForRegistration: false);
   }
+
+  // 아이디 중복 확인 메소드
+  Future<bool> checkIdAvailability(String loginId) async {
+    try {
+      // _memberAuthRepository.checkIdAvailability는 서버 응답의 {"available": bool} 값을 반환.
+      // 서버 응답 true: 아이디 사용 가능 (존재하지 않음)
+      // 서버 응답 false: 아이디 사용 불가 (이미 존재함)
+      // 이 값을 그대로 UI로 전달합니다.
+      final bool isAvailable =
+          await _memberAuthRepository.checkIdAvailability(loginId);
+      return isAvailable;
+    } catch (e) {
+      rethrow; // 에러는 호출 측(UI)에서 처리하도록 다시 던짐
+    }
+  }
 }
 
 final memberAuthRepositoryProvider = Provider<MemberAuthRepository>((ref) {
