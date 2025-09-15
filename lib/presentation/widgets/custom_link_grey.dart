@@ -10,6 +10,7 @@ class CustomLInkGrey extends StatelessWidget {
   final VoidCallback? onPressed; // onPressed는 null일 수 있음
 
   const CustomLInkGrey({
+    // Restore const
     Key? key,
     required this.text,
     required this.onPressed,
@@ -29,6 +30,7 @@ class CustomLInkGrey extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
+            // This TextStyle is fine as non-const
             color: Colors.black54,
             fontFamily: Assets.Fonts.cookieRun,
           ),

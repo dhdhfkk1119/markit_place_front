@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/_core/constants/theme.dart'; // kAppSecondaryColor 사용
 import 'package:markit_place_front/_core/constants/theme.dart';
 
-import '../../_core/constants/assets.dart'; // kAppSecondaryColor를 사용
+import '../../_core/constants/assets.dart';
 
 /// ## CustomButtonMedium (중간 크기 버튼)
 ///
@@ -43,7 +42,8 @@ class CustomButtonMedium extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(small), // 테두리 둥글기
       ),
-      textStyle: const TextStyle(
+      textStyle: TextStyle(
+        // const 제거
         // 버튼 텍스트 스타일
         fontFamily: Assets.Fonts.cookieRun,
         fontSize: medium,

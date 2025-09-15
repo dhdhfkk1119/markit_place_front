@@ -15,9 +15,7 @@ import 'package:markit_place_front/presentation/widgets/custom_text_form_field.d
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
 import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
 import 'package:markit_place_front/presentation/widgets/snackbar_util.dart';
-import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart'; // 새로운 위젯 임포트
 import '../../../../../_core/constants/assets.dart';
-import '../../../../widgets/snackbar_util.dart';
 
 class AccountLoginForm extends ConsumerStatefulWidget {
   const AccountLoginForm({super.key});
@@ -63,7 +61,8 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
       child: ListView(
         children: [
           const SizedBox(height: medium),
-          const Center(
+          Center(
+            // const 제거
             child: Text(
               'Markit Place',
               style: TextStyle(
@@ -110,7 +109,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
                   });
                 },
               ),
-              const Text('자동 로그인',
+              Text('자동 로그인', // const 제거
                   style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
             ],
           ),
@@ -147,7 +146,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
                 },
               ),
               const SizedBox(width: small),
-              const Text('|',
+              Text('|', // const 제거
                   style: TextStyle(
                       color: Colors.black54,
                       fontFamily: Assets.Fonts.cookieRun)),
