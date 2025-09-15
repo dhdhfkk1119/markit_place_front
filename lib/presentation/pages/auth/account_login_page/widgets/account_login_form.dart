@@ -30,8 +30,8 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
   bool _autoLogin = false; // 자동 로그인 UI 상태
 
   // TextEditingController는 UI의 입력 필드와 직접 연결되므로 유지
-  final _idController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _idController = TextEditingController(text: 'user1');
+  final _passwordController = TextEditingController(text: 'user1234');
 
   @override
   void dispose() {

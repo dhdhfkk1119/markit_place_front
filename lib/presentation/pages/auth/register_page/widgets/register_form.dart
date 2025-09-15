@@ -8,6 +8,10 @@ import 'package:markit_place_front/presentation/widgets/custom_button_large.dart
 import 'package:markit_place_front/presentation/widgets/custom_button_medium.dart';
 
 import '../../../../../_core/constants/assets.dart';
+// 새로 추가된 EmailVerificationSection import
+import './email_verification_section.dart';
+// AppTextFormField import 추가
+import 'package:markit_place_front/presentation/widgets/app_text_form_field.dart';
 
 class RegisterForm extends ConsumerStatefulWidget {
   final List<int> agreedTermIds;
@@ -21,11 +25,11 @@ class RegisterForm extends ConsumerStatefulWidget {
 class _RegisterFormState extends ConsumerState<RegisterForm> {
   final _formKey = GlobalKey<FormState>();
 
-  final _idController = TextEditingController(text: 'asdfasdf');
-  final _passwordController = TextEditingController(text: 'asdfasdf');
-  final _passwordConfirmController = TextEditingController(text: 'asdfasdf');
-  final _emailController = TextEditingController(text: 'asdfasdf@gmail.com');
-  final _verificationCodeController = TextEditingController(text: ''); // 초기값 비움
+  final _idController = TextEditingController(text: 'user3');
+  final _passwordController = TextEditingController(text: 'user1234');
+  final _passwordConfirmController = TextEditingController(text: 'user1234');
+  final _emailController = TextEditingController(text: 'user3@gmail.com');
+  final _verificationCodeController = TextEditingController(text: 'user3');
 
   final _idFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
@@ -47,10 +51,6 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     'nate.com',
   ];
 
-  // 각 버튼의 로딩 상태를 관리하기 위한 bool 변수
-  bool _isSendingVerificationEmail = false;
-  bool _isConfirmingVerificationCode = false;
-
   @override
   void initState() {
     super.initState();
@@ -71,8 +71,6 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     for (final node in _allFocusNodes) {
       node.addListener(() => _ensureVisible(node));
     }
-    // 페이지 진입 시 이전 이메일 인증 상태 초기화 (선택적)
-    // Future.microtask(() => ref.read(authNotifierProvider.notifier).resetEmailVerificationState());
   }
 
   @override
@@ -81,7 +79,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
       controller.dispose();
     }
     for (final node in _allFocusNodes) {
-      node.removeListener(() => _ensureVisible(node)); // 리스너 제거 추가
+      node.removeListener(() => _ensureVisible(node));
       node.dispose();
     }
     _scrollController.dispose();
@@ -92,7 +90,6 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     if (node.hasFocus && mounted && node.context != null) {
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted && node.context != null && node.hasFocus) {
-          // node.hasFocus 추가 체크
           Scrollable.ensureVisible(
             node.context!,
             duration: const Duration(milliseconds: 250),
@@ -104,6 +101,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     }
   }
 
+  // _buildTextFormField 메소드를 AppTextFormField를 사용하도록 수정
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
@@ -115,33 +113,21 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     Widget? suffixIcon,
     bool readOnly = false,
   }) {
-    final defaultLabelStyle =
-        TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black87);
-    final defaultHelperStyle = TextStyle(
-        fontFamily: Assets.Fonts.cookieRun, color: Colors.grey.shade700);
-    final defaultErrorStyle = TextStyle(
-        fontFamily: Assets.Fonts.cookieRun,
-        color: Colors.redAccent,
-        fontWeight: FontWeight.bold);
-
-    return TextFormField(
+    // --- AppTextFormField 사용으로 변경 ---
+    return AppTextFormField(
       controller: controller,
+      labelText: labelText,
+      validator: validator,
       focusNode: focusNode,
-      decoration: InputDecoration(
-        labelText: labelText,
-        labelStyle: defaultLabelStyle,
-        helperText: helperText,
-        helperStyle: defaultHelperStyle,
-        errorStyle: defaultErrorStyle,
-        suffixIcon: suffixIcon,
-      ),
       obscureText: obscureText,
       keyboardType: keyboardType,
-      validator: validator,
+      helperText: helperText,
+      suffixIcon: suffixIcon,
       readOnly: readOnly,
     );
   }
 
+  // _onDomainSuggestionTap은 EmailVerificationSection에 콜백으로 전달하기 위해 유지
   void _onDomainSuggestionTap(String domain) {
     String currentText = _emailController.text;
     final atSignIndex = currentText.indexOf('@');
@@ -155,155 +141,19 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     _emailFocusNode.requestFocus();
   }
 
-  // "인증번호 전송" 버튼을 눌렀을 때 실행될 콜백 함수
-  Future<void> _handleSendVerificationEmail() async {
-    final email = _emailController.text;
-    // 이메일 필드에 대한 간단한 유효성 검사 (정규식 사용)
-    final emailRegExp = RegExp(
-        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+$");
-
-    if (email.isEmpty || !emailRegExp.hasMatch(email)) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            // const 제거
-            content: Text('유효한 이메일 주소를 입력해주세요.',
-                style: TextStyle(
-                    fontFamily:
-                        Assets.Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
-      );
-      return;
-    }
-
-    setState(() {
-      _isSendingVerificationEmail = true;
-    });
-
-    try {
-      // AuthNotifier를 통해 인증번호 발송 요청
-      await ref
-          .read(authNotifierProvider.notifier)
-          .requestEmailVerification(email);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            // const 제거
-            content: Text('인증번호가 발송되었습니다. 이메일을 확인해주세요.',
-                style: TextStyle(
-                    fontFamily:
-                        Assets.Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('인증번호 발송 실패: ${e.toString()}',
-                style: TextStyle(
-                    fontFamily:
-                        Assets.Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSendingVerificationEmail = false;
-        });
-      }
-    }
-  }
-
-  // "인증확인" 버튼을 눌렀을 때 실행될 콜백 함수
-  Future<void> _handleConfirmVerificationCode() async {
-    final email = _emailController.text;
-    final code = _verificationCodeController.text;
-
-    // 이메일 또는 인증 코드 필드가 비어 있는지 확인
-    if (email.isEmpty || code.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            // const 제거
-            content: Text('이메일과 인증번호를 모두 입력해주세요.',
-                style: TextStyle(
-                    fontFamily:
-                        Assets.Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
-      );
-      return;
-    }
-    // 간단한 인증 코드 유효성 검사 (예: 6자리) - 실제 상세 검증은 서버에서!
-    if (code.length != 6) {
-      // 예시로 6자리로 가정
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            // const 제거
-            content: Text('인증번호 6자리를 입력해주세요.',
-                style: TextStyle(
-                    fontFamily:
-                        Assets.Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
-      );
-      return;
-    }
-
-    setState(() {
-      _isConfirmingVerificationCode = true;
-    });
-
-    try {
-      // AuthNotifier를 통해 인증 코드 확인 요청
-      final isVerified = await ref
-          .read(authNotifierProvider.notifier)
-          .confirmEmailVerification(email, code);
-      if (!mounted) return;
-
-      if (isVerified) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              // const 제거
-              content: Text('이메일 인증이 완료되었습니다.',
-                  style: TextStyle(
-                      fontFamily: Assets
-                          .Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
-        );
-        _verificationCodeController.clear();
-        FocusScope.of(context).unfocus();
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('인증 실패: ${e.toString()}',
-                style: TextStyle(
-                    fontFamily:
-                        Assets.Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isConfirmingVerificationCode = false;
-        });
-      }
-    }
-  }
-
-  // "가입하기" 버튼을 눌렀을 때 실행될 콜백 함수
   void _onRegisterButtonPressed() {
     final authNotifier = ref.read(authNotifierProvider.notifier);
     final currentAuthState = ref.read(authNotifierProvider);
 
-    if (currentAuthState.status == AuthStatus.loading ||
-        _isSendingVerificationEmail ||
-        _isConfirmingVerificationCode) {
+    if (currentAuthState.status == AuthStatus.loading) {
       return;
     }
 
     if (!currentAuthState.isEmailVerifiedForRegistration) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            // const 제거
             content: Text('이메일 인증을 먼저 완료해주세요.',
-                style: TextStyle(
-                    fontFamily:
-                        Assets.Fonts.cookieRun))), // Assets.Fonts.cookieRun 사용
+                style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
       );
       return;
     }
@@ -311,7 +161,6 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     if (widget.agreedTermIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          // const 제거
           content: Text('약관 동의 정보가 올바르지 않습니다. 다시 시도해주세요.',
               style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
         ),
@@ -335,10 +184,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final bool isEmailVerified = authState.isEmailVerifiedForRegistration;
-    final cookieRunTextStyle =
-        TextStyle(fontFamily: Assets.Fonts.cookieRun); // const 제거
-    final cookieRunBlackTextStyle = TextStyle(
-        fontFamily: Assets.Fonts.cookieRun, color: Colors.black87); // const 제거
+    final cookieRunTextStyle = TextStyle(fontFamily: Assets.Fonts.cookieRun);
 
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
       if (next.status == AuthStatus.error &&
@@ -386,10 +232,12 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                       labelText: '아이디',
                       helperText: '아이디는 4자 이상 20자 이하로 입력해주세요.',
                       validator: (value) {
-                        if (value == null || value.isEmpty)
+                        if (value == null || value.isEmpty) {
                           return '아이디를 입력해주세요.';
-                        if (value.length < 4 || value.length > 20)
+                        }
+                        if (value.length < 4 || value.length > 20) {
                           return '아이디는 4자 이상 20자 이하로 입력해주세요.';
+                        }
                         if (value.contains(' ')) return '아이디에 공백을 포함할 수 없습니다.';
                         return null;
                       },
@@ -415,8 +263,9 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                 helperText: '비밀번호는 8자 이상 20자 이하로 입력해주세요.',
                 validator: (value) {
                   if (value == null || value.isEmpty) return '비밀번호를 입력해주세요.';
-                  if (value.length < 8 || value.length > 20)
+                  if (value.length < 8 || value.length > 20) {
                     return '비밀번호는 8자 이상 20자 이하이어야 합니다.';
+                  }
                   return null;
                 },
                 readOnly: false,
@@ -428,125 +277,33 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                 labelText: '비밀번호 확인',
                 obscureText: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty)
+                  if (value == null || value.isEmpty) {
                     return '비밀번호를 다시 한번 입력해주세요.';
-                  if (value != _passwordController.text)
+                  }
+                  if (value != _passwordController.text) {
                     return '비밀번호가 일치하지 않습니다.';
+                  }
                   return null;
                 },
                 readOnly: false,
               ),
               const SizedBox(height: medium),
-              CustomWidget.buildTitle("이메일 인증하기"),
-              const SizedBox(height: small),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _buildTextFormField(
-                      controller: _emailController,
-                      focusNode: _emailFocusNode,
-                      labelText: '이메일 주소',
-                      keyboardType: TextInputType.emailAddress,
-                      helperText: '예: example@markit.com',
-                      readOnly: isEmailVerified,
-                      validator: (value) {
-                        if (value == null || value.isEmpty)
-                          return '이메일 주소를 입력해주세요.';
-                        final emailRegex = RegExp(
-                            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+$");
-                        if (!emailRegex.hasMatch(value))
-                          return '유효한 이메일 형식이 아닙니다.';
-                        return null;
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: small, top: small, right: xSmall),
-                    child: CustomButtonMedium(
-                      text: '인증번호 전송',
-                      isLoading: _isSendingVerificationEmail,
-                      onPressed: _isSendingVerificationEmail || isEmailVerified
-                          ? null
-                          : _handleSendVerificationEmail,
-                    ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: xSmall),
-                child: Wrap(
-                  spacing: small,
-                  runSpacing: xSmall,
-                  children: _suggestedDomains.map((domain) {
-                    return OutlinedButton(
-                      onPressed: isEmailVerified
-                          ? null
-                          : () => _onDomainSuggestionTap(domain),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: small, vertical: xSmall),
-                        side:
-                            BorderSide(color: Colors.grey.shade400, width: 1.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(small),
-                        ),
-                      ),
-                      child: Text(domain, style: cookieRunBlackTextStyle),
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: medium),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: _buildTextFormField(
-                      controller: _verificationCodeController,
-                      focusNode: _verificationCodeFocusNode,
-                      labelText: '인증번호',
-                      helperText: '이메일로 전송된 인증번호 6자리를 입력해주세요.',
-                      keyboardType: TextInputType.number,
-                      readOnly: isEmailVerified,
-                      validator: (value) {
-                        if (!isEmailVerified &&
-                            (value == null || value.isEmpty))
-                          return '인증번호를 입력해주세요.';
-                        return null;
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: small, top: small, right: xSmall),
-                    child: CustomButtonMedium(
-                      text: isEmailVerified ? '인증완료' : '인증확인',
-                      isLoading: _isConfirmingVerificationCode,
-                      onPressed:
-                          _isConfirmingVerificationCode || isEmailVerified
-                              ? null
-                              : _handleConfirmVerificationCode,
-                    ),
-                  ),
-                ],
+              EmailVerificationSection(
+                emailController: _emailController,
+                verificationCodeController: _verificationCodeController,
+                emailFocusNode: _emailFocusNode,
+                verificationCodeFocusNode: _verificationCodeFocusNode,
+                isEmailAlreadyVerified: isEmailVerified,
+                suggestedDomains: _suggestedDomains,
+                onDomainSuggestionTap: _onDomainSuggestionTap,
               ),
               const SizedBox(height: xLarge),
               CustomButtonLarge(
-                text: authState.status == AuthStatus.loading &&
-                        !(_isSendingVerificationEmail ||
-                            _isConfirmingVerificationCode)
+                text: authState.status == AuthStatus.loading
                     ? '가입 처리 중...'
-                    : (_isSendingVerificationEmail
-                        ? '인증번호 전송중...'
-                        : (_isConfirmingVerificationCode
-                            ? '인증 확인중...'
-                            : '가입하기')),
+                    : '가입하기',
                 onPressed: authState.status == AuthStatus.loading ||
-                        widget.agreedTermIds.isEmpty ||
-                        _isSendingVerificationEmail ||
-                        _isConfirmingVerificationCode
+                        widget.agreedTermIds.isEmpty
                     ? null
                     : _onRegisterButtonPressed,
               ),
