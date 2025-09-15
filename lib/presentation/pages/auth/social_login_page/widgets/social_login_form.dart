@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart'; // CustomButtonLarge 임포트
-import 'package:flutter_svg/svg.dart'; // SVG 이미지를 사용하기 위한 임포트
-import 'package:markit_place_front/_core/constants/size.dart'; // 상수 파일 임포트
-import 'package:flutter_naver_login/flutter_naver_login.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
+import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
+// UserRepository를 사용하기 위한 임포트 추가
 import 'package:markit_place_front/domain/repositories/auth_repository/user_repository.dart';
-// import 'package:markit_place_front/presentation/pages/auth/account_login_page/account_login_page.dart'; // 명명된 라우트 사용으로 직접 임포트 불필요
 
 class SocialLoginForm extends StatelessWidget {
   const SocialLoginForm({super.key});
@@ -89,42 +86,46 @@ class SocialLoginForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // 구글 로그인 버튼
-        CustomButtonLarge(
-          text: "구글 로그인",
-          onPressed: () {
-            // TODO: 구글 로그인 로직 구현
-            print("구글 로그인 클릭");
-          },
+        const SizedBox(height: medium),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildSocialIcon(
+              context,
+              iconAssetPath: Assets.Svgs.google,
+              onPressed: () {
+                // TODO: 구글 로그인 로직 구현
+                print("구글 로그인 클릭");
+                Navigator.pushNamed(context, "product/list");
+              },
+            ),
+            const SizedBox(width: large),
+            _buildSocialIcon(
+              context,
+              iconAssetPath: Assets.Svgs.naver,
+              onPressed: () {
+                // TODO: 네이버 로그인 로직 구현 (기능 유지)
+                print("네이버 로그인 클릭");
+                UserRepository().signInWithNaver();
+              },
+            ),
+            const SizedBox(width: large),
+            _buildSocialIcon(
+              context,
+              iconAssetPath: Assets.Svgs.kakao,
+              onPressed: () {
+                // TODO: 카카오 로그인 로직 구현
+                print("카카오 로그인 클릭");
+                Navigator.pushNamed(context, "product/list");
+              },
+            ),
+          ],
         ),
         const SizedBox(height: medium), // 소셜 아이콘과 일반 로그인 버튼 사이 간격
         CustomButtonLarge(
           // CustomButtonLarge로 변경
           text: "일반 회원 로그인",
           onPressed: () {
-            // TODO: 네이버 로그인 로직 구현
-            print("네이버 로그인 클릭");
-            UserRepository().signInWithNaver();
-          },
-        ),
-        const SizedBox(height: small), // 버튼 사이 간격 수정: medium -> small
-
-        // 카카오 로그인 버튼
-        CustomButtonLarge(
-          text: "카카오 로그인",
-          onPressed: () {
-            // TODO: 카카오 로그인 로직 구현
-            print("카카오 로그인 클릭");
-          },
-        ),
-        const SizedBox(height: small), // 버튼 사이 간격 수정: medium -> small
-
-        // 일반 회원 로그인 버튼
-        CustomButtonLarge(
-          text: "일반 회원 로그인",
-          // iconAssetPath는 선택 사항이므로 여기서는 제공하지 않음
-          onPressed: () {
-            // 계정 로그인 페이지로 이동 (명명된 라우트 사용)
             Navigator.pushNamed(context, "/account-login");
           },
         ),

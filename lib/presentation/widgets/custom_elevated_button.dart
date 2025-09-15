@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart'; // 사이즈 상수 사용 가능
+import 'package:markit_place_front/_core/constants/size.dart';
+
+import '../../_core/constants/assets.dart'; // 사이즈 상수 사용 가능
 
 class CustomElevatedButton extends StatelessWidget {
   final String text;
@@ -32,7 +34,7 @@ class CustomElevatedButton extends StatelessWidget {
     // 2. 버튼 텍스트의 스타일 정의
     final TextStyle elevatedButtonTextStyle =
         (theme.textTheme.labelLarge ?? const TextStyle()).copyWith(
-      fontFamily: "CookieRun", // 폰트: 쿠키런
+      fontFamily: Assets.Fonts.cookieRun, // 폰트: 쿠키런
       color: Colors.deepPurpleAccent, // 글자색: 진보라 (foregroundColor와 일치)
       // fontSize는 theme.textTheme.labelLarge의 것을 따름
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 
 import '../../detail_page/community_detail_page.dart';
 
@@ -58,7 +59,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.asset(
-        "assets/lun.jpg",
+        Assets.Images.lun,
         width: 75,
         height: 75,
         scale: 1,
@@ -110,7 +111,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontFamily: "CookieRun",
+        fontFamily: Assets.Fonts.cookieRun,
         fontSize: size,
         color: color ?? Colors.black,
         fontWeight: font ?? FontWeight.w700,

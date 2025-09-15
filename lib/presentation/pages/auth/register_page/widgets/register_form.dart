@@ -1,35 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_medium.dart';
+import 'package:markit_place_front/domain/members/models/member.dart';
+import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
+// import 'package:markit_place_front/presentation/pages/auth/terms_page/terms_page.dart'; // 새로운 흐름에서는 직접 호출 안 함
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
+import 'package:markit_place_front/presentation/widgets/custom_button_medium.dart';
 
-// 회원가입 폼 위젯
-class RegisterForm extends StatefulWidget {
-  const RegisterForm({super.key});
+import '../../../../../_core/constants/assets.dart';
+
+class RegisterForm extends ConsumerStatefulWidget {
+  final List<int> agreedTermIds; // 생성자 파라미터로 약관 ID 목록을 받음
+
+  const RegisterForm({super.key, required this.agreedTermIds});
 
   @override
-  State<RegisterForm> createState() => _RegisterFormState();
+  ConsumerState<RegisterForm> createState() => _RegisterFormState();
 }
 
-class _RegisterFormState extends State<RegisterForm> {
-  final _formKey = GlobalKey<FormState>(); // 폼 상태 관리를 위한 키
+class _RegisterFormState extends ConsumerState<RegisterForm> {
+  final _formKey = GlobalKey<FormState>();
 
-  // 컨트롤러
   final _idController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
   final _emailController = TextEditingController();
   final _verificationCodeController = TextEditingController();
 
-  // 포커스 노드
   final _idFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
   final _passwordConfirmFocusNode = FocusNode();
   final _emailFocusNode = FocusNode();
   final _verificationCodeFocusNode = FocusNode();
 
-  final _scrollController = ScrollController(); // 스크롤 컨트롤러
+  final _scrollController = ScrollController();
 
   late final List<TextEditingController> _allControllers;
   late final List<FocusNode> _allFocusNodes;
@@ -42,6 +47,10 @@ class _RegisterFormState extends State<RegisterForm> {
     'daum.net',
     'nate.com',
   ];
+
+  // 이제 생성자를 통해 agreedTermIds를 받으므로, 이 상태 변수들은 직접 사용되지 않거나 다른 방식으로 활용 가능
+  // List<int>? _agreedTermIdsFromTermsPage;
+  // bool _termsAgreed = false;
 
   @override
   void initState() {
@@ -77,7 +86,6 @@ class _RegisterFormState extends State<RegisterForm> {
     super.dispose();
   }
 
-  // 포커스된 위젯이 보이도록 스크롤 조정
   void _ensureVisible(FocusNode node) {
     if (node.hasFocus && mounted && node.context != null) {
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -93,7 +101,6 @@ class _RegisterFormState extends State<RegisterForm> {
     }
   }
 
-  // TextFormField 생성 헬퍼
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
@@ -103,17 +110,13 @@ class _RegisterFormState extends State<RegisterForm> {
     TextInputType? keyboardType,
     String? helperText,
     Widget? suffixIcon,
-    TextStyle? labelStyle,
-    TextStyle? helperStyle,
-    TextStyle? errorStyle,
   }) {
-    // 기본 스타일 정의 (검정색 계열 및 CookieRun 폰트)
-    const defaultLabelStyle =
-        TextStyle(fontFamily: "CookieRun", color: Colors.black87);
-    final defaultHelperStyle =
-        TextStyle(fontFamily: "CookieRun", color: Colors.grey.shade700);
-    const defaultErrorStyle = TextStyle(
-        fontFamily: "CookieRun",
+    final defaultLabelStyle =
+        TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black87);
+    final defaultHelperStyle = TextStyle(
+        fontFamily: Assets.Fonts.cookieRun, color: Colors.grey.shade700);
+    final defaultErrorStyle = TextStyle(
+        fontFamily: Assets.Fonts.cookieRun,
         color: Colors.redAccent,
         fontWeight: FontWeight.bold);
 
@@ -122,10 +125,10 @@ class _RegisterFormState extends State<RegisterForm> {
       focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: labelStyle ?? defaultLabelStyle,
+        labelStyle: defaultLabelStyle,
         helperText: helperText,
-        helperStyle: helperStyle ?? defaultHelperStyle,
-        errorStyle: errorStyle ?? defaultErrorStyle,
+        helperStyle: defaultHelperStyle,
+        errorStyle: defaultErrorStyle,
         suffixIcon: suffixIcon,
       ),
       obscureText: obscureText,
@@ -134,7 +137,6 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  // 이메일 도메인 선택 시 필드 업데이트
   void _onDomainSuggestionTap(String domain) {
     String currentText = _emailController.text;
     final atSignIndex = currentText.indexOf('@');
@@ -148,21 +150,69 @@ class _RegisterFormState extends State<RegisterForm> {
     _emailFocusNode.requestFocus();
   }
 
-  // "가입하기" 버튼 클릭 로직
   void _onRegisterButtonPressed() {
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    final currentAuthState = ref.read(authNotifierProvider);
+
+    if (currentAuthState.status == AuthStatus.loading) {
+      return;
+    }
+
+    // TermsPage에서 필수 약관 동의는 이미 검증되었으므로,
+    // 여기서는 widget.agreedTermIds가 비어있는지만 간단히 확인하거나, 특정 개수 이상인지 확인할 수 있음.
+    if (widget.agreedTermIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '약관 동의 정보가 올바르지 않습니다. 다시 시도해주세요.',
+            style: TextStyle(fontFamily: Assets.Fonts.cookieRun),
+          ),
+        ),
+      );
+      return;
+    }
+
     if (_formKey.currentState!.validate()) {
-      print("가입하기 클릭");
-      Navigator.pushNamed(context, "product/list");
-      // TODO: 실제 회원가입 API 호출 및 결과 처리
+      final memberToRegister = Member.forRegistration(
+        loginId: _idController.text,
+        password: _passwordController.text,
+        email: _emailController.text,
+        agreedTermIds: widget.agreedTermIds,
+        // 생성자를 통해 받은 ID 목록 사용
+        isEmailVerified: false,
+      );
+      authNotifier.register(memberToRegister);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // SnackBar 및 OutlinedButton에 사용할 기본 CookieRun 폰트 스타일
-    const cookieRunTextStyle = TextStyle(fontFamily: "CookieRun");
-    const cookieRunBlackTextStyle =
-        TextStyle(fontFamily: "CookieRun", color: Colors.black87);
+    final authState = ref.watch(authNotifierProvider);
+    final cookieRunTextStyle = TextStyle(fontFamily: Assets.Fonts.cookieRun);
+    final cookieRunBlackTextStyle =
+        TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black87);
+
+    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
+      if (next.status == AuthStatus.error && next.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(next.errorMessage!, style: cookieRunTextStyle)),
+        );
+      } else if (next.status == AuthStatus.unauthenticated &&
+          next.errorMessage != null &&
+          next.errorMessage == "회원가입 성공! 로그인해주세요.") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(next.errorMessage!, style: cookieRunTextStyle)),
+        );
+        if (Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
+        ref
+            .read(authNotifierProvider.notifier)
+            .clearRegistrationSuccessMessage();
+      }
+    });
 
     return SingleChildScrollView(
       controller: _scrollController,
@@ -185,15 +235,11 @@ class _RegisterFormState extends State<RegisterForm> {
                       labelText: '아이디',
                       helperText: '아이디는 4자 이상 20자 이하로 입력해주세요.',
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.isEmpty)
                           return '아이디를 입력해주세요.';
-                        }
-                        if (value.length < 4 || value.length > 20) {
+                        if (value.length < 4 || value.length > 20)
                           return '아이디는 4자 이상 20자 이하로 입력해주세요.';
-                        }
-                        if (value.contains(' ')) {
-                          return '아이디에 공백을 포함할 수 없습니다.';
-                        }
+                        if (value.contains(' ')) return '아이디에 공백을 포함할 수 없습니다.';
                         return null;
                       },
                     ),
@@ -204,23 +250,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     child: CustomButtonMedium(
                       text: '중복확인',
                       onPressed: () {
-                        if (_idController.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('아이디를 먼저 입력해주세요.',
-                                    style:
-                                        cookieRunTextStyle)), // CookieRun 폰트 적용
-                          );
-                          return;
-                        }
-                        print('아이디 중복 확인 요청: ${_idController.text}');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  '${_idController.text} 중복확인 (서버 연동 필요)',
-                                  style:
-                                      cookieRunTextStyle)), // CookieRun 폰트 적용
-                        );
+                        /* TODO: 아이디 중복확인 API 연동 */
                       },
                     ),
                   ),
@@ -234,12 +264,9 @@ class _RegisterFormState extends State<RegisterForm> {
                 obscureText: true,
                 helperText: '비밀번호는 8자 이상 20자 이하로 입력해주세요.',
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '비밀번호를 입력해주세요.';
-                  }
-                  if (value.length < 8 || value.length > 20) {
+                  if (value == null || value.isEmpty) return '비밀번호를 입력해주세요.';
+                  if (value.length < 8 || value.length > 20)
                     return '비밀번호는 8자 이상 20자 이하이어야 합니다.';
-                  }
                   return null;
                 },
               ),
@@ -250,16 +277,15 @@ class _RegisterFormState extends State<RegisterForm> {
                 labelText: '비밀번호 확인',
                 obscureText: true,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.isEmpty)
                     return '비밀번호를 다시 한번 입력해주세요.';
-                  }
-                  if (value != _passwordController.text) {
+                  if (value != _passwordController.text)
                     return '비밀번호가 일치하지 않습니다.';
-                  }
                   return null;
                 },
               ),
               const SizedBox(height: medium),
+
               CustomWidget.buildTitle("이메일 인증하기"),
               const SizedBox(height: small),
               Row(
@@ -273,14 +299,12 @@ class _RegisterFormState extends State<RegisterForm> {
                       keyboardType: TextInputType.emailAddress,
                       helperText: '예: example@markit.com',
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.isEmpty)
                           return '이메일 주소를 입력해주세요.';
-                        }
                         final emailRegex = RegExp(
                             r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-                        if (!emailRegex.hasMatch(value)) {
+                        if (!emailRegex.hasMatch(value))
                           return '유효한 이메일 형식이 아닙니다.';
-                        }
                         return null;
                       },
                     ),
@@ -291,34 +315,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     child: CustomButtonMedium(
                       text: '인증번호 전송',
                       onPressed: () {
-                        final email = _emailController.text;
-                        if (email.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('이메일 주소를 먼저 입력해주세요.',
-                                    style:
-                                        cookieRunTextStyle)), // CookieRun 폰트 적용
-                          );
-                          return;
-                        }
-                        final emailRegex = RegExp(
-                            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-                        if (!emailRegex.hasMatch(email)) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('유효한 이메일 형식이 아닙니다.',
-                                    style:
-                                        cookieRunTextStyle)), // CookieRun 폰트 적용
-                          );
-                          return;
-                        }
-                        print('인증번호 전송 요청: $email');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('$email 로 인증번호 전송 (서버 연동 필요)',
-                                  style:
-                                      cookieRunTextStyle)), // CookieRun 폰트 적용
-                        );
+                        /* TODO: 이메일 인증번호 전송 API 연동 */
                       },
                     ),
                   ),
@@ -340,9 +337,7 @@ class _RegisterFormState extends State<RegisterForm> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(xSmall)),
                       ),
-                      child: Text(domain,
-                          style:
-                              cookieRunBlackTextStyle), // CookieRun 폰트 및 검정 계열 색상 적용
+                      child: Text(domain, style: cookieRunBlackTextStyle),
                     );
                   }).toList(),
                 ),
@@ -355,16 +350,57 @@ class _RegisterFormState extends State<RegisterForm> {
                 keyboardType: TextInputType.number,
                 helperText: '이메일로 전송된 인증번호를 입력해주세요.',
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '인증번호를 입력해주세요.';
-                  }
+                  if (value == null || value.isEmpty) return '인증번호를 입력해주세요.';
                   return null;
                 },
               ),
+              const SizedBox(height: medium),
+
+              // 약관 동의 UI는 새로운 흐름에 따라 제거 또는 수정됨
+              // 예를 들어, 동의 완료 상태만 간단히 표시할 수 있음:
+              CustomWidget.buildTitle("약관 동의 정보"),
+              const SizedBox(height: small),
+              if (widget.agreedTermIds.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(small),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(xSmall),
+                    color: Colors.green.shade50,
+                  ),
+                  child: Text(
+                    "약관 동의 완료 (동의 항목: ${widget.agreedTermIds.length}개)",
+                    style: cookieRunTextStyle.copyWith(
+                        color: Colors.green.shade800),
+                  ),
+                ),
+              if (widget.agreedTermIds.isEmpty) // 혹시라도 ID가 안 넘어온 경우
+                Container(
+                  padding: const EdgeInsets.all(small),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red.shade200),
+                    borderRadius: BorderRadius.circular(xSmall),
+                    color: Colors.red.shade50,
+                  ),
+                  child: Text(
+                    "약관 동의 정보가 수신되지 않았습니다. 회원가입을 다시 진행해주세요.",
+                    style:
+                        cookieRunTextStyle.copyWith(color: Colors.red.shade800),
+                  ),
+                ),
               const SizedBox(height: xLarge),
+
               CustomButtonLarge(
-                text: '가입하기',
-                onPressed: _onRegisterButtonPressed,
+                text: authState.status == AuthStatus.loading
+                    ? '가입 처리 중...'
+                    : '가입하기',
+                // agreedTermIds가 비어있으면 가입 버튼 비활성화 (선택적)
+                onPressed: authState.status == AuthStatus.loading ||
+                        widget.agreedTermIds.isEmpty
+                    ? null
+                    : _onRegisterButtonPressed,
               ),
             ],
           ),

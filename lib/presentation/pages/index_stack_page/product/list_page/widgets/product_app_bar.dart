@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../../_core/constants/assets.dart';
+
 class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String currentTitle;
   final ValueChanged<String> onTitleChanged;
@@ -25,8 +27,8 @@ class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           Text(currentTitle,
-              style: const TextStyle(
-                fontFamily: "CookieRun",
+              style: TextStyle(
+                fontFamily: Assets.Fonts.cookieRun,
                 fontWeight: FontWeight.w500,
               )),
           const SizedBox(width: 4),
@@ -108,8 +110,8 @@ class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Text(
           title,
-          style: const TextStyle(
-            fontFamily: "CookieRun",
+          style: TextStyle(
+            fontFamily: Assets.Fonts.cookieRun,
             fontWeight: FontWeight.w500,
           ),
         ),

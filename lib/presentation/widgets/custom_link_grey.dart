@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 
+import '../../_core/constants/assets.dart';
+
 /// 빅버튼 아래에 들어가는 회색 텍스트 링크
 // 아직 아이디가 없으세요? 회원가입
 class CustomLInkGrey extends StatelessWidget {
@@ -26,9 +28,9 @@ class CustomLInkGrey extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black54,
-            fontFamily: "CookieRun",
+            fontFamily: Assets.Fonts.cookieRun,
           ),
         ),
       ),

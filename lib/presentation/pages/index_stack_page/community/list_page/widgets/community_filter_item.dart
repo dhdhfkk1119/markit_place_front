@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../../_core/constants/assets.dart';
+
 class FilterItemWidget extends StatefulWidget {
   final String title;
   final bool initialValue;
@@ -55,8 +57,8 @@ class _FilterItemWidgetState extends State<FilterItemWidget> {
         ),
         Text(
           widget.title,
-          style: const TextStyle(
-            fontFamily: "CookieRun",
+          style: TextStyle(
+            fontFamily: Assets.Fonts.cookieRun,
             fontWeight: FontWeight.w700,
           ),
         ),

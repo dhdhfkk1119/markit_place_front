@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../../_core/constants/assets.dart';
 import 'filter_item.dart';
 
 class ProductFilterList extends StatefulWidget {
@@ -49,10 +50,10 @@ class _ProductFiterListState extends State<ProductFilterList> {
                   _priceFilters.updateAll((key, value) => false);
                 });
               },
-              child: const Text(
+              child: Text(
                 "초기화",
                 style: TextStyle(
-                    fontFamily: "CookieRun",
+                    fontFamily: Assets.Fonts.cookieRun,
                     color: Colors.grey,
                     decoration: TextDecoration.underline),
               ),
@@ -128,8 +129,10 @@ class _ProductFiterListState extends State<ProductFilterList> {
   getTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
-          fontWeight: FontWeight.w700, fontSize: 16, fontFamily: "CookieRun"),
+      style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          fontFamily: Assets.Fonts.cookieRun),
     );
   }
 }

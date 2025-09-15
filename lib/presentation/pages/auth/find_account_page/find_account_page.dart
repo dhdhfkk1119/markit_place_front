@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../_core/constants/assets.dart';
 import 'widgets/find_account_body.dart'; // 수정된 경로
 
 // 아이디/비밀번호 찾기 페이지 위젯 (탭 구조)
@@ -13,8 +14,8 @@ class FindAccountPage extends StatelessWidget {
       length: 2, // 탭 개수: 아이디 찾기, 비밀번호 초기화
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('아이디/비밀번호 찾기',
-              style: TextStyle(fontFamily: "CookieRun")),
+          title: Text('아이디/비밀번호 찾기',
+              style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios),
             onPressed: () {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../../../../../_core/constants/assets.dart';
+
 class CommunityListAppBar extends StatelessWidget
     implements PreferredSizeWidget {
   final String currentTitle;
@@ -23,8 +25,8 @@ class CommunityListAppBar extends StatelessWidget
       title: Row(
         children: [
           Text(currentTitle,
-              style: const TextStyle(
-                fontFamily: "CookieRun",
+              style: TextStyle(
+                fontFamily: Assets.Fonts.cookieRun,
                 fontWeight: FontWeight.w500,
               )),
           const SizedBox(width: 4),
@@ -99,8 +101,8 @@ class CommunityListAppBar extends StatelessWidget
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Text(title,
-            style: const TextStyle(
-              fontFamily: "CookieRun",
+            style: TextStyle(
+              fontFamily: Assets.Fonts.cookieRun,
               fontWeight: FontWeight.w500,
             )),
       ),

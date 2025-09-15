@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:location/location.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 
 class NearPage extends StatefulWidget {
   const NearPage({super.key});
@@ -96,13 +97,17 @@ class _NearPageState extends State<NearPage> {
 
             return NaverMap(
               options: NaverMapViewOptions(
-                initialCameraPosition:
-                    NCameraPosition(target: _currentPosition!, zoom: 15, bearing: _locationData!.heading!),
+                initialCameraPosition: NCameraPosition(
+                    target: _currentPosition!,
+                    zoom: 15,
+                    bearing: _locationData!.heading!),
               ),
               onMapReady: (controller) {
                 _mapController = controller;
                 final marker = NMarker(
                   id: "my_location",
+                  size: Size(50, 50),
+                  icon: NOverlayImage.fromAssetImage(Assets.Images.marker),
                   position: _currentPosition!,
                   caption: const NOverlayCaption(text: "내 위치"),
                 );
@@ -116,8 +121,10 @@ class _NearPageState extends State<NearPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_currentPosition != null) {
-            final cameraUpdate =
-                NCameraUpdate.withParams(target: _currentPosition!, zoom: 15, bearing: _locationData!.heading);
+            final cameraUpdate = NCameraUpdate.withParams(
+                target: _currentPosition!,
+                zoom: 15,
+                bearing: _locationData!.heading);
 
             cameraUpdate.setAnimation(
                 animation: NCameraAnimation.fly,

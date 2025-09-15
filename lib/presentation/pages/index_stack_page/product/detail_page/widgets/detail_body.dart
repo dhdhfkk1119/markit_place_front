@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../../_core/constants/assets.dart';
 import 'detail_item.dart';
 import 'detail_item_image.dart';
 
@@ -11,12 +12,12 @@ class DetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       controller: scrollController,
-      child: const Column(
+      child: Column(
         children: [
           DetailItemImage(
             imagePaths: [
-              "assets/product.jpg",
-              "assets/product2.jpg",
+              Assets.Images.product,
+              Assets.Images.product2,
               "assets/product3.jpg",
             ],
           ),

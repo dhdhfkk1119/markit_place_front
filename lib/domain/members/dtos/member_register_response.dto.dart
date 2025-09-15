@@ -1,40 +1,13 @@
-// lib/members/dto_auth/member_register_response.dto.dart
-import '../../../_core/dtos/error_dto.dart'; // 공용 ErrorDto import
-import '../domains/member.dart'; // Member 및 MemberStatus enum import
+import '../../../domain/members/models/member.dart'; // MemberStatus enum을 위해 유지
 
-// 서버의 기본 응답 래퍼 DTO
-class MemberRegisterResponseDto {
-  final bool success;
-  final MemberRegisterResponseDataDto? response;
-  final ErrorDto? error;
-
-  MemberRegisterResponseDto({
-    required this.success,
-    this.response,
-    this.error,
-  });
-
-  factory MemberRegisterResponseDto.fromJson(Map<String, dynamic> json) {
-    return MemberRegisterResponseDto(
-      success: json['success'] as bool,
-      response: json['response'] != null
-          ? MemberRegisterResponseDataDto.fromJson(
-              json['response'] as Map<String, dynamic>)
-          : null,
-      error: json['error'] != null
-          ? ErrorDto.fromJson(json['error'] as Map<String, dynamic>)
-          : null,
-    );
-  }
-}
-
-// 'response' 필드 내부의 상세 데이터를 위한 DTO
+// 'response' 필드 내부의 실제 상세 데이터를 위한 DTO
+// 이 클래스는 ApiResponseDto<T>의 T로 사용됩니다.
 class MemberRegisterResponseDataDto {
   final int id;
   final String loginId;
   final String? name;
   final String role;
-  final MemberStatus status; // 이제 명확히 member.dart의 MemberStatus를 참조
+  final MemberStatus status;
 
   MemberRegisterResponseDataDto({
     required this.id,
@@ -61,11 +34,14 @@ class MemberRegisterResponseDataDto {
       name: name,
       status: status,
       role: role,
+      // email, password, isEmailVerified, agreedTermIds 등은
+      // 이 DTO에 포함되지 않으므로, Member 모델 기본값 또는 null로 설정됩니다.
     );
   }
 
+  // MemberStatus 파싱 로직 (기존과 동일)
   static MemberStatus _parseStatusSafe(String? statusString) {
-    if (statusString == null) return MemberStatus.ACTIVE;
+    if (statusString == null) return MemberStatus.ACTIVE; // 기본값 또는 서버 명세에 따름
     final lowerStatus = statusString.toLowerCase();
     if (lowerStatus == 'active') {
       return MemberStatus.ACTIVE;
@@ -74,6 +50,8 @@ class MemberRegisterResponseDataDto {
     } else if (lowerStatus == 'banned') {
       return MemberStatus.BANNED;
     }
+    // 알 수 없는 상태값에 대한 기본 처리 (예: 로깅 후 기본값 반환)
+    // Logger().w("Unknown member status from server: $statusString");
     return MemberStatus.ACTIVE;
   }
 }

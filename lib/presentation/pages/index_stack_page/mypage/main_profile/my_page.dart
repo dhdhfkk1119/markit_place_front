@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/main_profile/widgets/my_page_body.dart';
 
+import '../../../../../_core/constants/assets.dart';
+
 class MyPage extends StatelessWidget {
   const MyPage({super.key});
 
@@ -15,12 +17,12 @@ class MyPage extends StatelessWidget {
             // 뒤로 가기 동작
           },
         ),
-        title: const Text(
+        title: Text(
           '나의 MP 마당',
           style: TextStyle(
             fontSize: 18,
             color: Colors.black,
-            fontFamily: "CookieRun",
+            fontFamily: Assets.Fonts.cookieRun,
           ),
         ),
         centerTitle: false,

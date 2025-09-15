@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 
+import '../../../../../../_core/constants/assets.dart';
+
 class CommunityWriteItem extends StatefulWidget {
   const CommunityWriteItem({super.key});
 
@@ -95,7 +97,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                     text: "안내 ",
                     style: TextStyle(
                       fontSize: 14,
-                      fontFamily: "CookieRun",
+                      fontFamily: Assets.Fonts.cookieRun,
                       fontWeight: FontWeight.w700,
                       color: Colors.redAccent,
                     ),
@@ -105,7 +107,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                         "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
                     style: TextStyle(
                       fontSize: 14,
-                      fontFamily: "CookieRun",
+                      fontFamily: Assets.Fonts.cookieRun,
                       fontWeight: FontWeight.w200,
                       color: Colors.black,
                     ),

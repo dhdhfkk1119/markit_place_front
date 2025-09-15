@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
@@ -45,19 +46,21 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
     if (_imageIndex >= _maxImageUpload) return; // 최대 이미지 수 초과 시 종료
 
     final picker = ImagePicker();
-    final pickedFile =
-        await picker.pickMultiImage(); // 갤러리에서 이미지 선택
+    final pickedFile = await picker.pickMultiImage(); // 갤러리에서 이미지 선택
 
     if (pickedFile.isNotEmpty) {
       setState(() {
-        for(int i = 0; i < pickedFile.length; i++) {
-          if(pickedFile[i].path.isNotEmpty) imageList.add(pickedFile[i]);
+        for (int i = 0; i < pickedFile.length; i++) {
+          if (pickedFile[i].path.isNotEmpty) imageList.add(pickedFile[i]);
         }
-        ref.read(productItemProvider.notifier).uploadImages(images: pickedFile, isOn: _isOn, onError = (error) {
-          setState(() {
-            _isLoading = !error;
-          });
-        });
+        ref.read(productItemProvider.notifier).uploadImages(
+            images: pickedFile,
+            isOn: _isOn,
+            onError = (error) {
+              setState(() {
+                _isLoading = !error;
+              });
+            });
         _isLoading = true;
         widget.onGetStatus(_isLoading);
         startLoadingAnimation();
@@ -80,13 +83,11 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
               _buildProductInfo(productItemModel),
             ],
           ),
-          
           Positioned.fill(
             child: Container(
               color: Colors.black.withOpacity(0.5),
             ),
           ),
-
           Center(
             child: Container(
               width: getScreenWidth(context) * 0.8,
@@ -95,12 +96,18 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
-              
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Transform(transform: Matrix4.rotationZ(_rotateValue), alignment: Alignment.center, child: Image.asset("assets/gemini_logo.png", height: 70, width: 70,)),
+                    Transform(
+                        transform: Matrix4.rotationZ(_rotateValue),
+                        alignment: Alignment.center,
+                        child: Image.asset(
+                          Assets.Images.geminiLogo,
+                          height: 70,
+                          width: 70,
+                        )),
                     SizedBox(height: 20),
                     CustomWidget.buildTitle("AI가 분석 중입니다..."),
                   ],
@@ -137,12 +144,13 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
     _animationTimer?.cancel();
 
     if (_isLoading) {
-      _animationTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      _animationTimer =
+          Timer.periodic(const Duration(milliseconds: 50), (timer) {
         if (!mounted) {
           timer.cancel();
           return;
         }
-        
+
         if (!_isLoading) {
           timer.cancel();
           return;
@@ -154,8 +162,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
       });
     }
   }
-
-
 
   Widget _buildAiController() {
     return Container(
@@ -254,27 +260,35 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
           ...imageList.map((imagePath) {
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: Stack(
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      image: DecorationImage(
-                        image: FileImage(File(imagePath.path)),
-                        fit: BoxFit.cover,
-                      ),
+              child: Stack(children: [
+                Container(
+                  width: 70,
+                  height: 70,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    image: DecorationImage(
+                      image: FileImage(File(imagePath.path)),
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  Positioned(left: 30, bottom: 30, child: IconButton(onPressed: () {
-                    setState(() {
-                      imageList.remove(imagePath);
-                      ref.read(productItemProvider.notifier).cancelUploadImages(images: imageList);
-                    });
-                  }, icon: const Icon(Icons.cancel, color: Colors.white,)))
-                ]
-              ),
+                ),
+                Positioned(
+                    left: 30,
+                    bottom: 30,
+                    child: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            imageList.remove(imagePath);
+                            ref
+                                .read(productItemProvider.notifier)
+                                .cancelUploadImages(images: imageList);
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.cancel,
+                          color: Colors.white,
+                        )))
+              ]),
             );
           }).toList(),
         ],
@@ -305,8 +319,8 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
           maxLines: null,
           minLines: 5,
           decoration: InputDecoration(
-              hintText:
-                  productItemModel.description ?? '여기는 상품에 대한 정보가 담기느 부분입니다 판매 금지 된 물품이나 등록 선정에 부적절한 물픔은 등록을 삼가 해주시기바랍니다 ',
+              hintText: productItemModel.description ??
+                  '여기는 상품에 대한 정보가 담기느 부분입니다 판매 금지 된 물품이나 등록 선정에 부적절한 물픔은 등록을 삼가 해주시기바랍니다 ',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
