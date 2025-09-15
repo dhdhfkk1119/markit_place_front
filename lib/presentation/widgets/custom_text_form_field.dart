@@ -9,6 +9,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? initValue; // 초기 값 - 글 쓰기
   final String? Function(String?)? validator; // 유효성 검사
   final InputDecoration? decoration;
+  final ValueChanged<String>? onChanged; // <<<--- 이 줄 추가
 
   const CustomTextFormField({
     Key? key,
@@ -18,6 +19,7 @@ class CustomTextFormField extends StatelessWidget {
     this.initValue = "",
     this.validator, // 선택적 매개 변수 (옵션값) - 유효성 검사
     this.decoration,
+    this.onChanged, // <<<--- 이 줄 추가
   }) : super(key: key);
 
   @override
@@ -26,8 +28,8 @@ class CustomTextFormField extends StatelessWidget {
       controller.text = initValue!;
     }
 
-    final mergedDecoration = InputDecoration(
-      hintText: "Enter $hint",
+    final defaultDecoration = InputDecoration(
+      hintText: hint != null ? "Enter $hint" : null,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(5),
       ),
@@ -40,12 +42,16 @@ class CustomTextFormField extends StatelessWidget {
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(5),
       ),
-    ).copyWith(
-      border: decoration?.border,
-      labelText: decoration?.labelText,
-      hintText: decoration?.hintText ?? "Enter $hint",
-      prefixIcon: decoration?.prefixIcon,
-      suffixIcon: decoration?.suffixIcon,
+    );
+
+    final mergedDecoration = (decoration ?? defaultDecoration).copyWith(
+      border: decoration?.border ?? defaultDecoration.border,
+      labelText: decoration?.labelText ?? defaultDecoration.labelText,
+      hintText: decoration?.hintText ?? defaultDecoration.hintText,
+      prefixIcon: decoration?.prefixIcon ?? defaultDecoration.prefixIcon,
+      suffixIcon: decoration?.suffixIcon ?? defaultDecoration.suffixIcon,
+      errorText:
+          decoration?.errorText, // account_login_form.dart의 errorText를 사용하도록
     );
 
     return TextFormField(
@@ -53,6 +59,7 @@ class CustomTextFormField extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       decoration: mergedDecoration,
+      onChanged: onChanged, // <<<--- 이 줄 추가 (TextFormField의 onChanged에 연결)
     );
   }
 }

@@ -22,10 +22,11 @@ class MemberAuthRepository {
 
     try {
       final dioResponse = await _dio.post(
-        '/register',
+        '/members/register', // 수정된 경로
         data: requestDto.toJson(),
       );
 
+      // ApiResponseDto의 제네릭 타입을 명시적으로 지정
       final apiResponse =
           ApiResponseDto<MemberRegisterResponseDataDto>.fromJson(
         dioResponse.data as Map<String, dynamic>,
@@ -75,7 +76,6 @@ class MemberAuthRepository {
       }
       throw Exception(finalErrorMessage);
     } catch (e) {
-      // DioException 외의 예외 (네트워크 연결 자체 실패 등은 여기에 해당 안될 수 있음, DioException의 type으로 구분)
       final errorMessage = extractErrorMessage(e);
       print('[Register Error - General] $errorMessage ($e)');
       throw Exception(errorMessage);
@@ -85,7 +85,7 @@ class MemberAuthRepository {
   Future<Map<String, dynamic>> login(String loginId, String password) async {
     try {
       final dioResponse = await _dio.post(
-        '/login',
+        '/members/login', // 수정된 경로
         data: {
           'loginId': loginId,
           'password': password,
@@ -154,6 +154,121 @@ class MemberAuthRepository {
       final errorMessage = extractErrorMessage(e);
       print('[Login Error - General] $errorMessage ($e)');
       throw Exception(errorMessage);
+    }
+  }
+
+  // 회원가입용 이메일 인증 코드 발송 요청
+  Future<void> requestEmailVerification(String email) async {
+    try {
+      final dioResponse = await _dio.post(
+        '/email/register/send-code',
+        data: {'email': email},
+      );
+
+      // 서버 응답이 String이므로 ApiResponseDto<String>으로 파싱
+      final apiResponse = ApiResponseDto<String>.fromJson(
+        dioResponse.data as Map<String, dynamic>,
+      );
+
+      if (apiResponse.success) {
+        print('인증 코드 발송 요청 성공: $email, 응답 메시지: ${apiResponse.response}');
+        // 성공 시 특별한 반환 값 없음 (void)
+      } else {
+        throw Exception(apiResponse.error?.message ?? '인증 코드 발송에 실패했습니다.');
+      }
+    } on DioException catch (e) {
+      String finalErrorMessage;
+      ErrorDto? parsedErrorDto;
+      if (e.response?.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        final responseData = e.response!.data as Map<String, dynamic>;
+        if (responseData.containsKey('error') &&
+            responseData['error'] != null &&
+            responseData['error'] is Map<String, dynamic>) {
+          try {
+            parsedErrorDto = ErrorDto.fromJson(
+                responseData['error'] as Map<String, dynamic>);
+          } catch (parseError) {
+            print(
+                '[RequestEmailVerification Error - DioException] Failed to parse ErrorDto: $parseError');
+          }
+        }
+      }
+      if (parsedErrorDto?.message != null &&
+          parsedErrorDto!.message!.isNotEmpty) {
+        finalErrorMessage = parsedErrorDto.message!;
+      } else {
+        finalErrorMessage = extractErrorMessage(e);
+      }
+      print(
+          '[RequestEmailVerification Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
+      if (parsedErrorDto != null) {
+        print(
+            '[RequestEmailVerification Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
+      }
+      throw Exception(finalErrorMessage);
+    } catch (e) {
+      final errorMessage = extractErrorMessage(e);
+      print('[RequestEmailVerification Error - General] $errorMessage ($e)');
+      throw Exception(errorMessage);
+    }
+  }
+
+  // 회원가입용 이메일 인증 코드 확인 요청
+  Future<bool> confirmEmailVerification(String email, String code) async {
+    try {
+      final dioResponse = await _dio.post(
+        '/email/register/confirm-code',
+        data: {'email': email, 'code': code},
+      );
+
+      // 서버 응답이 String이므로 ApiResponseDto<String>으로 파싱
+      final apiResponse = ApiResponseDto<String>.fromJson(
+        dioResponse.data as Map<String, dynamic>,
+      );
+
+      if (apiResponse.success) {
+        print('이메일 인증 성공: $email, 응답 메시지: ${apiResponse.response}');
+        return true;
+      } else {
+        // API 호출은 성공했으나 비즈니스 로직상 실패 (예: 코드가 틀림)
+        throw Exception(apiResponse.error?.message ?? '인증 코드 확인에 실패했습니다.');
+      }
+    } on DioException catch (e) {
+      String finalErrorMessage;
+      ErrorDto? parsedErrorDto;
+      if (e.response?.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        final responseData = e.response!.data as Map<String, dynamic>;
+        if (responseData.containsKey('error') &&
+            responseData['error'] != null &&
+            responseData['error'] is Map<String, dynamic>) {
+          try {
+            parsedErrorDto = ErrorDto.fromJson(
+                responseData['error'] as Map<String, dynamic>);
+          } catch (parseError) {
+            print(
+                '[ConfirmEmailVerification Error - DioException] Failed to parse ErrorDto: $parseError');
+          }
+        }
+      }
+      if (parsedErrorDto?.message != null &&
+          parsedErrorDto!.message!.isNotEmpty) {
+        finalErrorMessage = parsedErrorDto.message!;
+      } else {
+        finalErrorMessage = extractErrorMessage(e);
+      }
+      print(
+          '[ConfirmEmailVerification Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
+      if (parsedErrorDto != null) {
+        print(
+            '[ConfirmEmailVerification Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
+      }
+      throw Exception(finalErrorMessage); // 여기서 false를 반환하는 대신 예외를 던짐
+    } catch (e) {
+      final errorMessage = extractErrorMessage(e);
+      print('[ConfirmEmailVerification Error - General] $errorMessage ($e)');
+      throw Exception(errorMessage); // 여기서 false를 반환하는 대신 예외를 던짐
     }
   }
 }

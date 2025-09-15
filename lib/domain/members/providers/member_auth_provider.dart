@@ -3,46 +3,55 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart'; // error_utils.dart 임포트
 import 'package:markit_place_front/domain/members/models/member.dart';
 import 'package:markit_place_front/domain/members/models/session_user.dart';
-import 'package:markit_place_front/domain/members/repositories/member_auth_repository.dart';
+import 'package:markit_place_front/domain/members/repositories/member_auth_repository.dart'; // MemberAuthRepository 임포트
+// import 'package:markit_place_front/domain/repositories/auth_repository/user_repository.dart'; // UserRepository 관련 코드는 주석 처리 또는 삭제
 
 enum AuthStatus {
-  initial,
-  loading,
-  authenticated,
-  unauthenticated,
-  error,
+  initial, // 초기 상태
+  loading, // 로딩 중
+  authenticated, // 인증됨 (로그인 성공)
+  unauthenticated, // 미인증 (로그아웃 또는 초기)
+  error, // 오류 발생
 }
 
+// 인증 상태를 나타내는 클래스
 class AuthState {
-  final AuthStatus status;
-  final SessionUser? user;
-  final String? errorMessage;
+  final AuthStatus status; // 현재 인증 상태 (enum)
+  final SessionUser? user; // 로그인한 사용자 정보 (nullable)
+  final String? errorMessage; // 오류 발생 시 메시지 (nullable)
+  final bool isEmailVerifiedForRegistration; // 회원가입 시 이메일 인증 완료 여부
 
   AuthState({
     this.status = AuthStatus.initial,
     this.user,
     this.errorMessage,
+    this.isEmailVerifiedForRegistration = false, // 기본값은 false
   });
 
+  // AuthState 객체를 복사하여 일부 값만 변경하는 메소드
   AuthState copyWith({
     AuthStatus? status,
     SessionUser? user,
     String? errorMessage,
-    bool clearUser = false,
-    bool clearError = false,
+    bool? isEmailVerifiedForRegistration, // 이메일 인증 상태 업데이트용
+    bool clearUser = false, // 사용자 정보를 명시적으로 null로 설정할지 여부
+    bool clearError = false, // 에러 메시지를 명시적으로 null로 설정할지 여부
   }) {
     return AuthState(
       status: status ?? this.status,
       user: clearUser ? null : user ?? this.user,
       errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+      isEmailVerifiedForRegistration:
+          isEmailVerifiedForRegistration ?? this.isEmailVerifiedForRegistration,
     );
   }
 }
 
 class AuthNotifier extends Notifier<AuthState> {
-  late MemberAuthRepository _memberAuthRepository;
+  late MemberAuthRepository
+      _memberAuthRepository; // 직접 사용할 MemberAuthRepository
   final _secureStorage = const FlutterSecureStorage();
-  static const _tokenKey = 'auth_token';
+  static const _tokenKey = 'accessToken';
   static const _userMemberIdKey = 'user_member_id';
   static const _userLoginIdKey = 'user_login_id';
   static const _userNameKey = 'user_name';
@@ -51,9 +60,14 @@ class AuthNotifier extends Notifier<AuthState> {
 
   @override
   AuthState build() {
-    _memberAuthRepository = ref.watch(memberAuthRepositoryProvider);
+    _memberAuthRepository =
+        ref.watch(memberAuthRepositoryProvider); // MemberAuthRepository 주입
     Future.microtask(() => _tryAutoLogin());
-    return AuthState();
+    return AuthState(
+        status: AuthStatus.initial,
+        user: null,
+        errorMessage: null,
+        isEmailVerifiedForRegistration: false);
   }
 
   Future<void> _tryAutoLogin() async {
@@ -76,31 +90,36 @@ class AuthNotifier extends Notifier<AuthState> {
             role: role,
           );
           state = state.copyWith(
-              status: AuthStatus.authenticated, user: sessionUser);
+              status: AuthStatus.authenticated,
+              user: sessionUser,
+              isEmailVerifiedForRegistration: false);
         } catch (e) {
-          // _tryAutoLogin 실패 시에도 에러 메시지를 남길 수 있지만, 보통은 자동 로그아웃 처리
-          await logout(); // 여기서 logout은 unauthenticated 상태로 만들고 에러 메시지를 초기화함
+          await logout();
         }
       } else {
         await logout();
       }
     } else {
-      state = state.copyWith(status: AuthStatus.unauthenticated);
+      state = state.copyWith(
+          status: AuthStatus.unauthenticated,
+          isEmailVerifiedForRegistration: false);
     }
   }
 
   Future<void> register(Member memberToRegister) async {
-    state = state.copyWith(status: AuthStatus.loading, clearError: true);
+    state = state.copyWith(
+        status: AuthStatus.loading,
+        clearError: true,
+        isEmailVerifiedForRegistration: false);
     try {
       final registeredMember =
           await _memberAuthRepository.register(memberToRegister);
       if (registeredMember != null) {
         state = state.copyWith(
             status: AuthStatus.unauthenticated,
-            errorMessage: "회원가입 성공! 로그인해주세요.");
+            errorMessage: "회원가입 성공! 로그인해주세요.",
+            isEmailVerifiedForRegistration: false);
       } else {
-        // Repository에서 Member?를 반환하고 null을 반환한 경우는 이제 없을 것으로 예상 (Exception을 throw하므로)
-        // 만약을 위해 남겨두거나, Repository가 항상 Exception을 throw하도록 완전히 신뢰한다면 이 else 블록 제거 가능
         state = state.copyWith(
             status: AuthStatus.error,
             errorMessage: "회원가입 처리 중 알 수 없는 문제가 발생했습니다.");
@@ -113,29 +132,49 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> login(String loginId, String password) async {
-    state = state.copyWith(status: AuthStatus.loading, clearError: true);
+    state = state.copyWith(
+        status: AuthStatus.loading,
+        clearError: true,
+        isEmailVerifiedForRegistration: false);
     try {
+      // UserRepository를 거치지 않고 MemberAuthRepository를 직접 사용
       final loginResult = await _memberAuthRepository.login(loginId, password);
 
-      final SessionUser sessionUser = loginResult['sessionUser'] as SessionUser;
-      final String token = loginResult['token'] as String;
+      final SessionUser? sessionUser =
+          loginResult['sessionUser'] as SessionUser?;
+      final String? token = loginResult['token'] as String?;
 
-      await _secureStorage.write(key: _tokenKey, value: token);
-      await _secureStorage.write(
-          key: _userMemberIdKey, value: sessionUser.memberId.toString());
-      await _secureStorage.write(
-          key: _userLoginIdKey, value: sessionUser.loginId);
-      if (sessionUser.name != null) {
-        await _secureStorage.write(key: _userNameKey, value: sessionUser.name!);
+      if (sessionUser != null && token != null && token.isNotEmpty) {
+        await _secureStorage.write(key: _tokenKey, value: token);
+        await _secureStorage.write(
+            key: _userMemberIdKey, value: sessionUser.memberId.toString());
+        await _secureStorage.write(
+            key: _userLoginIdKey, value: sessionUser.loginId);
+        if (sessionUser.name != null) {
+          await _secureStorage.write(
+              key: _userNameKey, value: sessionUser.name!);
+        }
+        await _secureStorage.write(key: _userRoleKey, value: sessionUser.role);
+
+        state = state.copyWith(
+            status: AuthStatus.authenticated,
+            user: sessionUser,
+            isEmailVerifiedForRegistration: false);
+        print("로그인 성공 (AuthNotifier -> MemberAuthRepository 직접 호출)"); // 디버깅 로그
+      } else {
+        String errorMessage = "로그인 처리 중 알 수 없는 문제가 발생했습니다 (데이터 누락).";
+        if (token == null || token.isEmpty) {
+          errorMessage = "로그인 응답에서 토큰을 추출하지 못했습니다.";
+        } else if (sessionUser == null) {
+          errorMessage = "로그인 응답에서 사용자 정보를 추출하지 못했습니다.";
+        }
+        throw Exception(errorMessage); // 에러를 발생시켜 아래 catch 블록에서 처리
       }
-      await _secureStorage.write(key: _userRoleKey, value: sessionUser.role);
-
-      state =
-          state.copyWith(status: AuthStatus.authenticated, user: sessionUser);
     } catch (e) {
       final errorMessage = extractErrorMessage(e);
       state =
           state.copyWith(status: AuthStatus.error, errorMessage: errorMessage);
+      print("로그인 실패 (AuthNotifier): $errorMessage"); // 디버깅 로그
     }
   }
 
@@ -148,7 +187,10 @@ class AuthNotifier extends Notifier<AuthState> {
     await _secureStorage.delete(key: _userEmailKey);
     await _secureStorage.delete(key: _userRoleKey);
     state = state.copyWith(
-        status: AuthStatus.unauthenticated, clearUser: true, clearError: true);
+        status: AuthStatus.unauthenticated,
+        clearUser: true,
+        clearError: true,
+        isEmailVerifiedForRegistration: false);
   }
 
   void clearRegistrationSuccessMessage() {
@@ -156,6 +198,35 @@ class AuthNotifier extends Notifier<AuthState> {
         state.errorMessage == "회원가입 성공! 로그인해주세요.") {
       state = state.copyWith(clearError: true);
     }
+  }
+
+  Future<void> requestEmailVerification(String email) async {
+    try {
+      await _memberAuthRepository.requestEmailVerification(email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<bool> confirmEmailVerification(String email, String code) async {
+    try {
+      final isVerified =
+          await _memberAuthRepository.confirmEmailVerification(email, code);
+      if (isVerified) {
+        state = state.copyWith(
+            isEmailVerifiedForRegistration: true,
+            status: AuthStatus.initial,
+            clearError: true);
+      }
+      return isVerified;
+    } catch (e) {
+      state = state.copyWith(isEmailVerifiedForRegistration: false);
+      rethrow;
+    }
+  }
+
+  void resetEmailVerificationState() {
+    state = state.copyWith(isEmailVerifiedForRegistration: false);
   }
 }
 

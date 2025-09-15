@@ -10,12 +10,10 @@ import 'package:markit_place_front/domain/repositories/auth_repository/user_repo
 class SocialLoginForm extends StatelessWidget {
   const SocialLoginForm({super.key});
 
-  // 호버 기능이 없는 _buildSocialIcon 헬퍼 메서드 다시 추가
   Widget _buildSocialIcon(BuildContext context,
       {required String iconAssetPath,
       required VoidCallback onPressed,
       double iconSize = 48.0}) {
-    // 아이콘 크기 48.0 유지
     return InkWell(
       onTap: onPressed,
       borderRadius: BorderRadius.circular(iconSize / 2 + xSmall),
@@ -29,58 +27,6 @@ class SocialLoginForm extends StatelessWidget {
       ),
     );
   }
-
-  // Helper method for the full-width login button with background (e.g., "일반 회원 로그인")
-  // 이 메서드는 CustomButtonLarge로 대체되었으므로 주석 처리 또는 삭제 가능
-  /*
-  Widget _buildLoginButton(BuildContext context, String title,
-      {String? iconAssetPath, // "일반 회원 로그인"의 경우 null
-      required VoidCallback onPressed}) {
-    final theme = Theme.of(context);
-    List<Widget> buttonChildren = [];
-
-    if (iconAssetPath != null) {
-      buttonChildren
-          .add(SvgPicture.asset(iconAssetPath, height: large, width: large));
-      buttonChildren.add(const SizedBox(width: small));
-    }
-
-    buttonChildren.add(
-      Text(
-        title,
-        style: theme.textTheme.titleMedium?.copyWith(
-          color: theme.colorScheme.onSurface,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-
-    return InkWell(
-      onTap: onPressed,
-      borderRadius: BorderRadius.circular(large),
-      child: Container(
-        width: double.infinity,
-        height: xLarge,
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(large),
-          boxShadow: [
-            BoxShadow(
-              color: theme.colorScheme.shadow.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: buttonChildren,
-        ),
-      ),
-    );
-  }
-  */
 
   @override
   Widget build(BuildContext context) {
@@ -121,18 +67,28 @@ class SocialLoginForm extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: medium), // 소셜 아이콘과 일반 로그인 버튼 사이 간격
+        const SizedBox(height: medium), // 소셜 아이콘과 일반이메일 로그인 버튼 사이 간격
         CustomButtonLarge(
-          // CustomButtonLarge로 변경
-          text: "일반 회원 로그인",
+          text: "일반이메일 로그인",
           onPressed: () {
-            Navigator.pushNamed(context, "/account-login");
+            // TODO: 일반 이메일 로그인 로직 구현 또는 페이지 이동
+            print("일반이메일 로그인 클릭됨");
+            // Navigator.pushNamed(context, "/email-login"); // 예시 경로
           },
         ),
-        const SizedBox(height: small), // 일반 로그인 버튼과 "회원가입" 링크 사이 간격
+        const SizedBox(height: small), // 일반이메일 로그인 버튼과 "아이디로 로그인하기" 링크 사이 간격
+        Center(
+          // "아이디로 로그인하기" 링크 추가
+          child: CustomLInkGrey(
+            text: '아이디로 로그인하기',
+            onPressed: () {
+              Navigator.pushNamed(context, "/account-login");
+            },
+          ),
+        ),
+        const SizedBox(height: small), // "아이디로 로그인하기" 링크와 "회원가입" 링크 사이 간격
         Center(
           child: CustomLInkGrey(
-            // custom_link_grey.dart 에서 StyledLinkTextButton으로 변경됨
             text: '아직 아이디가 없으신가요? 회원가입',
             onPressed: () {
               Navigator.pushNamed(context, "/terms");
@@ -142,7 +98,6 @@ class SocialLoginForm extends StatelessWidget {
         const SizedBox(height: xSmall),
         Center(
           child: CustomLInkGrey(
-            // custom_link_grey.dart 에서 StyledLinkTextButton으로 변경됨
             text: '아이디/비밀번호가 생각나지 않으세요? 계정찾기',
             onPressed: () {
               Navigator.pushNamed(context, "/find-account");
