@@ -1,24 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_body.dart';
 
 import '../../../../../_core/constants/custom_widget.dart';
 
-class ProductWritePage extends StatefulWidget {
+class ProductWritePage extends ConsumerStatefulWidget {
   const ProductWritePage({super.key});
 
   @override
-  State<ProductWritePage> createState() => _ProductWritePageState();
+  ConsumerState<ProductWritePage> createState() => _ProductWritePageState();
 }
 
-class _ProductWritePageState extends State<ProductWritePage> {
-  bool _isLoading = false;
-  void _handleStatus(bool status) {
-    setState(() {
-      _isLoading = status;
-    });
-  }
-
+class _ProductWritePageState extends ConsumerState<ProductWritePage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -35,7 +30,7 @@ class _ProductWritePageState extends State<ProductWritePage> {
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: ProductWriteBody(_handleStatus),
+            child: ProductWriteBody(),
           ),
         ),
         bottomNavigationBar: _buildSubmitButton(),
@@ -44,6 +39,8 @@ class _ProductWritePageState extends State<ProductWritePage> {
   }
 
   Widget _buildSubmitButton() {
+    final productItem = ref.watch(productItemProvider);
+
     return Container(
       margin: const EdgeInsets.all(16.0),
       child: SizedBox(
@@ -57,8 +54,10 @@ class _ProductWritePageState extends State<ProductWritePage> {
             ),
             padding: const EdgeInsets.symmetric(vertical: 12.0),
           ),
-          child: CustomWidget.buildTitle(_isLoading ? "작성 중..." : "작성완료",
-              color: Colors.white, size: 20),
+          child: CustomWidget.buildTitle(
+              productItem.isLoading ? "작성 중..." : "작성완료",
+              color: Colors.white,
+              size: 20),
         ),
       ),
     );
