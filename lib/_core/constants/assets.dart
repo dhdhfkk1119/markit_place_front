@@ -11,7 +11,7 @@ class _Images {
 
   /// 이미지 하드코딩 방지용
   // 이미지 공통 경로
-  static const String _baseImagePath = "assets/";
+  static const String _baseImagePath = "assets";
 
   // 이미지 경로
   final String defaultProfile = "$_baseImagePath/default_profile.png";
