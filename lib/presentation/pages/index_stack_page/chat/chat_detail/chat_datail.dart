@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_detail_notifier.dart';
+import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
 import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/widgets/detail_bottom_sheet.dart';
 
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
 import '../../../../widgets/snackbar_util.dart';
@@ -32,18 +34,6 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
             .fetchMessages(roomId: widget.room.roomId, myId: session.user!.id);
       }
     });
-
-    // ref.listen(chatProvider(widget.room.roomId), (previous, next) {
-    //   if (next.isNotEmpty && mounted) {
-    //     Future.delayed(const Duration(milliseconds: 100), () {
-    //       _scrollController.animateTo(
-    //         _scrollController.position.maxScrollExtent,
-    //         duration: const Duration(milliseconds: 300),
-    //         curve: Curves.easeOut,
-    //       );
-    //     });
-    //   }
-    // });
   }
 
   @override
@@ -56,111 +46,131 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     if (chatDetailNotifier.errorMessage.isNotEmpty) {
       return Center(child: Text(chatDetailNotifier.errorMessage));
     }
+    return Consumer(builder: (context, ref, child) {
+      ref.listen(chatProvider(widget.room.roomId), (previous, next) {
+        if (next.isNotEmpty && mounted) {
+          ref.read(chatDetailNotifierProvider).addNewMessages(next);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.arrow_back_ios)),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.room.otherUserName,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "보통 10분내 응답",
-              style: TextStyle(fontSize: 14, color: Colors.grey[200]!),
-            ),
+          Future.delayed(const Duration(milliseconds: 100), () {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          });
+        }
+      });
+
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(Icons.arrow_back_ios)),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.room.otherUserName,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "보통 10분내 응답",
+                style: TextStyle(fontSize: 14, color: Colors.grey[200]!),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
+            IconButton(
+                onPressed: () {},
+                icon: const Icon(CupertinoIcons.ellipsis_vertical)),
           ],
+          bottom: const PreferredSize(
+              preferredSize: Size.zero,
+              child: Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.black38,
+              )),
+          backgroundColor: Colors.purple[100],
         ),
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          IconButton(
-              onPressed: () {},
-              icon: const Icon(CupertinoIcons.ellipsis_vertical)),
-        ],
-        bottom: const PreferredSize(
-            preferredSize: Size.zero,
-            child: Divider(
-              height: 1,
-              thickness: 1,
-              color: Colors.black38,
-            )),
-        backgroundColor: Colors.purple[100],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // 상품 정보 영역
-            Container(
-              height: 100,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(bottom: BorderSide(color: Colors.black38))),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ClipOval(
-                      clipBehavior: Clip.hardEdge,
-                      child: Image.asset(
-                        "assets/product.jpg",
-                        height: 70,
-                        width: 70,
-                        fit: BoxFit.cover,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // 상품 정보 영역
+              Container(
+                height: 100,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(bottom: BorderSide(color: Colors.black38))),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ClipOval(
+                        clipBehavior: Clip.hardEdge,
+                        child: Image.asset(
+                          "assets/product.jpg",
+                          height: 70,
+                          width: 70,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("rtx 3080ti 새삥 [미사용]"),
-                        Row(children: [
-                          Text("550,000원"),
-                          Text(
-                            "(가격제안불가)",
-                            style: TextStyle(color: Colors.grey),
-                          )
-                        ])
-                      ],
-                    )
-                  ],
+                      const SizedBox(width: 10),
+                      const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("rtx 3080ti 새삥 [미사용]"),
+                          Row(children: [
+                            Text("550,000원"),
+                            Text(
+                              "(가격제안불가)",
+                              style: TextStyle(color: Colors.grey),
+                            )
+                          ])
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
-            ),
-            // 채팅 리스트
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: chatDetailNotifier.messages.length,
-                itemBuilder: (context, index) {
-                  final item = chatDetailNotifier.messages[index];
+              // 채팅 리스트
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: chatDetailNotifier.messages.length,
+                  itemBuilder: (context, index) {
+                    final item = chatDetailNotifier.messages[index];
 
-                  if (item.type == 'date_separator') {
-                    return _buildDateSeparator(item.content);
-                  } else if (item.type == 'transaction') {
-                    return const SizedBox.shrink();
-                  } else {
-                    if (item.isMine) {
-                      return _buildMyMessage(context, item);
+                    if (item.time == 'createdAt') {
+                      return _buildDateSeparator(item.content);
+                    } else if (item.type == 'transaction') {
+                      return const SizedBox.shrink();
                     } else {
-                      return _buildOtherMessage(context, item);
+                      if (item.isMine) {
+                        return _buildMyMessage(context, item);
+                      } else {
+                        return _buildOtherMessage(context, item);
+                      }
                     }
-                  }
-                },
-              ),
-            )
-          ],
+                  },
+                ),
+              )
+            ],
+          ),
         ),
-      ),
-    );
+        bottomSheet: DetailBottomSheet(
+          receiverId: widget.room.otherUserId,
+          roomId: widget.room.roomId,
+        ),
+      );
+    });
   }
 
   Widget _buildDateSeparator(String date) {

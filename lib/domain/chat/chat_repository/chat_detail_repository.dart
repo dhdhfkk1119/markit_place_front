@@ -36,7 +36,7 @@ class ChatDetailRepository {
 
         final rooms = chatList.map((data) {
           final model = ChatMessageModel.fromJson(data);
-          return ChatMessageDto.fromModel(model, roomId);
+          return ChatMessageDto.fromModel(model, myId);
         }).toList();
 
         print("[Repository] 메시지 파싱 완료: ${rooms.length}개");
