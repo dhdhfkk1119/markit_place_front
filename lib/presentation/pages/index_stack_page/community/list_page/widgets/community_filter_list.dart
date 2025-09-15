@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../../_core/constants/assets.dart';
 import 'community_filter_item.dart';
 
 class CommunityFilterList extends StatefulWidget {
@@ -48,7 +49,7 @@ class _CommunityFilterListState extends State<CommunityFilterList> {
               child: const Text(
                 "초기화",
                 style: TextStyle(
-                    fontFamily: "CookieRun",
+                    fontFamily: Fonts.cookieRun,
                     color: Colors.grey,
                     decoration: TextDecoration.underline),
               ),
@@ -148,7 +149,9 @@ class _CommunityFilterListState extends State<CommunityFilterList> {
     return Text(
       title,
       style: const TextStyle(
-          fontWeight: FontWeight.w700, fontSize: 16, fontFamily: "CookieRun"),
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          fontFamily: Fonts.cookieRun),
     );
   }
 }

@@ -6,6 +6,8 @@ import 'package:markit_place_front/presentation/widgets/custom_button_large.dart
 import 'package:markit_place_front/domain/terms/models/term.dart';
 import 'package:markit_place_front/domain/terms/providers/terms_provider.dart';
 
+import '../../../../../_core/constants/assets.dart';
+
 class TermsForm extends ConsumerStatefulWidget {
   const TermsForm({super.key});
 
@@ -54,14 +56,15 @@ class _TermsFormState extends ConsumerState<TermsForm> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title, style: const TextStyle(fontFamily: "CookieRun")),
+        title: Text(title, style: const TextStyle(fontFamily: Fonts.cookieRun)),
         content: SingleChildScrollView(
-            child:
-                Text(content, style: const TextStyle(fontFamily: "CookieRun"))),
+            child: Text(content,
+                style: const TextStyle(fontFamily: Fonts.cookieRun))),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('닫기', style: TextStyle(fontFamily: "CookieRun")),
+            child:
+                const Text('닫기', style: TextStyle(fontFamily: Fonts.cookieRun)),
           ),
         ],
       ),
@@ -87,7 +90,7 @@ class _TermsFormState extends ConsumerState<TermsForm> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('필수 약관에 모두 동의해주세요.',
-              style: TextStyle(fontFamily: "CookieRun")),
+              style: TextStyle(fontFamily: Fonts.cookieRun)),
           duration: Duration(seconds: 2),
         ),
       );
@@ -119,7 +122,7 @@ class _TermsFormState extends ConsumerState<TermsForm> {
         if (terms.isEmpty && !termsAsyncValue.isLoading) {
           return const Center(
               child: Text('표시할 약관이 없습니다.',
-                  style: TextStyle(fontFamily: "CookieRun")));
+                  style: TextStyle(fontFamily: Fonts.cookieRun)));
         }
         if (termsAsyncValue.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -136,7 +139,7 @@ class _TermsFormState extends ConsumerState<TermsForm> {
                 title: Text(
                   '전체동의',
                   style: theme.textTheme.labelLarge
-                      ?.copyWith(fontFamily: "CookieRun", fontSize: medium),
+                      ?.copyWith(fontFamily: Fonts.cookieRun, fontSize: medium),
                 ),
                 value: _isAllAgreed,
                 onChanged: (value) => _onAllAgreedChanged(value, terms),
@@ -179,7 +182,7 @@ class _TermsFormState extends ConsumerState<TermsForm> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(
           child: Text('약관을 불러올 수 없습니다: ${error.toString()}',
-              style: const TextStyle(fontFamily: "CookieRun"))),
+              style: const TextStyle(fontFamily: Fonts.cookieRun))),
     );
   }
 }
@@ -224,7 +227,7 @@ class _TermItemRow extends StatelessWidget {
                   '필수',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSecondaryContainer,
-                    fontFamily: "CookieRun",
+                    fontFamily: Fonts.cookieRun,
                   ),
                 ),
               ),
@@ -232,7 +235,7 @@ class _TermItemRow extends StatelessWidget {
               child: Text(
                 term.title,
                 style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontFamily: "CookieRun"),
+                    ?.copyWith(fontFamily: Fonts.cookieRun),
               ),
             ),
             const SizedBox(width: small),
@@ -248,7 +251,7 @@ class _TermItemRow extends StatelessWidget {
                 '보기',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontFamily: "CookieRun",
+                  fontFamily: Fonts.cookieRun,
                 ),
               ),
             ),

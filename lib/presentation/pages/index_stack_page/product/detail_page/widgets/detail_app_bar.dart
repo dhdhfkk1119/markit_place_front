@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../../_core/constants/assets.dart';
+
 class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color backgroundColor;
   final Color iconColor;
@@ -37,7 +39,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 "커뮤니티",
                 style: TextStyle(
                   fontSize: 18,
-                  fontFamily: "CookieRun",
+                  fontFamily: Fonts.cookieRun,
                   fontWeight: FontWeight.w700,
                   color: iconColor,
                 ),

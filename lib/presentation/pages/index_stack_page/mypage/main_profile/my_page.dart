@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/main_profile/widgets/my_page_body.dart';
 
+import '../../../../../_core/constants/assets.dart';
+
 class MyPage extends StatelessWidget {
   const MyPage({super.key});
 
@@ -20,7 +22,7 @@ class MyPage extends StatelessWidget {
           style: TextStyle(
             fontSize: 18,
             color: Colors.black,
-            fontFamily: "CookieRun",
+            fontFamily: Fonts.cookieRun,
           ),
         ),
         centerTitle: false,

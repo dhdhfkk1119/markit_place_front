@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 
 import '../../../../../../_core/constants/custom_widget.dart';
 
@@ -66,7 +67,7 @@ class _DetailItemState extends State<DetailItem> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: Image.asset(
-                  "assets/default_profile.png",
+                  Images.defaultProfile,
                   width: 40,
                 ),
               ),

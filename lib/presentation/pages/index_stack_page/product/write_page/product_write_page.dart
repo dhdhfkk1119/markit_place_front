@@ -21,24 +21,25 @@ class _ProductWritePageState extends State<ProductWritePage> {
 
   @override
   Widget build(BuildContext context) {
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: CustomWidget.buildIcon(
-          onPressed: () => Navigator.pop(context),
-          const Icon(CupertinoIcons.back),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: CustomWidget.buildIcon(
+            onPressed: () => Navigator.pop(context),
+            const Icon(CupertinoIcons.back),
+          ),
+          title: CustomWidget.buildTitle("내 상품등록하기"),
         ),
-        title: CustomWidget.buildTitle("내 상품등록하기"),
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: ProductWriteBody(_handleStatus),
+        body: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: ProductWriteBody(_handleStatus),
+          ),
         ),
+        bottomNavigationBar: _buildSubmitButton(),
       ),
-      bottomNavigationBar: _buildSubmitButton(),
     );
   }
 
@@ -56,7 +57,8 @@ class _ProductWritePageState extends State<ProductWritePage> {
             ),
             padding: const EdgeInsets.symmetric(vertical: 12.0),
           ),
-          child: CustomWidget.buildTitle(_isLoading ? "작성 중..." : "작성완료", color: Colors.white, size: 20),
+          child: CustomWidget.buildTitle(_isLoading ? "작성 중..." : "작성완료",
+              color: Colors.white, size: 20),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:location/location.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 
 class NearPage extends StatefulWidget {
   const NearPage({super.key});
@@ -106,8 +107,7 @@ class _NearPageState extends State<NearPage> {
                 final marker = NMarker(
                   id: "my_location",
                   size: Size(50, 50),
-                  icon:
-                      NOverlayImage.fromAssetImage("assets/circle_marker.png"),
+                  icon: NOverlayImage.fromAssetImage(Images.marker),
                   position: _currentPosition!,
                   caption: const NOverlayCaption(text: "내 위치"),
                 );

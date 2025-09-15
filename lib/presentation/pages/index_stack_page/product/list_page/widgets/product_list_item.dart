@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/custom_popup.dart';
 
 import '../../detail_page/detail_page.dart';
@@ -46,7 +47,7 @@ class _ProductListItemState extends State<ProductListItem> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.asset(
-        "assets/product.jpg",
+        Images.product,
         width: 100,
         height: 100,
       ),
@@ -116,7 +117,7 @@ class _ProductListItemState extends State<ProductListItem> {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontFamily: "CookieRun",
+        fontFamily: Fonts.cookieRun,
         fontSize: size,
         color: color ?? Colors.black,
         fontWeight: font ?? FontWeight.w700,

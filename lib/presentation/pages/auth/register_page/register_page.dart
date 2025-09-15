@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/presentation/pages/auth/register_page/widgets/register_body.dart';
 
+import '../../../../_core/constants/assets.dart';
+
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
@@ -23,7 +25,8 @@ class RegisterPage extends StatelessWidget {
             // Navigator.pushReplacementNamed(context, '/social-login'); // 필요시 대체
           },
         ),
-        title: const Text('회원 가입', style: TextStyle(fontFamily: "CookieRun")),
+        title:
+            const Text('회원 가입', style: TextStyle(fontFamily: Fonts.cookieRun)),
         centerTitle: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),

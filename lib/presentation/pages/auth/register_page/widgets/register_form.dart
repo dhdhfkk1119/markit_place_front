@@ -8,6 +8,8 @@ import 'package:markit_place_front/domain/members/providers/member_auth_provider
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
 import 'package:markit_place_front/presentation/widgets/custom_button_medium.dart';
 
+import '../../../../../_core/constants/assets.dart';
+
 class RegisterForm extends ConsumerStatefulWidget {
   final List<int> agreedTermIds; // 생성자 파라미터로 약관 ID 목록을 받음
 
@@ -110,11 +112,11 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     Widget? suffixIcon,
   }) {
     const defaultLabelStyle =
-        TextStyle(fontFamily: "CookieRun", color: Colors.black87);
+        TextStyle(fontFamily: Fonts.cookieRun, color: Colors.black87);
     final defaultHelperStyle =
-        TextStyle(fontFamily: "CookieRun", color: Colors.grey.shade700);
+        TextStyle(fontFamily: Fonts.cookieRun, color: Colors.grey.shade700);
     const defaultErrorStyle = TextStyle(
-        fontFamily: "CookieRun",
+        fontFamily: Fonts.cookieRun,
         color: Colors.redAccent,
         fontWeight: FontWeight.bold);
 
@@ -163,7 +165,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
         const SnackBar(
           content: Text(
             '약관 동의 정보가 올바르지 않습니다. 다시 시도해주세요.',
-            style: TextStyle(fontFamily: "CookieRun"),
+            style: TextStyle(fontFamily: Fonts.cookieRun),
           ),
         ),
       );
@@ -186,9 +188,9 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
-    const cookieRunTextStyle = TextStyle(fontFamily: "CookieRun");
+    const cookieRunTextStyle = TextStyle(fontFamily: Fonts.cookieRun);
     const cookieRunBlackTextStyle =
-        TextStyle(fontFamily: "CookieRun", color: Colors.black87);
+        TextStyle(fontFamily: Fonts.cookieRun, color: Colors.black87);
 
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
       if (next.status == AuthStatus.error && next.errorMessage != null) {

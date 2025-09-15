@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
 import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
@@ -91,7 +92,7 @@ class SocialLoginForm extends StatelessWidget {
           children: [
             _buildSocialIcon(
               context,
-              iconAssetPath: "assets/social/google.svg",
+              iconAssetPath: Svgs.google,
               onPressed: () {
                 // TODO: 구글 로그인 로직 구현
                 print("구글 로그인 클릭");
@@ -101,7 +102,7 @@ class SocialLoginForm extends StatelessWidget {
             const SizedBox(width: large),
             _buildSocialIcon(
               context,
-              iconAssetPath: "assets/social/naver.svg",
+              iconAssetPath: Svgs.naver,
               onPressed: () {
                 // TODO: 네이버 로그인 로직 구현 (기능 유지)
                 print("네이버 로그인 클릭");
@@ -111,7 +112,7 @@ class SocialLoginForm extends StatelessWidget {
             const SizedBox(width: large),
             _buildSocialIcon(
               context,
-              iconAssetPath: "assets/social/kakao.svg",
+              iconAssetPath: Svgs.kakao,
               onPressed: () {
                 // TODO: 카카오 로그인 로직 구현
                 print("카카오 로그인 클릭");

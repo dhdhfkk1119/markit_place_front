@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'assets.dart';
+
 /// [CustomWidget]
 ///
 /// ## 목적
@@ -24,7 +26,7 @@ class CustomWidget {
       title,
       style: TextStyle(
         fontSize: size ?? 18,
-        fontFamily: "CookieRun",
+        fontFamily: Fonts.cookieRun,
         fontWeight: weight ?? FontWeight.w700,
         color: color ?? Colors.black,
         decoration: decoration ?? TextDecoration.none,

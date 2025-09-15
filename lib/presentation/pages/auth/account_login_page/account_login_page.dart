@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../_core/constants/assets.dart';
 import 'widgets/account_login_body.dart';
 
 // 일반 계정 로그인 페이지 정의 위젯
@@ -10,7 +11,7 @@ class AccountLoginPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         // AppBar 제목
-        title: const Text('로그인', style: TextStyle(fontFamily: "CookieRun")),
+        title: const Text('로그인', style: TextStyle(fontFamily: Fonts.cookieRun)),
         // AppBar 하단 구분선 (Divider 위젯으로 변경)
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),

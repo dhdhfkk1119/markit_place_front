@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_popup.dart';
 import 'community_detail_item.dart';
 import 'community_detail_item_image.dart';
@@ -37,8 +38,8 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
                     borderRadius: BorderRadius.circular(16),
                     child: const CommunityDetailItemImage(
                       imagePaths: [
-                        "assets/product.jpg",
-                        "assets/product2.jpg",
+                        Images.product,
+                        Images.product2,
                         "assets/product3.jpg",
                       ],
                     ),
@@ -205,7 +206,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
       title,
       style: TextStyle(
         fontSize: 18,
-        fontFamily: "CookieRun",
+        fontFamily: Fonts.cookieRun,
         fontWeight: weight ?? FontWeight.w700,
         color: color ?? Colors.black,
       ),

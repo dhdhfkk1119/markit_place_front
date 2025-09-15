@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 
+import '../../_core/constants/assets.dart';
+
 /// 핵심 기능이 들어있는 최종 제출버튼이다.
 // 가입, 로그인
 class CustomButtonLarge extends StatelessWidget {
@@ -29,7 +31,7 @@ class CustomButtonLarge extends StatelessWidget {
 
     final TextStyle submitButtonTextStyle =
         theme.textTheme.labelLarge!.copyWith(
-      fontFamily: "CookieRun",
+      fontFamily: Fonts.cookieRun,
       color: Colors.white, // 폰트 색상: 흰색
       fontSize: medium, // 폰트 크기: medium (16.0)
     );

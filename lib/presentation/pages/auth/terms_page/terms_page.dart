@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/presentation/pages/auth/terms_page/widgets/terms_body.dart';
 
+import '../../../../_core/constants/assets.dart';
+
 // 약관 동의 페이지 (경로, AppBar, 제목 담당)
 class TermsPage extends StatelessWidget {
   const TermsPage({super.key});
@@ -13,7 +15,8 @@ class TermsPage extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios_new), // 뒤로가기 아이콘
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('약관동의', style: TextStyle(fontFamily: "CookieRun")),
+        title:
+            const Text('약관동의', style: TextStyle(fontFamily: Fonts.cookieRun)),
         centerTitle: true,
         // AppBar 하단 구분선 추가
         bottom: PreferredSize(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../../_core/constants/assets.dart';
 import 'filter_item.dart';
 
 class ProductFilterList extends StatefulWidget {
@@ -52,7 +53,7 @@ class _ProductFiterListState extends State<ProductFilterList> {
               child: const Text(
                 "초기화",
                 style: TextStyle(
-                    fontFamily: "CookieRun",
+                    fontFamily: Fonts.cookieRun,
                     color: Colors.grey,
                     decoration: TextDecoration.underline),
               ),
@@ -129,7 +130,9 @@ class _ProductFiterListState extends State<ProductFilterList> {
     return Text(
       title,
       style: const TextStyle(
-          fontWeight: FontWeight.w700, fontSize: 16, fontFamily: "CookieRun"),
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          fontFamily: Fonts.cookieRun),
     );
   }
 }

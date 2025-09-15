@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/_core/constants/theme.dart'; // kAppSecondaryColor를 사용
+import 'package:markit_place_front/_core/constants/theme.dart';
+
+import '../../_core/constants/assets.dart'; // kAppSecondaryColor를 사용
 
 /// 보조 기능이 중간크기의 버튼이다.
 // 중복확인, 이메일인증
@@ -29,7 +31,7 @@ class CustomButtonMedium extends StatelessWidget {
         ),
         textStyle: const TextStyle(
           // 텍스트 스타일 직접 지정
-          fontFamily: "CookieRun",
+          fontFamily: Fonts.cookieRun,
           fontSize: medium,
           color: Colors.black, // 텍스트 색상을 검정색으로 변경
         ),

@@ -5,6 +5,7 @@ import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.da
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
 import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart'; // 새로운 위젯 임포트
+import '../../../../../_core/constants/assets.dart';
 import '../../../../widgets/snackbar_util.dart';
 
 class AccountLoginForm extends ConsumerStatefulWidget {
@@ -34,7 +35,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
               style: TextStyle(
                   fontSize: large,
                   fontWeight: FontWeight.bold,
-                  fontFamily: "CookieRun"),
+                  fontFamily: Fonts.cookieRun),
             ),
           ),
           const SizedBox(height: xLarge),
@@ -77,7 +78,8 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
                   });
                 },
               ),
-              const Text('자동 로그인', style: TextStyle(fontFamily: "CookieRun")),
+              const Text('자동 로그인',
+                  style: TextStyle(fontFamily: Fonts.cookieRun)),
             ],
           ),
           const SizedBox(height: medium),
@@ -121,7 +123,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
               const SizedBox(width: small), // 추가된 간격
               const Text('|',
                   style: TextStyle(
-                      color: Colors.black54, fontFamily: "CookieRun")),
+                      color: Colors.black54, fontFamily: Fonts.cookieRun)),
               const SizedBox(width: small), // 추가된 간격
               CustomLInkGrey(
                 text: '아이디 / 비밀번호 찾기',

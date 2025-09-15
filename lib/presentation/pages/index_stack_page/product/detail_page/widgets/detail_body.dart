@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../../_core/constants/assets.dart';
 import 'detail_item.dart';
 import 'detail_item_image.dart';
 
@@ -15,8 +16,8 @@ class DetailBody extends StatelessWidget {
         children: [
           DetailItemImage(
             imagePaths: [
-              "assets/product.jpg",
-              "assets/product2.jpg",
+              Images.product,
+              Images.product2,
               "assets/product3.jpg",
             ],
           ),

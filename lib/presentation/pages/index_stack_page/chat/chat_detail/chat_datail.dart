@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../_core/constants/assets.dart';
 import '../../../../widgets/snackbar_util.dart';
 
 class ChatDetail extends StatefulWidget {
@@ -123,7 +124,7 @@ class _ChatDetailState extends State<ChatDetail> {
                     ClipOval(
                       clipBehavior: Clip.hardEdge,
                       child: Image.asset(
-                        "assets/product.jpg",
+                        Images.product,
                         height: 70,
                         width: 70,
                         fit: BoxFit.cover,
@@ -196,7 +197,7 @@ class _ChatDetailState extends State<ChatDetail> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           CircleAvatar(
-            backgroundImage: const AssetImage("assets/logo.png"),
+            backgroundImage: const AssetImage(Images.logo),
             child: MaterialButton(
               onPressed: () {
                 SnackBarUtil.showSuccess(context, "테스트");
