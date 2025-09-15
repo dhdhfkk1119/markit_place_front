@@ -15,8 +15,6 @@ class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
   void setRoomId(int? roomId) {
     if (roomId != null && _roomId != roomId) {
       _roomId = roomId;
-      // 새로운 방 ID로 구독을 다시 시작할 수 있습니다.
-      // repository.connect(_roomId!, (json) { /* ... */ });
       print("[ChatNotifier] Room ID updated to $_roomId");
     }
   }
@@ -30,7 +28,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
       onMessageReceived: (json) {
         final model = ChatMessageModel.fromJson(json);
         final dto = ChatMessageDto.fromModel(model, myId);
-        state = [...state, dto];
+        state = [dto];
       },
     );
   }
