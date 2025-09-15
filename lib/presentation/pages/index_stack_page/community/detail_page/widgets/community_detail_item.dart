@@ -55,7 +55,7 @@ class _CommunityDetailItemState extends State<CommunityDetailItem> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: Image.asset(
-                  Images.defaultProfile,
+                  Assets.Images.defaultProfile,
                   width: 40,
                 ),
               ),

@@ -15,14 +15,14 @@ ThemeData theme() {
   // 기본 TextTheme을 가져와서 CookieRun 폰트 및 기본 색상 적용
   final TextTheme baseTextTheme = ThemeData.light().textTheme;
   final TextTheme cookieRunTextTheme = baseTextTheme.apply(
-    fontFamily: Fonts.cookieRun,
+    fontFamily: Assets.Fonts.cookieRun,
     bodyColor: Colors.black87, // 기본 본문 텍스트 색상을 Colors.black87로 설정
     displayColor: Colors.black87, // 기본 제목/디스플레이 텍스트 색상을 Colors.black87로 설정
   );
 
   return ThemeData(
     useMaterial3: true, // Material 3 사용
-    fontFamily: Fonts.cookieRun, // 최상위 fontFamily도 유지 (혹시 모를 경우 대비)
+    fontFamily: Assets.Fonts.cookieRun, // 최상위 fontFamily도 유지 (혹시 모를 경우 대비)
     // 색상 구성표
     colorScheme: ColorScheme.fromSeed(
       seedColor: kAppButtonSolidColor, // 기준 색상 (진보라)

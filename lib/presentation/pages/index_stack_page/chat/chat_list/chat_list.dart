@@ -144,7 +144,7 @@ class ChatList extends ConsumerWidget {
                       child: ClipOval(
                         clipBehavior: Clip.hardEdge,
                         child: Image.asset(
-                          Images.logo,
+                          Assets.Images.logo,
                           height: 10,
                           width: 10,
                           fit: BoxFit.cover,

@@ -42,11 +42,11 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
     // bool success = true; // API 호출 결과에 따라 설정
     // if (success) {
     //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('비밀번호 재설정 메일이 발송되었습니다.', style: TextStyle(fontFamily: Fonts.cookieRun))),
+    //     const SnackBar(content: Text('비밀번호 재설정 메일이 발송되었습니다.', style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
     //   );
     // } else {
     //   ScaffoldMessenger.of(context).showSnackBar(
-    //     SnackBar(content: Text('메일 발송에 실패했습니다.', style: TextStyle(color: Theme.of(context).colorScheme.error, fontFamily: Fonts.cookieRun))),
+    //     SnackBar(content: Text('메일 발송에 실패했습니다.', style: TextStyle(color: Theme.of(context).colorScheme.error, fontFamily: Assets.Fonts.cookieRun))),
     //   );
     // }
     // }
@@ -56,7 +56,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cookieRunPrimaryColorTextStyle = TextStyle(
-        fontFamily: Fonts.cookieRun, color: theme.colorScheme.primary);
+        fontFamily: Assets.Fonts.cookieRun, color: theme.colorScheme.primary);
 
     return Padding(
       padding: const EdgeInsets.all(medium),
@@ -67,7 +67,7 @@ class _ResetPasswordFormState extends State<ResetPasswordForm> {
           Text(
             '가입 시 사용한 아이디 또는 이메일을 입력해주세요.',
             style: theme.textTheme.titleMedium
-                ?.copyWith(fontFamily: Fonts.cookieRun),
+                ?.copyWith(fontFamily: Assets.Fonts.cookieRun),
           ),
           const SizedBox(height: medium),
           TextFormField(

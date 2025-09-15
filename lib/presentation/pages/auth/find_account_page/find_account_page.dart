@@ -14,8 +14,8 @@ class FindAccountPage extends StatelessWidget {
       length: 2, // 탭 개수: 아이디 찾기, 비밀번호 초기화
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('아이디/비밀번호 찾기',
-              style: TextStyle(fontFamily: Fonts.cookieRun)),
+          title: Text('아이디/비밀번호 찾기',
+              style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios),
             onPressed: () {

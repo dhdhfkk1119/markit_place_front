@@ -47,7 +47,7 @@ class _ProductListItemState extends State<ProductListItem> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.asset(
-        Images.product,
+        Assets.Images.product,
         width: 100,
         height: 100,
       ),
@@ -117,7 +117,7 @@ class _ProductListItemState extends State<ProductListItem> {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontFamily: Fonts.cookieRun,
+        fontFamily: Assets.Fonts.cookieRun,
         fontSize: size,
         color: color ?? Colors.black,
         fontWeight: font ?? FontWeight.w700,

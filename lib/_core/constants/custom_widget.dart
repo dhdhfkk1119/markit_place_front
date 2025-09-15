@@ -26,7 +26,7 @@ class CustomWidget {
       title,
       style: TextStyle(
         fontSize: size ?? 18,
-        fontFamily: Fonts.cookieRun,
+        fontFamily: Assets.Fonts.cookieRun,
         fontWeight: weight ?? FontWeight.w700,
         color: color ?? Colors.black,
         decoration: decoration ?? TextDecoration.none,

@@ -59,7 +59,7 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(_message,
-                  style: const TextStyle(fontFamily: Fonts.cookieRun))),
+                  style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
         );
       } else {
         _message = '이메일 발송에 실패했습니다. 다시 시도해주세요.';
@@ -68,7 +68,7 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
               content: Text(_message,
                   style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
-                      fontFamily: Fonts.cookieRun))),
+                      fontFamily: Assets.Fonts.cookieRun))),
         );
       }
       setState(() {
@@ -81,7 +81,7 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cookieRunPrimaryColorTextStyle = TextStyle(
-        fontFamily: Fonts.cookieRun, color: theme.colorScheme.primary);
+        fontFamily: Assets.Fonts.cookieRun, color: theme.colorScheme.primary);
 
     return Padding(
       padding: const EdgeInsets.all(medium),
@@ -94,7 +94,7 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
             Text(
               '등록된 이메일 주소를 입력해주세요.',
               style: theme.textTheme.titleMedium
-                  ?.copyWith(fontFamily: Fonts.cookieRun),
+                  ?.copyWith(fontFamily: Assets.Fonts.cookieRun),
             ),
             const SizedBox(height: medium),
             TextFormField(
@@ -124,7 +124,7 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
                 child: Text(
                   _message,
                   style: TextStyle(
-                      fontFamily: Fonts.cookieRun,
+                      fontFamily: Assets.Fonts.cookieRun,
                       color:
                           _message.contains("실패") || _message.contains("없습니다")
                               ? theme.colorScheme.error
@@ -137,7 +137,8 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
                 child: Text(
                   '확인된 아이디: $_maskedId',
                   style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.bold, fontFamily: Fonts.cookieRun),
+                      fontWeight: FontWeight.bold,
+                      fontFamily: Assets.Fonts.cookieRun),
                 ),
               ),
             const SizedBox(height: large),

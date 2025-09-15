@@ -34,7 +34,7 @@ class CustomElevatedButton extends StatelessWidget {
     // 2. 버튼 텍스트의 스타일 정의
     final TextStyle elevatedButtonTextStyle =
         (theme.textTheme.labelLarge ?? const TextStyle()).copyWith(
-      fontFamily: Fonts.cookieRun, // 폰트: 쿠키런
+      fontFamily: Assets.Fonts.cookieRun, // 폰트: 쿠키런
       color: Colors.deepPurpleAccent, // 글자색: 진보라 (foregroundColor와 일치)
       // fontSize는 theme.textTheme.labelLarge의 것을 따름
     );

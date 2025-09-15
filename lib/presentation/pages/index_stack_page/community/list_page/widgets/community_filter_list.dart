@@ -46,10 +46,10 @@ class _CommunityFilterListState extends State<CommunityFilterList> {
                   _priceFilters.updateAll((key, value) => false);
                 });
               },
-              child: const Text(
+              child: Text(
                 "초기화",
                 style: TextStyle(
-                    fontFamily: Fonts.cookieRun,
+                    fontFamily: Assets.Fonts.cookieRun,
                     color: Colors.grey,
                     decoration: TextDecoration.underline),
               ),
@@ -148,10 +148,10 @@ class _CommunityFilterListState extends State<CommunityFilterList> {
   getTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 16,
-          fontFamily: Fonts.cookieRun),
+          fontFamily: Assets.Fonts.cookieRun),
     );
   }
 }

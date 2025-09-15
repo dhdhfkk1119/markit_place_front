@@ -28,9 +28,9 @@ class CustomLInkGrey extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black54,
-            fontFamily: Fonts.cookieRun,
+            fontFamily: Assets.Fonts.cookieRun,
           ),
         ),
       ),

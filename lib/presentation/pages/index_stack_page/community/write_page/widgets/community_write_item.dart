@@ -97,7 +97,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                     text: "안내 ",
                     style: TextStyle(
                       fontSize: 14,
-                      fontFamily: Fonts.cookieRun,
+                      fontFamily: Assets.Fonts.cookieRun,
                       fontWeight: FontWeight.w700,
                       color: Colors.redAccent,
                     ),
@@ -107,7 +107,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                         "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
                     style: TextStyle(
                       fontSize: 14,
-                      fontFamily: Fonts.cookieRun,
+                      fontFamily: Assets.Fonts.cookieRun,
                       fontWeight: FontWeight.w200,
                       color: Colors.black,
                     ),

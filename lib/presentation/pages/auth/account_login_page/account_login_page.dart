@@ -11,7 +11,8 @@ class AccountLoginPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         // AppBar 제목
-        title: const Text('로그인', style: TextStyle(fontFamily: Fonts.cookieRun)),
+        title:
+            Text('로그인', style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
         // AppBar 하단 구분선 (Divider 위젯으로 변경)
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),

@@ -29,9 +29,9 @@ class CustomButtonMedium extends StatelessWidget {
           borderRadius:
               BorderRadius.circular(small), // 테두리 둥글기 (CustomSubmitButton과 동일)
         ),
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
           // 텍스트 스타일 직접 지정
-          fontFamily: Fonts.cookieRun,
+          fontFamily: Assets.Fonts.cookieRun,
           fontSize: medium,
           color: Colors.black, // 텍스트 색상을 검정색으로 변경
         ),

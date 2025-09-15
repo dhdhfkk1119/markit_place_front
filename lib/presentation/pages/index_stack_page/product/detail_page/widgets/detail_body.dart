@@ -12,12 +12,12 @@ class DetailBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       controller: scrollController,
-      child: const Column(
+      child: Column(
         children: [
           DetailItemImage(
             imagePaths: [
-              Images.product,
-              Images.product2,
+              Assets.Images.product,
+              Assets.Images.product2,
               "assets/product3.jpg",
             ],
           ),

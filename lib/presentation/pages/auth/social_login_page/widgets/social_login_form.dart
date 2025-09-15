@@ -92,7 +92,7 @@ class SocialLoginForm extends StatelessWidget {
           children: [
             _buildSocialIcon(
               context,
-              iconAssetPath: Svgs.google,
+              iconAssetPath: Assets.Svgs.google,
               onPressed: () {
                 // TODO: 구글 로그인 로직 구현
                 print("구글 로그인 클릭");
@@ -102,7 +102,7 @@ class SocialLoginForm extends StatelessWidget {
             const SizedBox(width: large),
             _buildSocialIcon(
               context,
-              iconAssetPath: Svgs.naver,
+              iconAssetPath: Assets.Svgs.naver,
               onPressed: () {
                 // TODO: 네이버 로그인 로직 구현 (기능 유지)
                 print("네이버 로그인 클릭");
@@ -112,7 +112,7 @@ class SocialLoginForm extends StatelessWidget {
             const SizedBox(width: large),
             _buildSocialIcon(
               context,
-              iconAssetPath: Svgs.kakao,
+              iconAssetPath: Assets.Svgs.kakao,
               onPressed: () {
                 // TODO: 카카오 로그인 로직 구현
                 print("카카오 로그인 클릭");

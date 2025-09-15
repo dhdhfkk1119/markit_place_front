@@ -67,7 +67,7 @@ class _DetailItemState extends State<DetailItem> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(50),
                 child: Image.asset(
-                  Images.defaultProfile,
+                  Assets.Images.defaultProfile,
                   width: 40,
                 ),
               ),

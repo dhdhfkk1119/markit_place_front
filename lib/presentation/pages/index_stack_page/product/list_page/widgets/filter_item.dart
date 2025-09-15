@@ -57,8 +57,8 @@ class _FilterItemWidgetState extends State<FilterItemWidget> {
         ),
         Text(
           widget.title,
-          style: const TextStyle(
-            fontFamily: Fonts.cookieRun,
+          style: TextStyle(
+            fontFamily: Assets.Fonts.cookieRun,
             fontWeight: FontWeight.w700,
           ),
         ),

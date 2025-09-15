@@ -124,7 +124,7 @@ class _ChatDetailState extends State<ChatDetail> {
                     ClipOval(
                       clipBehavior: Clip.hardEdge,
                       child: Image.asset(
-                        Images.product,
+                        Assets.Images.product,
                         height: 70,
                         width: 70,
                         fit: BoxFit.cover,
@@ -197,7 +197,7 @@ class _ChatDetailState extends State<ChatDetail> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           CircleAvatar(
-            backgroundImage: const AssetImage(Images.logo),
+            backgroundImage: AssetImage(Assets.Images.logo),
             child: MaterialButton(
               onPressed: () {
                 SnackBarUtil.showSuccess(context, "테스트");

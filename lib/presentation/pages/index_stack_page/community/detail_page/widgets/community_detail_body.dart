@@ -36,10 +36,10 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
                   const CommunityDetailItem(),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: const CommunityDetailItemImage(
+                    child: CommunityDetailItemImage(
                       imagePaths: [
-                        Images.product,
-                        Images.product2,
+                        Assets.Images.product,
+                        Assets.Images.product2,
                         "assets/product3.jpg",
                       ],
                     ),
@@ -206,7 +206,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
       title,
       style: TextStyle(
         fontSize: 18,
-        fontFamily: Fonts.cookieRun,
+        fontFamily: Assets.Fonts.cookieRun,
         fontWeight: weight ?? FontWeight.w700,
         color: color ?? Colors.black,
       ),

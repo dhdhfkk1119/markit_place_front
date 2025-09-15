@@ -56,15 +56,16 @@ class _TermsFormState extends ConsumerState<TermsForm> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(title, style: const TextStyle(fontFamily: Fonts.cookieRun)),
+        title:
+            Text(title, style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
         content: SingleChildScrollView(
             child: Text(content,
-                style: const TextStyle(fontFamily: Fonts.cookieRun))),
+                style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child:
-                const Text('닫기', style: TextStyle(fontFamily: Fonts.cookieRun)),
+            child: Text('닫기',
+                style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
           ),
         ],
       ),
@@ -88,9 +89,9 @@ class _TermsFormState extends ConsumerState<TermsForm> {
           arguments: agreedIds);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('필수 약관에 모두 동의해주세요.',
-              style: TextStyle(fontFamily: Fonts.cookieRun)),
+              style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
           duration: Duration(seconds: 2),
         ),
       );
@@ -120,9 +121,9 @@ class _TermsFormState extends ConsumerState<TermsForm> {
         }
 
         if (terms.isEmpty && !termsAsyncValue.isLoading) {
-          return const Center(
+          return Center(
               child: Text('표시할 약관이 없습니다.',
-                  style: TextStyle(fontFamily: Fonts.cookieRun)));
+                  style: TextStyle(fontFamily: Assets.Fonts.cookieRun)));
         }
         if (termsAsyncValue.isLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -138,8 +139,8 @@ class _TermsFormState extends ConsumerState<TermsForm> {
               child: CheckboxListTile(
                 title: Text(
                   '전체동의',
-                  style: theme.textTheme.labelLarge
-                      ?.copyWith(fontFamily: Fonts.cookieRun, fontSize: medium),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                      fontFamily: Assets.Fonts.cookieRun, fontSize: medium),
                 ),
                 value: _isAllAgreed,
                 onChanged: (value) => _onAllAgreedChanged(value, terms),
@@ -182,7 +183,7 @@ class _TermsFormState extends ConsumerState<TermsForm> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stackTrace) => Center(
           child: Text('약관을 불러올 수 없습니다: ${error.toString()}',
-              style: const TextStyle(fontFamily: Fonts.cookieRun))),
+              style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
     );
   }
 }
@@ -227,7 +228,7 @@ class _TermItemRow extends StatelessWidget {
                   '필수',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSecondaryContainer,
-                    fontFamily: Fonts.cookieRun,
+                    fontFamily: Assets.Fonts.cookieRun,
                   ),
                 ),
               ),
@@ -235,7 +236,7 @@ class _TermItemRow extends StatelessWidget {
               child: Text(
                 term.title,
                 style: theme.textTheme.bodyMedium
-                    ?.copyWith(fontFamily: Fonts.cookieRun),
+                    ?.copyWith(fontFamily: Assets.Fonts.cookieRun),
               ),
             ),
             const SizedBox(width: small),
@@ -251,7 +252,7 @@ class _TermItemRow extends StatelessWidget {
                 '보기',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
-                  fontFamily: Fonts.cookieRun,
+                  fontFamily: Assets.Fonts.cookieRun,
                 ),
               ),
             ),

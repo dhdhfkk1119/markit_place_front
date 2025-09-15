@@ -111,12 +111,12 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     String? helperText,
     Widget? suffixIcon,
   }) {
-    const defaultLabelStyle =
-        TextStyle(fontFamily: Fonts.cookieRun, color: Colors.black87);
-    final defaultHelperStyle =
-        TextStyle(fontFamily: Fonts.cookieRun, color: Colors.grey.shade700);
-    const defaultErrorStyle = TextStyle(
-        fontFamily: Fonts.cookieRun,
+    final defaultLabelStyle =
+        TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black87);
+    final defaultHelperStyle = TextStyle(
+        fontFamily: Assets.Fonts.cookieRun, color: Colors.grey.shade700);
+    final defaultErrorStyle = TextStyle(
+        fontFamily: Assets.Fonts.cookieRun,
         color: Colors.redAccent,
         fontWeight: FontWeight.bold);
 
@@ -162,10 +162,10 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     // 여기서는 widget.agreedTermIds가 비어있는지만 간단히 확인하거나, 특정 개수 이상인지 확인할 수 있음.
     if (widget.agreedTermIds.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
             '약관 동의 정보가 올바르지 않습니다. 다시 시도해주세요.',
-            style: TextStyle(fontFamily: Fonts.cookieRun),
+            style: TextStyle(fontFamily: Assets.Fonts.cookieRun),
           ),
         ),
       );
@@ -188,9 +188,9 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
-    const cookieRunTextStyle = TextStyle(fontFamily: Fonts.cookieRun);
-    const cookieRunBlackTextStyle =
-        TextStyle(fontFamily: Fonts.cookieRun, color: Colors.black87);
+    final cookieRunTextStyle = TextStyle(fontFamily: Assets.Fonts.cookieRun);
+    final cookieRunBlackTextStyle =
+        TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black87);
 
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
       if (next.status == AuthStatus.error && next.errorMessage != null) {

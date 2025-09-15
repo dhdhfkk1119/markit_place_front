@@ -31,7 +31,7 @@ class CustomButtonLarge extends StatelessWidget {
 
     final TextStyle submitButtonTextStyle =
         theme.textTheme.labelLarge!.copyWith(
-      fontFamily: Fonts.cookieRun,
+      fontFamily: Assets.Fonts.cookieRun,
       color: Colors.white, // 폰트 색상: 흰색
       fontSize: medium, // 폰트 크기: medium (16.0)
     );

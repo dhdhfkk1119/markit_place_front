@@ -16,7 +16,7 @@ class TermsPage extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title:
-            const Text('약관동의', style: TextStyle(fontFamily: Fonts.cookieRun)),
+            Text('약관동의', style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
         centerTitle: true,
         // AppBar 하단 구분선 추가
         bottom: PreferredSize(

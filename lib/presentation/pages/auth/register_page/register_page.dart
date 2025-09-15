@@ -26,7 +26,7 @@ class RegisterPage extends StatelessWidget {
           },
         ),
         title:
-            const Text('회원 가입', style: TextStyle(fontFamily: Fonts.cookieRun)),
+            Text('회원 가입', style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
         centerTitle: false,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),

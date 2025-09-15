@@ -39,7 +39,7 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 "커뮤니티",
                 style: TextStyle(
                   fontSize: 18,
-                  fontFamily: Fonts.cookieRun,
+                  fontFamily: Assets.Fonts.cookieRun,
                   fontWeight: FontWeight.w700,
                   color: iconColor,
                 ),

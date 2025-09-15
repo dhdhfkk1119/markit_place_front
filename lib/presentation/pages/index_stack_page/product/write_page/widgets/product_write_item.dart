@@ -104,7 +104,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem> {
                         transform: Matrix4.rotationZ(_rotateValue),
                         alignment: Alignment.center,
                         child: Image.asset(
-                          Images.geminiLogo,
+                          Assets.Images.geminiLogo,
                           height: 70,
                           width: 70,
                         )),

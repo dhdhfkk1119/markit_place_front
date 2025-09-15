@@ -27,8 +27,8 @@ class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           Text(currentTitle,
-              style: const TextStyle(
-                fontFamily: Fonts.cookieRun,
+              style: TextStyle(
+                fontFamily: Assets.Fonts.cookieRun,
                 fontWeight: FontWeight.w500,
               )),
           const SizedBox(width: 4),
@@ -110,8 +110,8 @@ class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Text(
           title,
-          style: const TextStyle(
-            fontFamily: Fonts.cookieRun,
+          style: TextStyle(
+            fontFamily: Assets.Fonts.cookieRun,
             fontWeight: FontWeight.w500,
           ),
         ),

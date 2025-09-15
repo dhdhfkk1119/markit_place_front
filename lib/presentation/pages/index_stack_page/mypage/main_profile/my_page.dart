@@ -17,12 +17,12 @@ class MyPage extends StatelessWidget {
             // 뒤로 가기 동작
           },
         ),
-        title: const Text(
+        title: Text(
           '나의 MP 마당',
           style: TextStyle(
             fontSize: 18,
             color: Colors.black,
-            fontFamily: Fonts.cookieRun,
+            fontFamily: Assets.Fonts.cookieRun,
           ),
         ),
         centerTitle: false,

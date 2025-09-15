@@ -107,7 +107,7 @@ class _NearPageState extends State<NearPage> {
                 final marker = NMarker(
                   id: "my_location",
                   size: Size(50, 50),
-                  icon: NOverlayImage.fromAssetImage(Images.marker),
+                  icon: NOverlayImage.fromAssetImage(Assets.Images.marker),
                   position: _currentPosition!,
                   caption: const NOverlayCaption(text: "내 위치"),
                 );

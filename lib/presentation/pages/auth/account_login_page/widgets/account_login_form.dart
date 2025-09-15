@@ -29,13 +29,13 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
       child: ListView(
         children: [
           const SizedBox(height: medium),
-          const Center(
+          Center(
             child: Text(
               'Markit Place',
               style: TextStyle(
                   fontSize: large,
                   fontWeight: FontWeight.bold,
-                  fontFamily: Fonts.cookieRun),
+                  fontFamily: Assets.Fonts.cookieRun),
             ),
           ),
           const SizedBox(height: xLarge),
@@ -78,8 +78,8 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
                   });
                 },
               ),
-              const Text('자동 로그인',
-                  style: TextStyle(fontFamily: Fonts.cookieRun)),
+              Text('자동 로그인',
+                  style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
             ],
           ),
           const SizedBox(height: medium),
@@ -121,9 +121,10 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
                 },
               ),
               const SizedBox(width: small), // 추가된 간격
-              const Text('|',
+              Text('|',
                   style: TextStyle(
-                      color: Colors.black54, fontFamily: Fonts.cookieRun)),
+                      color: Colors.black54,
+                      fontFamily: Assets.Fonts.cookieRun)),
               const SizedBox(width: small), // 추가된 간격
               CustomLInkGrey(
                 text: '아이디 / 비밀번호 찾기',
