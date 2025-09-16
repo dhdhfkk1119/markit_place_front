@@ -24,7 +24,8 @@ void setupInterceptors() {
         // 모든 요청에 저장된 토큰을 자동으로 추가
         final accessToken = await secureStorage.read(key: "accessToken");
         if (accessToken != null) {
-          options.headers["Authorization"] = accessToken;
+          options.headers["Authorization"] =
+              "Bearer $accessToken"; // "Bearer " 추가
         }
         return handler.next(options);
       },

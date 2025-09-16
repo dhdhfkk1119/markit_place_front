@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
 import 'package:markit_place_front/_core/dtos/error_dto.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart';
+import 'package:markit_place_front/_core/utils/my_http.dart';
 import 'package:markit_place_front/domain/members/models/member.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_request.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_response.dto.dart';
@@ -10,7 +11,7 @@ import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dar
 
 class MemberAuthRepository {
   final Dio _dio;
-  final String _baseUrl = "http://192.168.0.128:8080/api";
+  final String _baseUrl = baseUrl;
 
   MemberAuthRepository() : _dio = Dio() {
     _dio.options.baseUrl = _baseUrl;
