@@ -1,12 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/assets.dart';
+import 'package:markit_place_front/domain/community/community_dto/community_list_dto.dart';
+import 'package:markit_place_front/domain/community/community_model/community_list.dart';
 
 import '../../detail_page/community_detail_page.dart';
 
 class CommunityListItem extends StatefulWidget {
-  final bool _isFilterVisible;
-  const CommunityListItem(this._isFilterVisible, {super.key});
+  final CommunityListDTO list;
+  final bool isFilterVisible;
+  const CommunityListItem(this.list, this.isFilterVisible, {super.key});
 
   @override
   State<CommunityListItem> createState() => _CommunityListItemState();
@@ -30,7 +33,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
         height: 120,
         child: Row(
           children: [
-            Expanded(child: _buildProductInfo()),
+            Expanded(child: _buildCommunityInfo()),
             const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -38,7 +41,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
               children: [
                 Column(
                   children: [
-                    _buildProductImage(),
+                    _buildCommunityImage(),
                   ],
                 ),
                 Column(
@@ -54,8 +57,8 @@ class _CommunityListItemState extends State<CommunityListItem> {
     );
   }
 
-  // 상품에대한 대표 이미지를 만드는 함수
-  Widget _buildProductImage() {
+  // 게시글에 대한 대표 이미지를 만드는 함수
+  Widget _buildCommunityImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.asset(
@@ -67,8 +70,8 @@ class _CommunityListItemState extends State<CommunityListItem> {
     );
   }
 
-  // 상품에 대한 정보를 담음 함수(제목, 위치,가격)
-  Widget _buildProductInfo() {
+  // 게시글에 대한 정보를 담음 함수(제목, 위치,가격)
+  Widget _buildCommunityInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -79,23 +82,20 @@ class _CommunityListItemState extends State<CommunityListItem> {
             color: Colors.grey.shade200, // 회색 배경
             borderRadius: BorderRadius.circular(8), // 모서리 둥글게
           ),
-          child: const Text(
-            "운동",
+          child: Text(
+            "${widget.list.topic}",
             style: TextStyle(fontSize: 14, color: Colors.grey),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             softWrap: false,
           ),
         ),
-        _buildTitle("러닝 같이 하실분 구합니다 ", 16),
-        _buildTitle(
-            "러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다러닝 같이 하실분 구합니다",
-            12,
-            font: FontWeight.w200,
-            color: Colors.grey),
+        _buildTitle(widget.list.title, 16),
+        _buildTitle(widget.list.preview ?? "", 12,
+            font: FontWeight.w200, color: Colors.grey),
         const Spacer(),
         _buildTitle(
-          "등록위치 º 조회수 158",
+          "${widget.list.location}º 조회수 ${widget.list.viewCount}",
           12,
           font: FontWeight.w100,
           color: Colors.grey,
@@ -124,12 +124,14 @@ class _CommunityListItemState extends State<CommunityListItem> {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         _buildIcon(CupertinoIcons.heart),
-        _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
+        _buildTitle("${widget.list.likeCount}", 12,
+            font: FontWeight.w200, color: Colors.grey),
         const SizedBox(
           width: 8,
         ),
         _buildIcon(Icons.comment),
-        _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
+        _buildTitle("${widget.list.commentCount}", 12,
+            font: FontWeight.w200, color: Colors.grey),
       ],
     );
   }
