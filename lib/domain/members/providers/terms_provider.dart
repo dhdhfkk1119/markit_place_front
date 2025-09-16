@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart'; // error_utils.dart 임포트 (필요한 경우)
-import 'package:markit_place_front/domain/terms/models/term.dart';
-import 'package:markit_place_front/domain/terms/repositories/terms_repository.dart';
+import 'package:markit_place_front/domain/members/models/term.dart';
+import 'package:markit_place_front/domain/members/repositories/terms_repository.dart';
 
 final termsRepositoryProvider = Provider<TermsRepository>((ref) {
   return TermsRepository();

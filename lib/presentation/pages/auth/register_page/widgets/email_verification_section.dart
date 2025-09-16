@@ -38,10 +38,7 @@ class _EmailVerificationSectionState
   bool _isSendingVerificationEmail = false;
   bool _isConfirmingVerificationCode = false;
 
-  // --- _buildSimpleTextFormField 메소드 제거 ---
-
   Future<void> _handleSendVerificationEmail() async {
-    // ... (기존 코드 동일) ...
     final email = widget.emailController.text;
     final emailRegExp = RegExp(
         r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+$");
@@ -72,9 +69,31 @@ class _EmailVerificationSectionState
       );
     } catch (e) {
       if (!mounted) return;
+      String errorMessage = e.toString();
+
+      // "Exception: " 또는 유사한 접두사 제거
+      if (errorMessage.startsWith("Exception: ")) {
+        errorMessage = errorMessage.substring("Exception: ".length);
+      } else if (errorMessage.startsWith("DioException [unknown]: ")) {
+        // 만약 Repository가 DioException을 그대로 던진다면 여기서 추가 파싱이 필요할 수 있으나,
+        // 현재는 Repository가 메시지를 Exception에 담아 보내주고 있다고 가정합니다.
+      }
+      // "Error: " 접두사도 필요시 제거할 수 있습니다.
+      // else if (errorMessage.startsWith("Error: ")) {
+      //   errorMessage = errorMessage.substring("Error: ".length);
+      // }
+
+      // 서버가 준 메시지가 "이미 가입된 이메일입니다."인지 직접 확인
+      if (errorMessage == "이미 가입된 이메일입니다.") {
+        // 특정 메시지일 경우 그대로 사용
+      } else {
+        // 그 외의 경우, 일반적인 실패 메시지 형태로 가공
+        errorMessage = '인증번호 발송 실패: $errorMessage';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('인증번호 발송 실패: ${e.toString()}',
+            content: Text(errorMessage,
                 style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
       );
     } finally {
@@ -87,7 +106,6 @@ class _EmailVerificationSectionState
   }
 
   Future<void> _handleConfirmVerificationCode() async {
-    // ... (기존 코드 동일) ...
     final email = widget.emailController.text;
     final code = widget.verificationCodeController.text;
 
@@ -131,9 +149,21 @@ class _EmailVerificationSectionState
       }
     } catch (e) {
       if (!mounted) return;
+      String errorMessage = e.toString();
+      if (errorMessage.startsWith("Exception: ")) {
+        errorMessage = errorMessage.substring("Exception: ".length);
+      }
+      // 인증 실패 관련 특정 메시지 처리 (필요시)
+      // if (errorMessage == "인증번호가 일치하지 않습니다.") {
+      //   // 특정 메시지 처리
+      // } else {
+      //   errorMessage = '인증 실패: $errorMessage';
+      // }
+
+      // 현재는 모든 인증 실패를 일반적인 형태로 표시
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text('인증 실패: ${e.toString()}',
+            content: Text('인증 실패: $errorMessage',
                 style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
       );
     } finally {
@@ -160,7 +190,6 @@ class _EmailVerificationSectionState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              // --- AppTextFormField 사용으로 변경 ---
               child: AppTextFormField(
                 controller: widget.emailController,
                 focusNode: widget.emailFocusNode,
@@ -222,7 +251,6 @@ class _EmailVerificationSectionState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              // --- AppTextFormField 사용으로 변경 ---
               child: AppTextFormField(
                 controller: widget.verificationCodeController,
                 focusNode: widget.verificationCodeFocusNode,

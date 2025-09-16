@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_detail_notifier.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
-import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
+import 'package:markit_place_front/domain/providers/SessionNotifier.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/widgets/detail_bottom_sheet.dart';
 
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
