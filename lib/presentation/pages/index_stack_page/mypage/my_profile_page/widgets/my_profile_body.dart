@@ -9,20 +9,27 @@ class MyProfileBody extends StatefulWidget {
 }
 
 class _MyProfileBodyState extends State<MyProfileBody> {
-  static const Color primaryColor = Color(0xFF5E2B96);
-  static const Color profileAvatarColor = Color(0xFFFF9016);
-  static const Color accentColor = Color(0xFFE7D9F8);
-  static const Color lightGrey = Color(0xFFF0F0F0);
+  int _retransactionRate = 89;
+
+  // 따뜻한 봄 웜톤 팔레트
+  static const Color primaryColor = Color(0xFFF96666);
+  static const Color profileAvatarColor = Color(0xFFF5E6E6);
+  static const Color accentColor = Color(0xFFFFF7F7);
+  static const Color lightGrey = Color(0xFFFFFFFF);
   static const Color redHeartColor = Colors.red;
+  static const Color secondaryTextColor = Colors.grey;
+  static const Color dividerColor = Color(0xFFEDE0E0);
+  static const Color mainTextColor = Color(0xFF333333);
+
   static const double horizontalPadding = 20.0;
   static const double verticalSpacing = 24.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: lightGrey,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: lightGrey,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
@@ -118,25 +125,25 @@ class _MyProfileBodyState extends State<MyProfileBody> {
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: lightGrey,
+        color: accentColor,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomWidget.buildTitle(text, size: 14, color: Colors.black, weight: FontWeight.normal),
+          CustomWidget.buildTitle(text, size: 14, color: mainTextColor, weight: FontWeight.normal),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              CustomWidget.buildTitle("- $author", size: 12, color: Colors.grey),
+              CustomWidget.buildTitle("- $author", size: 12, color: secondaryTextColor),
             ],
           ),
         ],
       ),
     );
   }
-  
+
   // 프로필 섹션 위젯
   Widget _buildProfileSection() {
     return Row(
@@ -148,16 +155,16 @@ class _MyProfileBodyState extends State<MyProfileBody> {
             const CircleAvatar(
               radius: 40,
               backgroundColor: profileAvatarColor,
-              child: Text("🍔", style: TextStyle(fontSize: 40)),
+              child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
             Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(color: secondaryTextColor),
               ),
-              child: const Icon(Icons.refresh, color: Colors.grey, size: 16),
+              child: Icon(Icons.camera_alt, color: secondaryTextColor, size: 16),
             ),
           ],
         ),
@@ -167,7 +174,7 @@ class _MyProfileBodyState extends State<MyProfileBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomWidget.buildTitle("바보임당", size: 20, weight: FontWeight.w700),
-              CustomWidget.buildTitle("#zsswie5", size: 14, color: Colors.grey),
+              CustomWidget.buildTitle("#zsswie5", size: 14, color: secondaryTextColor),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -175,11 +182,11 @@ class _MyProfileBodyState extends State<MyProfileBody> {
                     child: OutlinedButton(
                       onPressed: () {},
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: lightGrey),
-                        backgroundColor: lightGrey,
+                        side: BorderSide(color: accentColor),
+                        backgroundColor: accentColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: CustomWidget.buildTitle("매너 칭찬하기", size: 12, color: Colors.black, weight: FontWeight.normal),
+                      child: CustomWidget.buildTitle("매너 칭찬하기", size: 12, color: mainTextColor, weight: FontWeight.normal),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -187,11 +194,11 @@ class _MyProfileBodyState extends State<MyProfileBody> {
                     child: OutlinedButton(
                       onPressed: () {},
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: accentColor),
+                        side: BorderSide(color: accentColor),
                         backgroundColor: accentColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: CustomWidget.buildTitle("모아보기", size: 12, color: primaryColor, weight: FontWeight.normal),
+                      child: CustomWidget.buildTitle("모아보기", size: 12, color: mainTextColor, weight: FontWeight.normal),
                     ),
                   ),
                 ],
@@ -210,10 +217,11 @@ class _MyProfileBodyState extends State<MyProfileBody> {
         Expanded(
           child: _buildRateBox(
             icon: Icons.favorite,
-            rate: "89%",
-            text: "재거래 희망률",
+            rate: "90%",
+            text: "평균 평점",
             subText: "9명 중 8명 만족",
             iconColor: redHeartColor,
+            textColor: primaryColor,
           ),
         ),
         const SizedBox(width: 16),
@@ -223,7 +231,8 @@ class _MyProfileBodyState extends State<MyProfileBody> {
             rate: "80%",
             text: "응답률",
             subText: "보통 30분 이내 응답",
-            iconColor: Colors.deepPurple,
+            iconColor: primaryColor,
+            textColor: primaryColor,
           ),
         ),
       ],
@@ -236,8 +245,8 @@ class _MyProfileBodyState extends State<MyProfileBody> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildMannerRow(icon: Icons.favorite, count: 8, text: "친절하고 매너가 좋아요.", iconColor: redHeartColor),
-        _buildMannerRow(icon: Icons.access_time_filled, count: 5, text: "시간 약속을 잘 지켜요."),
-        _buildMannerRow(icon: Icons.wechat_rounded, count: 5, text: "응답이 빨라요.", iconColor: Colors.black),
+        _buildMannerRow(icon: Icons.access_time_filled, count: 5, text: "시간 약속을 잘 지켜요.", iconColor: mainTextColor),
+        _buildMannerRow(icon: Icons.wechat_rounded, count: 5, text: "응답이 빨라요.", iconColor: mainTextColor),
       ],
     );
   }
@@ -249,11 +258,12 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     required String text,
     required String subText,
     required Color iconColor,
+    required Color textColor,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: accentColor.withOpacity(0.3),
+        color: accentColor,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -263,13 +273,13 @@ class _MyProfileBodyState extends State<MyProfileBody> {
             children: [
               Icon(icon, size: 16, color: iconColor),
               const SizedBox(width: 5),
-              CustomWidget.buildTitle(text, size: 14, color: primaryColor, weight: FontWeight.normal),
+              CustomWidget.buildTitle(text, size: 14, color: textColor, weight: FontWeight.normal),
             ],
           ),
           const SizedBox(height: 8),
-          CustomWidget.buildTitle(rate, size: 22, color: primaryColor, weight: FontWeight.w700),
+          CustomWidget.buildTitle(rate, size: 22, color: textColor, weight: FontWeight.w700),
           const SizedBox(height: 8),
-          CustomWidget.buildTitle(subText, size: 12, color: Colors.grey.shade600, weight: FontWeight.normal),
+          CustomWidget.buildTitle(subText, size: 12, color: secondaryTextColor, weight: FontWeight.normal),
         ],
       ),
     );
@@ -286,16 +296,16 @@ class _MyProfileBodyState extends State<MyProfileBody> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: lightGrey)),
+          border: Border(bottom: BorderSide(color: dividerColor)),
         ),
         child: Row(
           children: [
             CustomWidget.buildTitle(title, size: 16, weight: FontWeight.w700),
             const SizedBox(width: 8),
             if (subTitle != null)
-              CustomWidget.buildTitle(subTitle, size: 16, color: Colors.grey, weight: FontWeight.normal),
+              CustomWidget.buildTitle(subTitle, size: 16, color: secondaryTextColor, weight: FontWeight.normal),
             const Spacer(),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            Icon(Icons.arrow_forward_ios, size: 16, color: secondaryTextColor),
           ],
         ),
       ),
@@ -315,11 +325,11 @@ class _MyProfileBodyState extends State<MyProfileBody> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: lightGrey,
+            decoration: BoxDecoration(
+              color: accentColor,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: iconColor ?? Colors.black, size: 20),
+            child: Icon(icon, color: iconColor ?? primaryColor, size: 20),
           ),
           const SizedBox(width: 12),
           CustomWidget.buildTitle(count.toString(), size: 16, weight: FontWeight.w700),
@@ -327,10 +337,10 @@ class _MyProfileBodyState extends State<MyProfileBody> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: lightGrey,
+              color: accentColor,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: CustomWidget.buildTitle(text, size: 12, color: Colors.black, weight: FontWeight.normal),
+            child: CustomWidget.buildTitle(text, size: 12, color: mainTextColor, weight: FontWeight.normal),
           ),
         ],
       ),

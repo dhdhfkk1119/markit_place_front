@@ -12,12 +12,21 @@ class MyPageBody extends ConsumerStatefulWidget {
 }
 
 class _MyPageBodyState extends ConsumerState<MyPageBody> {
+  int _selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
+    // 새로운 색상 팔레트 (봄 웜톤)
+    const Color primaryColor = Color(0xFFF96666);
+    const Color profileAvatarColor = Color(0xFFF5E6E6);
+    const Color accentColor = Color(0xFFFFF7F7);
+    const Color lightGrey = Color(0xFFFFFFFF);
+    const Color secondaryTextColor = Color(0xFFB5A1A1);
+
     return SingleChildScrollView(
       primary: true,
       child: Container(
-        color: const Color(0xFFF0EBF9),
+        color: lightGrey,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
@@ -25,83 +34,89 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
             children: [
               const SizedBox(height: 20),
 
-              // Profile Section with "Profile View" Button
+              // 프로필 섹션 (중앙 배치)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const CircleAvatar(
-                          radius: 30,
-                          backgroundColor: Colors.white,
-                          child:
-                              Icon(Icons.person, size: 40, color: Colors.grey),
-                        ),
-                        const SizedBox(width: 15),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CustomWidget.buildTitle(
-                                "아자몽다",
-                                size: 18,
-                                weight: FontWeight.w200,
+                child: Center(
+                  child: Column(
+                    children: [
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: profileAvatarColor,
+                            child: const Icon(Icons.person, size: 60, color: Colors.white),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: accentColor,
+                                shape: BoxShape.circle,
                               ),
-                              const SizedBox(height: 5),
-                              CustomWidget.buildTitle(
-                                "전포동 #22",
-                                size: 14,
-                                color: Colors.grey,
-                                weight: FontWeight.w200,
-                              )
+                              child: Icon(
+                                Icons.camera_alt,
+                                color: secondaryTextColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      CustomWidget.buildTitle(
+                        "아자몽다",
+                        size: 18,
+                        weight: FontWeight.w200,
+                      ),
+                      const SizedBox(height: 5),
+                      CustomWidget.buildTitle(
+                        "전포동 #22",
+                        size: 14,
+                        color: secondaryTextColor,
+                        weight: FontWeight.w200,
+                      ),
+                      const SizedBox(height: 16),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MyProfileBody(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                spreadRadius: 1,
+                                blurRadius: 5,
+                                offset: const Offset(0, 3),
+                              ),
                             ],
                           ),
-                        ),
-                        const Icon(Icons.arrow_forward_ios,
-                            color: Colors.grey, size: 20)
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    // "프로필 보기
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MyProfileBody(),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              spreadRadius: 1,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
+                          child: Center(
+                            child: CustomWidget.buildTitle(
+                              "프로필 보기",
+                              size: 14,
+                              weight: FontWeight.w200,
                             ),
-                          ],
-                        ),
-                        child: Center(
-                          child: CustomWidget.buildTitle(
-                            "프로필 보기",
-                            size: 14,
-                            weight: FontWeight.w200,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
 
-              // "O-pay" banner
+              // "O-pay" 배너
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -121,8 +136,8 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const Icon(Icons.paid_outlined,
-                          size: 32, color: Color(0xFF5E2B96)),
+                      Icon(Icons.paid_outlined,
+                          size: 32, color: primaryColor),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,30 +161,30 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
 
               const Divider(height: 30),
 
-              // Icon menu section
+              // 아이콘 메뉴 섹션
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _buildIconButton(
                       icon: Icons.shopping_bag_outlined,
                       text: "판매 내역",
-                      color: const Color(0xFFE7D9F8),
-                      iconColor: Colors.white,
+                      color: accentColor,
+                      iconColor: primaryColor,
                     ),
                     _buildIconButton(
                       icon: Icons.shopping_cart_outlined,
                       text: "구매 내역",
-                      color: const Color(0xFFE7D9F8),
-                      iconColor: Colors.white,
+                      color: accentColor,
+                      iconColor: primaryColor,
                     ),
                     _buildIconButton(
                       icon: Icons.favorite_border,
                       text: "관심 목록",
-                      color: const Color(0xFFE7D9F8),
-                      iconColor: Colors.white,
+                      color: accentColor,
+                      iconColor: primaryColor,
                     ),
                   ],
                 ),
@@ -177,7 +192,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
 
               const Divider(height: 30),
 
-              // Local settings and other menu section
+              // 동네 설정 및 기타 메뉴 섹션
               _buildMenuTile(
                 icon: Icons.my_location_outlined,
                 text: "내 동네 설정",
