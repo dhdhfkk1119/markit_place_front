@@ -333,7 +333,6 @@ android/.kotlin/
 .env
 
 # 새로운 마크다운 문서 무시
-
 *.md
 
 # Windows Flutter generated files
