@@ -4,7 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
-/// 임시 로컬 서버 - http://192.168.0.128:8080/api
+/// 팀장 서버 주소 - http://192.168.0.128:8080/api
+/// 자기 서버 주소 - http://10.0.2.2:8080/api
 /// 임시 클라우드 서버 - https://port-0-market-place-server-m9sgwbay02179a7c.sel4.cloudtype.app/api
 const baseUrl =
     "https://port-0-market-place-server-m9sgwbay02179a7c.sel4.cloudtype.app/api";
