@@ -21,7 +21,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   _initNaverMap();
-  setupInterceptors();
+  setupInterceptors(AuthNotifier());
   runApp(const ProviderScope(child: MyApp()));
 }
 
