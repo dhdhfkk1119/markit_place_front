@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/main_profile/widgets/my_page_body.dart';
-
+import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/main_profile/widgets/my_profile_edit_page.dart';
 import '../../../../../_core/constants/assets.dart';
 
 class MyPage extends StatelessWidget {
@@ -28,7 +28,13 @@ class MyPage extends StatelessWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              // 톱니바퀴 버튼을 눌렀을 때 프로필 수정 페이지로 이동
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyProfileEditPage()),
+              );
+            },
             icon: const Icon(Icons.settings, color: Colors.grey),
           ),
         ],

@@ -1,24 +1,35 @@
+import 'dart:convert'; // Added for json.encode
 import 'package:dio/dio.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart'; // Added for Naver Login
 import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
 import 'package:markit_place_front/_core/dtos/error_dto.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart';
+import 'package:markit_place_front/_core/utils/my_http.dart'; // Imports global dio
 import 'package:markit_place_front/domain/members/models/member.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_request.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_response.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart';
-import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dart'; // 새 DTO 임포트
+import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dart';
+import 'package:markit_place_front/domain/members/dtos/access_token_response.dto.dart';
 
 class MemberAuthRepository {
-  final Dio _dio;
-  final String _baseUrl = "http://192.168.0.128:8080/api";
+  final Dio _dio = dio; // Use global dio instance
 
-  MemberAuthRepository() : _dio = Dio() {
-    _dio.options.baseUrl = _baseUrl;
-    _dio.interceptors
-        .add(LogInterceptor(requestBody: true, responseBody: true));
+  MemberAuthRepository() {
+    // _dio is already the configured global instance.
+    // BaseUrl is set in the global dio.
+    // The auth interceptor is set on the global dio in my_http.dart.
+
+    // LogInterceptor might be added multiple times if this constructor is called multiple times.
+    // Consider adding it once in my_http.dart or using a flag to ensure it's added only once.
+    // For now, assuming it's managed or this class is a singleton.
+    if (!_dio.interceptors
+        .any((interceptor) => interceptor is LogInterceptor)) {
+      _dio.interceptors
+          .add(LogInterceptor(requestBody: true, responseBody: true));
+    }
   }
 
-  // 아이디 중복 확인 메소드
   Future<bool> checkIdAvailability(String loginId) async {
     try {
       final dioResponse = await _dio.get(
@@ -32,10 +43,6 @@ class MemberAuthRepository {
       );
 
       if (apiResponse.success && apiResponse.response != null) {
-        // 서버 응답: apiResponse.response.available
-        //   - true: 아이디 사용 가능 (존재하지 않음)
-        //   - false: 아이디 사용 불가 (이미 존재함)
-        // 이 메소드는 서버가 반환하는 'available' 값을 그대로 반환합니다.
         return apiResponse.response!.available;
       } else if (!apiResponse.success && apiResponse.error != null) {
         throw Exception(
@@ -324,6 +331,165 @@ class MemberAuthRepository {
       final errorMessage = extractErrorMessage(e);
       print('[ConfirmEmailVerification Error - General] $errorMessage ($e)');
       throw Exception(errorMessage);
+    }
+  }
+
+  Future<String?> reissueToken() async {
+    // ... (existing reissueToken code)
+    try {
+      final dioResponse = await _dio.post('/members/reissue');
+
+      final apiResponse = ApiResponseDto<AccessTokenResponseDataDto>.fromJson(
+        dioResponse.data as Map<String, dynamic>,
+        fromJsonT: AccessTokenResponseDataDto.fromJson,
+      );
+
+      if (apiResponse.success && apiResponse.response != null) {
+        return apiResponse.response!.accessToken;
+      } else if (!apiResponse.success && apiResponse.error != null) {
+        throw Exception(apiResponse.error!.message ?? '토큰 재발급 중 알 수 없는 서버 오류');
+      } else {
+        throw Exception('토큰 재발급 중 알 수 없는 오류 (서버 응답 형식 확인 필요)');
+      }
+    } on DioException catch (e) {
+      String finalErrorMessage;
+      ErrorDto? parsedErrorDto;
+
+      if (e.response?.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        final responseData = e.response!.data as Map<String, dynamic>;
+        if (responseData.containsKey('error') &&
+            responseData['error'] != null &&
+            responseData['error'] is Map<String, dynamic>) {
+          try {
+            parsedErrorDto = ErrorDto.fromJson(
+                responseData['error'] as Map<String, dynamic>);
+          } catch (parseError) {
+            print(
+                '[ReissueToken Error - DioException] Failed to parse ErrorDto: $parseError');
+          }
+        }
+      }
+
+      if (parsedErrorDto?.message != null &&
+          parsedErrorDto!.message!.isNotEmpty) {
+        finalErrorMessage = parsedErrorDto.message!;
+      } else {
+        finalErrorMessage = extractErrorMessage(e);
+      }
+      print(
+          '[ReissueToken Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
+      throw Exception(finalErrorMessage);
+    } catch (e) {
+      final errorMessage = extractErrorMessage(e);
+      print('[ReissueToken Error - General] $errorMessage ($e)');
+      throw Exception(errorMessage);
+    }
+  }
+
+  // --- 네이버 소셜 로그인 기능 이전 ---
+  Future<Map<String, dynamic>?> signInWithNaver() async {
+    // void에서 Map<String, dynamic>?으로 변경 고려
+    try {
+      final NaverLoginResult result = await FlutterNaverLogin.logIn();
+      print(
+          "[NaverLogin] SDK Result: Status: ${result.status}, AccountID: ${result.account.id}");
+
+      if (result.status == NaverLoginStatus.loggedIn) {
+        // final NaverAccessToken res = await FlutterNaverLogin.currentAccessToken; // This token is for Naver API, not ours.
+        // final String naverAccessToken = res.accessToken;
+        // print("[NaverLogin] SDK AccessToken: ${naverAccessToken.substring(0, 10)}...");
+
+        return await _loginToServerWithNaverToken(result);
+      } else {
+        print(
+            "[NaverLogin] Naver login attempt was not successful. Status: ${result.status}, Message: ${result.errorMessage}");
+        if (result.errorMessage != null && result.errorMessage!.isNotEmpty) {
+          throw Exception("네이버 로그인 실패: ${result.errorMessage}");
+        }
+        return null;
+      }
+    } catch (e) {
+      print("[NaverLogin] signInWithNaver Error: $e");
+      throw Exception("네이버 로그인 중 오류 발생: ${extractErrorMessage(e)}");
+    }
+  }
+
+  Future<Map<String, dynamic>?> _loginToServerWithNaverToken(
+      NaverLoginResult naverResult) async {
+    final requestData = {
+      "provider": "NAVER",
+      "providerId": naverResult.account.id,
+      "email": naverResult.account.email,
+    };
+
+    try {
+      print(
+          "[NaverLogin] Attempting to login to our server with Naver data: ${json.encode(requestData)}");
+      final dioResponse = await _dio.post(
+        "/members/login/social",
+        data: requestData,
+      );
+
+      final String? token = dioResponse.headers.value('Authorization');
+      final apiResponse = ApiResponseDto<LoginResponseDataDto>.fromJson(
+        dioResponse.data as Map<String, dynamic>,
+        fromJsonT: LoginResponseDataDto.fromJson,
+      );
+
+      if (token != null &&
+          token.isNotEmpty &&
+          apiResponse.success &&
+          apiResponse.response != null) {
+        final sessionUser = apiResponse.response!.toSessionUser();
+        print(
+            "[NaverLogin] Our server login success! User: ${sessionUser.loginId}, Token: ${token.substring(0, 10)}...");
+        return {
+          'sessionUser': sessionUser,
+          'token': token.replaceFirst('Bearer ', ''),
+        };
+      } else if (!apiResponse.success && apiResponse.error != null) {
+        print(
+            "[NaverLogin] Our server login failed: ${apiResponse.error!.message}");
+        throw Exception(apiResponse.error!.message ?? '네이버 소셜 로그인 처리 중 서버 오류');
+      } else if (token == null || token.isEmpty) {
+        print(
+            "[NaverLogin] Our server login failed: Token missing in response");
+        throw Exception('네이버 소셜 로그인 응답에 토큰이 없습니다.');
+      } else {
+        print("[NaverLogin] Our server login failed: Unknown reason");
+        throw Exception('알 수 없는 이유로 네이버 소셜 로그인에 실패했습니다.');
+      }
+    } on DioException catch (e) {
+      String finalErrorMessage;
+      ErrorDto? parsedErrorDto;
+      if (e.response?.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        final responseData = e.response!.data as Map<String, dynamic>;
+        if (responseData.containsKey('error') &&
+            responseData['error'] != null &&
+            responseData['error'] is Map<String, dynamic>) {
+          try {
+            parsedErrorDto = ErrorDto.fromJson(
+                responseData['error'] as Map<String, dynamic>);
+          } catch (parseError) {
+            print(
+                '[NaverLogin DioException] Failed to parse ErrorDto: $parseError');
+          }
+        }
+      }
+      if (parsedErrorDto?.message != null &&
+          parsedErrorDto!.message!.isNotEmpty) {
+        finalErrorMessage = parsedErrorDto.message!;
+      } else {
+        finalErrorMessage = extractErrorMessage(e);
+      }
+      print(
+          '[NaverLogin DioException] Server login failed: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
+      throw Exception(finalErrorMessage);
+    } catch (e) {
+      print("[NaverLogin] _loginToServerWithNaverToken Error: $e");
+      throw Exception("네이버 정보로 서버 로그인 중 오류: ${extractErrorMessage(e)}");
     }
   }
 }
