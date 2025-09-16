@@ -6,13 +6,15 @@ import 'package:markit_place_front/domain/chat/chat_model/chat_room.dart';
 
 final _storage = FlutterSecureStorage();
 
+String baseUrl = "http://192.168.0.128:8080/api";
+
 class ChatRoomRepository {
   // 서버에 room 요청 (없으면 생성, 있으면 기존 roomId 반환)
   static Future<int> getOrCreateRoom(int receiverId) async {
     final token = await _storage.read(key: "accessToken");
 
     final response = await dio.post(
-      'http://192.168.0.128:8080/api/chat/send', // 메시지 전송용 엔드포인트
+      baseUrl + '/chat/send', // 메시지 전송용 엔드포인트
       options: Options(
         headers: {"Authorization": "Bearer $token"},
       ),
@@ -42,7 +44,7 @@ class ChatRoomRepository {
       print("Authorization 헤더: Bearer $token");
 
       final response = await dio.get(
-        'http://192.168.0.128:8080/api/chat/rooms',
+        baseUrl + '/chat/rooms',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),

@@ -5,6 +5,8 @@ import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 import 'chat_room_repository.dart';
 
+String baseUrl = "http://192.168.0.128:8080";
+
 class ChatRepository {
   final _storage = const FlutterSecureStorage();
   Completer<void>? _connectCompleter; // 연결 완료를 기다릴 수 있는 객체 추가
@@ -31,7 +33,7 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig(
-        url: 'http://192.168.0.128:8080/ws-stomp',
+        url: baseUrl + '/ws-stomp',
         useSockJS: true,
         onConnect: (StompFrame frame) {
           print("[ChatRepository] STOMP connected successfully!");
@@ -58,8 +60,8 @@ class ChatRepository {
           print("[ChatRepository] STOMP Protocol Error: ${error.body}");
           _connectCompleter!.completeError(error); // 연결 실패를 알립니다.
         },
-        webSocketConnectHeaders: {"Authorization": token},
-        stompConnectHeaders: {"Authorization": token},
+        webSocketConnectHeaders: {"Authorization": "Bearer $token"},
+        stompConnectHeaders: {"Authorization": "Bearer $token"},
       ),
     );
     _client!.activate();
