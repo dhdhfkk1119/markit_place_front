@@ -56,7 +56,7 @@ class AuthNotifier extends Notifier<AuthState> {
   static const _userLoginIdKey = 'user_login_id';
   static const _userNameKey = 'user_name';
   static const _userEmailKey = 'user_email';
-  static const _userRoleKey = 'user_role';
+  // static const _userRoleKey = 'user_role'; // Role 관련 키 주석 처리
 
   @override
   AuthState build() {
@@ -78,16 +78,17 @@ class AuthNotifier extends Notifier<AuthState> {
       final memberIdStr = await _secureStorage.read(key: _userMemberIdKey);
       final loginId = await _secureStorage.read(key: _userLoginIdKey);
       final name = await _secureStorage.read(key: _userNameKey);
-      final role = await _secureStorage.read(key: _userRoleKey);
+      // final role = await _secureStorage.read(key: _userRoleKey); // Role 읽기 주석 처리
 
-      if (memberIdStr != null && loginId != null && role != null) {
+      // if (memberIdStr != null && loginId != null && role != null) { // role 조건 제거
+      if (memberIdStr != null && loginId != null) {
         try {
           final memberId = int.parse(memberIdStr);
           final sessionUser = SessionUser(
             memberId: memberId,
             loginId: loginId,
             name: name,
-            role: role,
+            // role: role, // SessionUser 생성 시 role 전달 주석 처리
           );
           state = state.copyWith(
               status: AuthStatus.authenticated,
@@ -137,7 +138,6 @@ class AuthNotifier extends Notifier<AuthState> {
         clearError: true,
         isEmailVerifiedForRegistration: false);
     try {
-      // UserRepository를 거치지 않고 MemberAuthRepository를 직접 사용
       final loginResult = await _memberAuthRepository.login(loginId, password);
 
       final SessionUser? sessionUser =
@@ -154,13 +154,13 @@ class AuthNotifier extends Notifier<AuthState> {
           await _secureStorage.write(
               key: _userNameKey, value: sessionUser.name!);
         }
-        await _secureStorage.write(key: _userRoleKey, value: sessionUser.role);
+        // await _secureStorage.write(key: _userRoleKey, value: sessionUser.role); // Role 저장 주석 처리
 
         state = state.copyWith(
             status: AuthStatus.authenticated,
             user: sessionUser,
             isEmailVerifiedForRegistration: false);
-        print("로그인 성공 (AuthNotifier -> MemberAuthRepository 직접 호출)"); // 디버깅 로그
+        print("로그인 성공 (AuthNotifier -> MemberAuthRepository 직접 호출)");
       } else {
         String errorMessage = "로그인 처리 중 알 수 없는 문제가 발생했습니다 (데이터 누락).";
         if (token == null || token.isEmpty) {
@@ -168,13 +168,13 @@ class AuthNotifier extends Notifier<AuthState> {
         } else if (sessionUser == null) {
           errorMessage = "로그인 응답에서 사용자 정보를 추출하지 못했습니다.";
         }
-        throw Exception(errorMessage); // 에러를 발생시켜 아래 catch 블록에서 처리
+        throw Exception(errorMessage);
       }
     } catch (e) {
       final errorMessage = extractErrorMessage(e);
       state =
           state.copyWith(status: AuthStatus.error, errorMessage: errorMessage);
-      print("로그인 실패 (AuthNotifier): $errorMessage"); // 디버깅 로그
+      print("로그인 실패 (AuthNotifier): $errorMessage");
     }
   }
 
@@ -185,7 +185,7 @@ class AuthNotifier extends Notifier<AuthState> {
     await _secureStorage.delete(key: _userLoginIdKey);
     await _secureStorage.delete(key: _userNameKey);
     await _secureStorage.delete(key: _userEmailKey);
-    await _secureStorage.delete(key: _userRoleKey);
+    // await _secureStorage.delete(key: _userRoleKey); // Role 삭제 주석 처리
     state = state.copyWith(
         status: AuthStatus.unauthenticated,
         clearUser: true,
@@ -229,18 +229,13 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isEmailVerifiedForRegistration: false);
   }
 
-  // 아이디 중복 확인 메소드
   Future<bool> checkIdAvailability(String loginId) async {
     try {
-      // _memberAuthRepository.checkIdAvailability는 서버 응답의 {"available": bool} 값을 반환.
-      // 서버 응답 true: 아이디 사용 가능 (존재하지 않음)
-      // 서버 응답 false: 아이디 사용 불가 (이미 존재함)
-      // 이 값을 그대로 UI로 전달합니다.
       final bool isAvailable =
           await _memberAuthRepository.checkIdAvailability(loginId);
       return isAvailable;
     } catch (e) {
-      rethrow; // 에러는 호출 측(UI)에서 처리하도록 다시 던짐
+      rethrow;
     }
   }
 }
