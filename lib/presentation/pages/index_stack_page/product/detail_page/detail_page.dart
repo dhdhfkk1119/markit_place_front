@@ -1,18 +1,22 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/domain/product/providers/product_detail_notifier.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_body.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_app_bar.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_bottom_sheet.dart';
 import '../../../../../_core/constants/custom_popup.dart';
 
-class DetailPage extends StatefulWidget {
-  const DetailPage({super.key});
+class DetailPage extends ConsumerStatefulWidget {
+  int productId;
+
+  DetailPage({required this.productId, super.key});
 
   @override
-  State<DetailPage> createState() => _DetailPageState();
+  ConsumerState<DetailPage> createState() => _DetailPageState();
 }
 
-class _DetailPageState extends State<DetailPage> {
+class _DetailPageState extends ConsumerState<DetailPage> {
   final ScrollController _scrollController = ScrollController();
   Color _appBarColor = Colors.transparent;
   Color _iconColor = Colors.white;
@@ -42,6 +46,9 @@ class _DetailPageState extends State<DetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final productState = ref.watch(productDetailProvider(widget.productId));
+    final sellerId = productState.productDetail?.sellerId ?? 0;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: DetailAppBar(
@@ -59,9 +66,10 @@ class _DetailPageState extends State<DetailPage> {
           );
         },
       ),
-      body: DetailBody(scrollController: _scrollController),
+      body: DetailBody(
+          scrollController: _scrollController, productId: widget.productId),
       bottomSheet: DetailBottomSheet(
-        receiverId: 1,
+        receiverId: sellerId,
       ),
     );
   }

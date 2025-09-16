@@ -6,8 +6,8 @@ import 'package:markit_place_front/_core/utils/my_http.dart';
 const String baseUrl = "http://192.168.0.128:8080";
 const FlutterSecureStorage _storage = FlutterSecureStorage();
 
-class ProductListRepository {
-  Future<Map<String, dynamic>> productList() async {
+class ProductDetailRepository {
+  Future<Map<String, dynamic>> productDetail({required int itemId}) async {
     final token = await _storage.read(key: "accessToken");
     if (token == null) {
       throw Exception('토큰 정보가 존재하지 않습니다');
@@ -15,13 +15,13 @@ class ProductListRepository {
 
     try {
       final response = await dio.get(
-        'http://192.168.0.128:8080/api/items',
+        baseUrl + '/api/items/${itemId}',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
       );
-      print('아이템 상품 정보 : ${response.statusCode}');
-      print('아이템 상품 리스폰스 데이터: ${response.data}'); // Log the raw response data
+      print('[상세]아이템 상품 상세 정보 : ${response.statusCode}');
+      print('[상세]아이템 상품 상세 데이터: ${response.data}'); // Log the raw response data
 
       if (response.statusCode == 200) {
         return response.data;

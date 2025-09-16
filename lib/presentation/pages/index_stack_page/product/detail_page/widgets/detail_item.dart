@@ -1,96 +1,111 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/assets.dart';
-
+import 'package:markit_place_front/domain/product/dtos/product_detail_dto.dart';
+import 'package:markit_place_front/domain/product/providers/product_detail_notifier.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_item_image.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
-class DetailItem extends StatefulWidget {
-  const DetailItem({super.key});
+class DetailItem extends ConsumerStatefulWidget {
+  final int productId;
+  const DetailItem({required this.productId, super.key});
 
   @override
-  State<DetailItem> createState() => _DetailItemState();
+  ConsumerState<DetailItem> createState() => _DetailItemState();
 }
 
-class _DetailItemState extends State<DetailItem> {
+class _DetailItemState extends ConsumerState<DetailItem> {
   @override
-  Widget build(BuildContext) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(productDetailProvider(widget.productId).notifier)
+          .getProductDetailInfo();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notifier = ref.watch(productDetailProvider(widget.productId));
+
+    if (notifier.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (notifier.errorMessage != null) {
+      return Center(child: Text('오류 발생: ${notifier.errorMessage}'));
+    }
+
+    final product = notifier.productDetail!;
+
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildProfile(),
-          _buildDivider(),
-          CustomWidget.buildTitle(
-            "상품 상세 정보",
-            size: 20,
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildProfile(product),
+                _buildDivider(),
+                CustomWidget.buildTitle(
+                  "${product.productList.title}",
+                  size: 20,
+                ),
+                CustomWidget.buildTitle(
+                  "${product.productList.price}",
+                  size: 20,
+                ),
+                CustomWidget.buildTitle(
+                  "${product.productList.itemCategoryName}",
+                  size: 16,
+                  color: Colors.grey,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "${product.productList.content}",
+                  style: const TextStyle(fontSize: 16),
+                ),
+                const SizedBox(height: 200),
+              ],
+            ),
           ),
-          CustomWidget.buildTitle(
-            "50,000원",
-            size: 20,
-          ),
-          CustomWidget.buildTitle(
-            "카테고리",
-            size: 16,
-            color: Colors.grey,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "이 상품은 아주 좋은 상품입니다. 상세한 내용은 아래와 같습니다.",
-            style: TextStyle(fontSize: 16),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. 이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-            "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-            "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다.",
-          ),
-          const SizedBox(height: 200),
-          const Text("스크롤 끝"),
         ],
       ),
     );
   }
 
-  Widget _buildProfile() {
+  Widget _buildProfile(ProductDetailDto dto) {
     return InkWell(
       child: Row(
-        // 자식 위젯들을 양 끝으로 정렬
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 1. 프로필 이미지와 사용자 정보를 하나의 Row로 묶습니다.
           Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: Image.asset(
-                  Assets.Images.defaultProfile,
-                  width: 40,
-                ),
-              ),
+              // 프로필 이미지를 위한 전용 함수 호출
+              _buildProfileImage(dto.sellerProfileUrl),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomWidget.buildTitle("사용자 이름",
+                    CustomWidget.buildTitle("${dto.sellerName}",
                         size: 16, weight: FontWeight.w500),
-                    CustomWidget.buildTitle("연제구 연산제 8동",
+                    CustomWidget.buildTitle("${dto.sellerAddress}",
                         size: 12, color: Colors.grey, weight: FontWeight.w200),
                   ],
                 ),
               ),
             ],
           ),
-
-          // 2. 점수 Column을 오른쪽 끝으로 보냅니다.
           Column(
-            crossAxisAlignment: CrossAxisAlignment.end, // Column 내부 텍스트를 오른쪽 정렬
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              CustomWidget.buildTitle("4.5", size: 16, weight: FontWeight.w500),
+              CustomWidget.buildTitle("${dto.retransactionRate} 점",
+                  size: 16, weight: FontWeight.w500),
               InkWell(
                 onTap: () {
                   showModalBottomSheet(
@@ -121,15 +136,15 @@ class _DetailItemState extends State<DetailItem> {
     return const Padding(
       padding: EdgeInsets.only(top: 16.0, bottom: 16.0),
       child: Divider(
-        height: 1, // 선의 높이
-        thickness: 1, // 선의 두께
-        color: Colors.grey, // 선의 색상
+        height: 1,
+        thickness: 1,
+        color: Colors.grey,
       ),
     );
   }
 
-  // 바텀 팝업에 대한 내용을 나태내는 함수
   Widget _buildBottomPopUp(BuildContext context) {
+    // ... 기존 코드와 동일
     return SizedBox(
       width: double.infinity,
       child: Padding(
@@ -169,6 +184,45 @@ class _DetailItemState extends State<DetailItem> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // 판매자 프로필 이미지를 처리하는 함수 (ClipRRect를 둥글게)
+  Widget _buildProfileImage(String? imageUrl) {
+    if (imageUrl != null && imageUrl.startsWith('url(data:image/png;base64,')) {
+      try {
+        final base64String =
+            imageUrl.substring('url(data:image/png;base64,'.length);
+        final imageBytes = base64Decode(base64String);
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(50), // 프로필 이미지는 둥글게
+          child: Image.memory(
+            imageBytes,
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+          ),
+        );
+      } catch (e) {
+        print('Base64 프로필 이미지 디코딩 실패: $e');
+        return _buildDefaultProfileImage();
+      }
+    } else {
+      return _buildDefaultProfileImage();
+    }
+  }
+
+  // 기본 프로필 이미지를 반환하는 헬퍼 함수
+  Widget _buildDefaultProfileImage() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(50),
+      child: Image.asset(
+        Assets.Images.defaultProfile,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
       ),
     );
   }

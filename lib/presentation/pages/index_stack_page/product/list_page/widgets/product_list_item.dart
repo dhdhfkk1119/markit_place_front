@@ -1,29 +1,27 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/custom_popup.dart';
 
+import '../../../../../../domain/product/dtos/product_list_dtos.dart';
 import '../../detail_page/detail_page.dart';
 
-class ProductListItem extends StatefulWidget {
+class ProductListItem extends ConsumerWidget {
+  final ProductListDto product;
   final bool _isFilterVisible;
-  const ProductListItem(this._isFilterVisible, {super.key});
+  ProductListItem(this.product, this._isFilterVisible, {super.key});
 
   @override
-  State<ProductListItem> createState() => _ProductListItemState();
-}
-
-class _ProductListItemState extends State<ProductListItem> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
           // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
-            builder: (context) =>
-                const DetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
+            builder: (context) => DetailPage(
+                productId: product.id), // DetailPage()는 상세 페이지 위젯입니다.
           ),
         );
       },
@@ -31,11 +29,11 @@ class _ProductListItemState extends State<ProductListItem> {
         height: 100,
         child: Row(
           children: [
-            _buildProductImage(),
+            _buildProductImage(product.thumbnail),
             const SizedBox(width: 16),
-            Expanded(child: _buildProductInfo()),
+            Expanded(child: _buildProductInfo(product)),
             const SizedBox(width: 8),
-            _buildConditionalActions(),
+            _buildConditionalActions(context),
           ],
         ),
       ),
@@ -43,7 +41,7 @@ class _ProductListItemState extends State<ProductListItem> {
   }
 
   // 상품에대한 대표 이미지를 만드는 함수
-  Widget _buildProductImage() {
+  Widget _buildProductImage(String? thumbnailUrl) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.asset(
@@ -55,8 +53,8 @@ class _ProductListItemState extends State<ProductListItem> {
   }
 
   // 조건부에 따라 오른쪽 (list-button,bottom Icon) 위치 조정
-  Widget _buildConditionalActions() {
-    if (widget._isFilterVisible) {
+  Widget _buildConditionalActions(BuildContext context) {
+    if (_isFilterVisible) {
       return const SizedBox.shrink();
     } else {
       return Column(
@@ -93,19 +91,19 @@ class _ProductListItemState extends State<ProductListItem> {
   }
 
   // 상품에 대한 정보를 담음 함수(제목, 위치,가격)
-  Widget _buildProductInfo() {
+  Widget _buildProductInfo(ProductListDto product) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildTitle("그래픽 카드 판매 합니다", 16),
-        const Text(
-          "부전제2동 / 디지털",
+        _buildTitle(product.title, 16),
+        Text(
+          "${product.tradeLocation} / ${product.itemCategoryName}",
           style: TextStyle(fontSize: 14, color: Colors.grey),
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
           softWrap: false,
         ),
-        _buildTitle("가격 : 1,000,000원", 14, font: FontWeight.w200),
+        _buildTitle("가격 : ${product.price}원", 14, font: FontWeight.w200),
       ],
     );
   }
