@@ -2,19 +2,25 @@ import 'package:dio/dio.dart';
 import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
 import 'package:markit_place_front/_core/dtos/error_dto.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
+import 'package:markit_place_front/_core/utils/my_http.dart'; // Imports global dio
 import 'package:markit_place_front/domain/members/models/member.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_request.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/member_register_response.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart';
-import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dart'; // 새 DTO 임포트
+import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dart';
+// Import for the new DTO
+import 'package:markit_place_front/domain/members/dtos/access_token_response.dto.dart';
 
 class MemberAuthRepository {
-  final Dio _dio;
-  final String _baseUrl = baseUrl;
+  final Dio _dio = dio; // Use global dio instance
 
-  MemberAuthRepository() : _dio = Dio() {
-    _dio.options.baseUrl = _baseUrl;
+  MemberAuthRepository() {
+    // _dio is already the configured global instance.
+    // BaseUrl is set in the global dio.
+    // The auth interceptor is set on the global dio in my_http.dart.
+
+    // Add LogInterceptor to the (now global) _dio instance.
+    // This assumes MemberAuthRepository is effectively a singleton.
     _dio.interceptors
         .add(LogInterceptor(requestBody: true, responseBody: true));
   }
@@ -33,10 +39,6 @@ class MemberAuthRepository {
       );
 
       if (apiResponse.success && apiResponse.response != null) {
-        // 서버 응답: apiResponse.response.available
-        //   - true: 아이디 사용 가능 (존재하지 않음)
-        //   - false: 아이디 사용 불가 (이미 존재함)
-        // 이 메소드는 서버가 반환하는 'available' 값을 그대로 반환합니다.
         return apiResponse.response!.available;
       } else if (!apiResponse.success && apiResponse.error != null) {
         throw Exception(
@@ -324,6 +326,59 @@ class MemberAuthRepository {
     } catch (e) {
       final errorMessage = extractErrorMessage(e);
       print('[ConfirmEmailVerification Error - General] $errorMessage ($e)');
+      throw Exception(errorMessage);
+    }
+  }
+
+  // New method for token re-issuance
+  Future<String?> reissueToken() async {
+    try {
+      final dioResponse = await _dio.post('/members/reissue');
+
+      final apiResponse = ApiResponseDto<AccessTokenResponseDataDto>.fromJson(
+        dioResponse.data as Map<String, dynamic>,
+        fromJsonT: AccessTokenResponseDataDto.fromJson,
+      );
+
+      if (apiResponse.success && apiResponse.response != null) {
+        return apiResponse.response!.accessToken;
+      } else if (!apiResponse.success && apiResponse.error != null) {
+        throw Exception(apiResponse.error!.message ?? '토큰 재발급 중 알 수 없는 서버 오류');
+      } else {
+        throw Exception('토큰 재발급 중 알 수 없는 오류 (서버 응답 형식 확인 필요)');
+      }
+    } on DioException catch (e) {
+      String finalErrorMessage;
+      ErrorDto? parsedErrorDto;
+
+      if (e.response?.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        final responseData = e.response!.data as Map<String, dynamic>;
+        if (responseData.containsKey('error') &&
+            responseData['error'] != null &&
+            responseData['error'] is Map<String, dynamic>) {
+          try {
+            parsedErrorDto = ErrorDto.fromJson(
+                responseData['error'] as Map<String, dynamic>);
+          } catch (parseError) {
+            print(
+                '[ReissueToken Error - DioException] Failed to parse ErrorDto: $parseError');
+          }
+        }
+      }
+
+      if (parsedErrorDto?.message != null &&
+          parsedErrorDto!.message!.isNotEmpty) {
+        finalErrorMessage = parsedErrorDto.message!;
+      } else {
+        finalErrorMessage = extractErrorMessage(e);
+      }
+      print(
+          '[ReissueToken Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
+      throw Exception(finalErrorMessage);
+    } catch (e) {
+      final errorMessage = extractErrorMessage(e);
+      print('[ReissueToken Error - General] $errorMessage ($e)');
       throw Exception(errorMessage);
     }
   }

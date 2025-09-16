@@ -238,6 +238,25 @@ class AuthNotifier extends Notifier<AuthState> {
       rethrow;
     }
   }
+
+  Future<bool> refreshAccessToken() async {
+    try {
+      final String? newAccessToken = await _memberAuthRepository.reissueToken();
+      if (newAccessToken != null && newAccessToken.isNotEmpty) {
+        await _secureStorage.write(key: _tokenKey, value: newAccessToken);
+        print("Access token refreshed successfully.");
+        return true;
+      } else {
+        print("Failed to refresh access token: No new token received.");
+        await logout();
+        return false;
+      }
+    } catch (e) {
+      print("Failed to refresh access token: ${extractErrorMessage(e)}");
+      await logout();
+      return false;
+    }
+  }
 }
 
 final memberAuthRepositoryProvider = Provider<MemberAuthRepository>((ref) {

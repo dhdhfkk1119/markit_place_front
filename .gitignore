@@ -332,6 +332,10 @@ android/.kotlin/
 # 환경변수 무시
 .env
 
+# 새로운 마크다운 문서 무시
+
+*.md
+
 # Windows Flutter generated files
 windows/flutter/generated_plugin_registrant.cc
 windows/flutter/generated_plugin_registrant.h
