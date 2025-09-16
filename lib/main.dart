@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: const SplashPage(),
+      home: const SocialLoginPage(),
       routes: {
         "/main": (context) => const MainScreen(),
         "/register": (context) => const RegisterPage(),
@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
         "/social-login": (context) => const SocialLoginPage(),
         "/account-login": (context) => const AccountLoginPage(),
         "/find-account": (context) => const FindAccountPage(),
-        "product/list": (context) => const ProductListPage(),
+        "/product/list": (context) => const ProductListPage(),
       },
     );
   }

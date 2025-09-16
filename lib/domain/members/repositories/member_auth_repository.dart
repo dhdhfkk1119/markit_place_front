@@ -1,6 +1,6 @@
-import 'dart:convert'; // Added for json.encode
 import 'package:dio/dio.dart';
-import 'package:flutter_naver_login/flutter_naver_login.dart'; // Added for Naver Login
+// import 'dart:convert'; // 삭제 (json.encode가 삭제된 메소드에서만 사용됨)
+// import 'package:flutter_naver_login/flutter_naver_login.dart'; // 삭제 (네이버 로그인 관련)
 import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
 import 'package:markit_place_front/_core/dtos/error_dto.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart';
@@ -16,13 +16,6 @@ class MemberAuthRepository {
   final Dio _dio = dio; // Use global dio instance
 
   MemberAuthRepository() {
-    // _dio is already the configured global instance.
-    // BaseUrl is set in the global dio.
-    // The auth interceptor is set on the global dio in my_http.dart.
-
-    // LogInterceptor might be added multiple times if this constructor is called multiple times.
-    // Consider adding it once in my_http.dart or using a flag to ensure it's added only once.
-    // For now, assuming it's managed or this class is a singleton.
     if (!_dio.interceptors
         .any((interceptor) => interceptor is LogInterceptor)) {
       _dio.interceptors
@@ -225,117 +218,7 @@ class MemberAuthRepository {
     }
   }
 
-  Future<void> requestEmailVerification(String email) async {
-    try {
-      final dioResponse = await _dio.post(
-        '/email/register/send-code',
-        data: {'email': email},
-      );
-
-      final apiResponse = ApiResponseDto<String>.fromJson(
-        dioResponse.data as Map<String, dynamic>,
-      );
-
-      if (apiResponse.success) {
-        print('인증 코드 발송 요청 성공: $email, 응답 메시지: ${apiResponse.response}');
-      } else {
-        throw Exception(apiResponse.error?.message ?? '인증 코드 발송에 실패했습니다.');
-      }
-    } on DioException catch (e) {
-      String finalErrorMessage;
-      ErrorDto? parsedErrorDto;
-      if (e.response?.data != null &&
-          e.response!.data is Map<String, dynamic>) {
-        final responseData = e.response!.data as Map<String, dynamic>;
-        if (responseData.containsKey('error') &&
-            responseData['error'] != null &&
-            responseData['error'] is Map<String, dynamic>) {
-          try {
-            parsedErrorDto = ErrorDto.fromJson(
-                responseData['error'] as Map<String, dynamic>);
-          } catch (parseError) {
-            print(
-                '[RequestEmailVerification Error - DioException] Failed to parse ErrorDto: $parseError');
-          }
-        }
-      }
-      if (parsedErrorDto?.message != null &&
-          parsedErrorDto!.message!.isNotEmpty) {
-        finalErrorMessage = parsedErrorDto.message!;
-      } else {
-        finalErrorMessage = extractErrorMessage(e);
-      }
-      print(
-          '[RequestEmailVerification Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
-      if (parsedErrorDto != null) {
-        print(
-            '[RequestEmailVerification Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
-      }
-      throw Exception(finalErrorMessage);
-    } catch (e) {
-      final errorMessage = extractErrorMessage(e);
-      print('[RequestEmailVerification Error - General] $errorMessage ($e)');
-      throw Exception(errorMessage);
-    }
-  }
-
-  Future<bool> confirmEmailVerification(String email, String code) async {
-    try {
-      final dioResponse = await _dio.post(
-        '/email/register/confirm-code',
-        data: {'email': email, 'code': code},
-      );
-
-      final apiResponse = ApiResponseDto<String>.fromJson(
-        dioResponse.data as Map<String, dynamic>,
-      );
-
-      if (apiResponse.success) {
-        print('이메일 인증 성공: $email, 응답 메시지: ${apiResponse.response}');
-        return true;
-      } else {
-        throw Exception(apiResponse.error?.message ?? '인증 코드 확인에 실패했습니다.');
-      }
-    } on DioException catch (e) {
-      String finalErrorMessage;
-      ErrorDto? parsedErrorDto;
-      if (e.response?.data != null &&
-          e.response!.data is Map<String, dynamic>) {
-        final responseData = e.response!.data as Map<String, dynamic>;
-        if (responseData.containsKey('error') &&
-            responseData['error'] != null &&
-            responseData['error'] is Map<String, dynamic>) {
-          try {
-            parsedErrorDto = ErrorDto.fromJson(
-                responseData['error'] as Map<String, dynamic>);
-          } catch (parseError) {
-            print(
-                '[ConfirmEmailVerification Error - DioException] Failed to parse ErrorDto: $parseError');
-          }
-        }
-      }
-      if (parsedErrorDto?.message != null &&
-          parsedErrorDto!.message!.isNotEmpty) {
-        finalErrorMessage = parsedErrorDto.message!;
-      } else {
-        finalErrorMessage = extractErrorMessage(e);
-      }
-      print(
-          '[ConfirmEmailVerification Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
-      if (parsedErrorDto != null) {
-        print(
-            '[ConfirmEmailVerification Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
-      }
-      throw Exception(finalErrorMessage);
-    } catch (e) {
-      final errorMessage = extractErrorMessage(e);
-      print('[ConfirmEmailVerification Error - General] $errorMessage ($e)');
-      throw Exception(errorMessage);
-    }
-  }
-
   Future<String?> reissueToken() async {
-    // ... (existing reissueToken code)
     try {
       final dioResponse = await _dio.post('/members/reissue');
 
@@ -384,112 +267,6 @@ class MemberAuthRepository {
       final errorMessage = extractErrorMessage(e);
       print('[ReissueToken Error - General] $errorMessage ($e)');
       throw Exception(errorMessage);
-    }
-  }
-
-  // --- 네이버 소셜 로그인 기능 이전 ---
-  Future<Map<String, dynamic>?> signInWithNaver() async {
-    // void에서 Map<String, dynamic>?으로 변경 고려
-    try {
-      final NaverLoginResult result = await FlutterNaverLogin.logIn();
-      print(
-          "[NaverLogin] SDK Result: Status: ${result.status}, AccountID: ${result.account.id}");
-
-      if (result.status == NaverLoginStatus.loggedIn) {
-        // final NaverAccessToken res = await FlutterNaverLogin.currentAccessToken; // This token is for Naver API, not ours.
-        // final String naverAccessToken = res.accessToken;
-        // print("[NaverLogin] SDK AccessToken: ${naverAccessToken.substring(0, 10)}...");
-
-        return await _loginToServerWithNaverToken(result);
-      } else {
-        print(
-            "[NaverLogin] Naver login attempt was not successful. Status: ${result.status}, Message: ${result.errorMessage}");
-        if (result.errorMessage != null && result.errorMessage!.isNotEmpty) {
-          throw Exception("네이버 로그인 실패: ${result.errorMessage}");
-        }
-        return null;
-      }
-    } catch (e) {
-      print("[NaverLogin] signInWithNaver Error: $e");
-      throw Exception("네이버 로그인 중 오류 발생: ${extractErrorMessage(e)}");
-    }
-  }
-
-  Future<Map<String, dynamic>?> _loginToServerWithNaverToken(
-      NaverLoginResult naverResult) async {
-    final requestData = {
-      "provider": "NAVER",
-      "providerId": naverResult.account.id,
-      "email": naverResult.account.email,
-    };
-
-    try {
-      print(
-          "[NaverLogin] Attempting to login to our server with Naver data: ${json.encode(requestData)}");
-      final dioResponse = await _dio.post(
-        "/members/login/social",
-        data: requestData,
-      );
-
-      final String? token = dioResponse.headers.value('Authorization');
-      final apiResponse = ApiResponseDto<LoginResponseDataDto>.fromJson(
-        dioResponse.data as Map<String, dynamic>,
-        fromJsonT: LoginResponseDataDto.fromJson,
-      );
-
-      if (token != null &&
-          token.isNotEmpty &&
-          apiResponse.success &&
-          apiResponse.response != null) {
-        final sessionUser = apiResponse.response!.toSessionUser();
-        print(
-            "[NaverLogin] Our server login success! User: ${sessionUser.loginId}, Token: ${token.substring(0, 10)}...");
-        return {
-          'sessionUser': sessionUser,
-          'token': token.replaceFirst('Bearer ', ''),
-        };
-      } else if (!apiResponse.success && apiResponse.error != null) {
-        print(
-            "[NaverLogin] Our server login failed: ${apiResponse.error!.message}");
-        throw Exception(apiResponse.error!.message ?? '네이버 소셜 로그인 처리 중 서버 오류');
-      } else if (token == null || token.isEmpty) {
-        print(
-            "[NaverLogin] Our server login failed: Token missing in response");
-        throw Exception('네이버 소셜 로그인 응답에 토큰이 없습니다.');
-      } else {
-        print("[NaverLogin] Our server login failed: Unknown reason");
-        throw Exception('알 수 없는 이유로 네이버 소셜 로그인에 실패했습니다.');
-      }
-    } on DioException catch (e) {
-      String finalErrorMessage;
-      ErrorDto? parsedErrorDto;
-      if (e.response?.data != null &&
-          e.response!.data is Map<String, dynamic>) {
-        final responseData = e.response!.data as Map<String, dynamic>;
-        if (responseData.containsKey('error') &&
-            responseData['error'] != null &&
-            responseData['error'] is Map<String, dynamic>) {
-          try {
-            parsedErrorDto = ErrorDto.fromJson(
-                responseData['error'] as Map<String, dynamic>);
-          } catch (parseError) {
-            print(
-                '[NaverLogin DioException] Failed to parse ErrorDto: $parseError');
-          }
-        }
-      }
-      if (parsedErrorDto?.message != null &&
-          parsedErrorDto!.message!.isNotEmpty) {
-        finalErrorMessage = parsedErrorDto.message!;
-      } else {
-        finalErrorMessage = extractErrorMessage(e);
-      }
-      print(
-          '[NaverLogin DioException] Server login failed: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
-      throw Exception(finalErrorMessage);
-    } catch (e) {
-      print("[NaverLogin] _loginToServerWithNaverToken Error: $e");
-      throw Exception("네이버 정보로 서버 로그인 중 오류: ${extractErrorMessage(e)}");
     }
   }
 }

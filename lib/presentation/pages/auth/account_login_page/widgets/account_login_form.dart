@@ -5,11 +5,11 @@ import 'package:markit_place_front/_core/constants/size.dart';
 
 // --- 사용하지 않는 Provider import 주석 처리 또는 삭제 ---
 // import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
-// import 'package:markit_place_front/domain/providers/auth_form/login_form_notifier.dart'; // 만약 있었다면
+// import 'package:markit_place_front/domain/providers/auth_form/login_form_notifier.dart'; // 삭제됨
 
 // --- 새로운 Provider import ---
-import 'package:markit_place_front/domain/members/providers/member_login_form_provider.dart'; // 1단계에서 생성한 파일
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart'; // 기존 AuthNotifier
+import 'package:markit_place_front/domain/members/providers/member_login_form_provider.dart';
+import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
 
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
@@ -25,11 +25,9 @@ class AccountLoginForm extends ConsumerStatefulWidget {
 }
 
 class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
-  // _formKey는 Form 위젯에 사용되므로 유지
   final _formKey = GlobalKey<FormState>();
-  bool _autoLogin = false; // 자동 로그인 UI 상태
+  bool _autoLogin = false;
 
-  // TextEditingController는 UI의 입력 필드와 직접 연결되므로 유지
   final _idController = TextEditingController(text: 'user1');
   final _passwordController = TextEditingController(text: 'user1234');
 
@@ -42,7 +40,6 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    // AuthNotifier의 상태 변화 감지 (로그인 성공/실패 시 UI 피드백)
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
       if (next.status == AuthStatus.authenticated) {
         SnackBarUtil.showSuccess(context, "로그인 성공!");
@@ -52,17 +49,15 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
       }
     });
 
-    // memberLoginFormProvider를 watch하여 입력 필드 에러 메시지 표시에 사용
-    final loginFormState = ref.watch(memberLoginFormProvider);
-    final loginFormNotifier = ref.read(memberLoginFormProvider.notifier);
+    final memberLoginFormState = ref.watch(memberLoginFormProvider);
+    final memberLoginFormNotifier = ref.read(memberLoginFormProvider.notifier);
 
     return Form(
-      key: _formKey, // Form 위젯에 GlobalKey 연결
+      key: _formKey,
       child: ListView(
         children: [
           const SizedBox(height: medium),
           Center(
-            // const 제거
             child: Text(
               'Markit Place',
               style: TextStyle(
@@ -74,27 +69,25 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
           const SizedBox(height: xLarge),
           CustomTextFormField(
             controller: _idController,
-            onChanged: (value) => loginFormNotifier
-                .updateUsername(value), // 실시간 유효성 검사 및 에러 상태 업데이트
+            onChanged: (value) => memberLoginFormNotifier.updateUsername(value),
             decoration: InputDecoration(
               labelText: '아이디',
               border: const OutlineInputBorder(),
-              errorText: loginFormState.usernameError.isEmpty
+              errorText: memberLoginFormState.usernameError.isEmpty
                   ? null
-                  : loginFormState.usernameError,
+                  : memberLoginFormState.usernameError,
             ),
           ),
           const SizedBox(height: medium),
           CustomTextFormField(
             controller: _passwordController,
-            onChanged: (value) => loginFormNotifier
-                .updatePassword(value), // 실시간 유효성 검사 및 에러 상태 업데이트
+            onChanged: (value) => memberLoginFormNotifier.updatePassword(value),
             decoration: InputDecoration(
               labelText: '비밀번호',
               border: const OutlineInputBorder(),
-              errorText: loginFormState.passwordError.isEmpty
+              errorText: memberLoginFormState.passwordError.isEmpty
                   ? null
-                  : loginFormState.passwordError,
+                  : memberLoginFormState.passwordError,
             ),
             obscureText: true,
           ),
@@ -109,7 +102,7 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
                   });
                 },
               ),
-              Text('자동 로그인', // const 제거
+              Text('자동 로그인',
                   style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
             ],
           ),
@@ -119,12 +112,10 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
             isLoading:
                 ref.watch(authNotifierProvider).status == AuthStatus.loading,
             onPressed: () {
-              // 컨트롤러의 현재 값으로 Notifier 상태 업데이트 (onChanged가 이미 처리했을 수 있지만, 명시적 호출)
-              loginFormNotifier.updateUsername(_idController.text);
-              loginFormNotifier.updatePassword(_passwordController.text);
+              memberLoginFormNotifier.updateUsername(_idController.text);
+              memberLoginFormNotifier.updatePassword(_passwordController.text);
 
-              // 폼 유효성 검사 (memberLoginFormProvider 사용)
-              if (loginFormNotifier.validateForm()) {
+              if (memberLoginFormNotifier.validateForm()) {
                 ref.read(authNotifierProvider.notifier).login(
                       _idController.text,
                       _passwordController.text,
@@ -141,12 +132,12 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
               CustomLInkGrey(
                 text: '회원가입',
                 onPressed: () {
-                  ref.invalidate(memberLoginFormProvider); // 폼 상태 초기화
+                  ref.invalidate(memberLoginFormProvider);
                   Navigator.pushNamed(context, '/terms');
                 },
               ),
               const SizedBox(width: small),
-              Text('|', // const 제거
+              Text('|',
                   style: TextStyle(
                       color: Colors.black54,
                       fontFamily: Assets.Fonts.cookieRun)),
