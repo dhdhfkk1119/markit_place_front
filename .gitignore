@@ -325,7 +325,6 @@ $RECYCLE.BIN/
 
 # Gradle 캐시와 빌드 산출물 무시
 .gradle/
-build/
 .idea/
 android/.kotlin/
 

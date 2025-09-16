@@ -1,144 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
-import 'package:location/location.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
 
-class NearPage extends StatefulWidget {
+class NearPage extends StatelessWidget {
   const NearPage({super.key});
 
   @override
-  State<NearPage> createState() => _NearPageState();
-}
-
-class _NearPageState extends State<NearPage> {
-  Future<LocationData?>? _locationFuture;
-  NLatLng? _currentPosition;
-  late final NaverMapController _mapController;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsFlutterBinding.ensureInitialized();
-    _initNaverMap();
-    _locationFuture = _fetchPosition();
-  }
-
-  Future<void> _initNaverMap() async {
-    await FlutterNaverMap().init(
-        clientId: dotenv.env['NAVER_CLIENT_ID']!,
-        onAuthFailed: (ex) {
-          print("인증 실패: $ex");
-        });
-  }
-
-  Future<LocationData?> _fetchPosition() async {
-    final location = Location();
-    try {
-      var serviceEnabled = await location.serviceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await location.requestService();
-        if (!serviceEnabled) {
-          return null;
-        }
-      }
-
-      var permissionGranted = await location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
-        permissionGranted = await location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) {
-          return null;
-        }
-      }
-
-      return await location.getLocation();
-    } catch (e) {
-      print("위치 정보를 가져오는 데 실패했습니다: $e");
-      return null;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    LocationData? _locationData = null;
-
     return Scaffold(
-      body: Stack(children: [
-        FutureBuilder<LocationData?>(
-          future: _locationFuture,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text("현재 위치를 가져오는 중..."),
-                  ],
-                ),
-              );
-            }
-
-            if (snapshot.data == null) {
-              return const Center(
-                child: Text("위치 권한을 허용해주세요."),
-              );
-            }
-
-            _locationData = snapshot.data!;
-            print("${_locationData!.latitude} / ${_locationData!.longitude}");
-            _currentPosition =
-                NLatLng(_locationData!.latitude!, _locationData!.longitude!);
-
-            if (_currentPosition == null) {
-              return const Placeholder();
-            }
-
-            return NaverMap(
-              options: NaverMapViewOptions(
-                initialCameraPosition: NCameraPosition(
-                    target: _currentPosition!,
-                    zoom: 15,
-                    bearing: _locationData!.heading!),
-              ),
-              onMapReady: (controller) {
-                _mapController = controller;
-                final marker = NMarker(
-                  id: "my_location",
-                  size: Size(50, 50),
-                  icon: NOverlayImage.fromAssetImage(Assets.Images.marker),
-                  position: _currentPosition!,
-                  caption: const NOverlayCaption(text: "내 위치"),
-                );
-                controller.addOverlay(marker);
-                print("네이버 맵 준비 완료! 현재 위치에 마커 표시!");
-              },
-            );
-          },
+      appBar: AppBar(
+        title: const Text('네이버 지도 - 내 위치'),
+      ),
+      body: NaverMap(
+        // options 부분만 수정하면 돼!
+        options: const NaverMapViewOptions(
+          initialCameraPosition: NCameraPosition(
+            target: NLatLng(37.5666102, 126.9783881), // 초기 위치는 서울 시청
+            zoom: 15,
+          ),
+          // 👇 이 코드 한 줄만 추가하면 돼!
+          locationButtonEnable: true,
         ),
-      ]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_currentPosition != null) {
-            final cameraUpdate = NCameraUpdate.withParams(
-                target: _currentPosition!,
-                zoom: 15,
-                bearing: _locationData!.heading);
-
-            cameraUpdate.setAnimation(
-                animation: NCameraAnimation.fly,
-                duration: const Duration(seconds: 2));
-
-            _mapController.updateCamera(cameraUpdate);
-          }
-        },
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: const Icon(Icons.gps_fixed_rounded),
       ),
     );
   }

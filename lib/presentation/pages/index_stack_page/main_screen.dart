@@ -19,7 +19,11 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 새로운 색상 팔레트 (봄 웜톤)
+    const Color primaryColor = Color(0xFFF96666); // 코랄 핑크
+
     return Scaffold(
+      backgroundColor: Colors.white,
       body: IndexedStack(
         index: _selectedIndex,
         children: const [
@@ -31,6 +35,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: Colors.white,
           type: BottomNavigationBarType.fixed,
           currentIndex: _selectedIndex,
           onTap: (index) {
@@ -38,11 +43,13 @@ class _MainScreenState extends State<MainScreen> {
               _selectedIndex = index;
             });
           },
+          selectedItemColor: primaryColor, // 코랄 핑크
+          unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(
                 label: '상품', icon: Icon(CupertinoIcons.cart)),
             BottomNavigationBarItem(
-                label: '켜뮤니티', icon: Icon(CupertinoIcons.square_on_circle)),
+                label: '커뮤니티', icon: Icon(CupertinoIcons.square_on_circle)),
             BottomNavigationBarItem(
                 label: '주변위치', icon: Icon(Icons.place)),
             BottomNavigationBarItem(
