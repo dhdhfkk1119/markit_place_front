@@ -19,7 +19,6 @@ class ProductWriteItem extends ConsumerStatefulWidget {
 
 class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     with SingleTickerProviderStateMixin {
-  bool _isOn = false;
   final int _maxImageUpload = 10;
 
   late final AnimationController _animationController;
@@ -38,7 +37,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     );
 
     final initialModel = ref.read(productItemProvider);
-    _titleController = TextEditingController(text: initialModel.title);
+    _titleController = TextEditingController(text: initialModel.name);
     _descriptionController =
         TextEditingController(text: initialModel.description);
     _priceController =
@@ -55,7 +54,8 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
   }
 
   Future<void> _uploadImage() async {
-    final currentImageCount = ref.read(productItemProvider).images.length;
+    final productItemModel = ref.read(productItemProvider);
+    final currentImageCount = productItemModel.images.length;
     if (currentImageCount >= _maxImageUpload) return;
 
     final pickedFiles = await ImagePicker().pickMultiImage();
@@ -63,7 +63,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     if (pickedFiles.isNotEmpty) {
       ref
           .read(productItemProvider.notifier)
-          .uploadImages(images: pickedFiles, isOn: _isOn);
+          .uploadImages(images: pickedFiles, isOn: productItemModel.isOn);
     }
   }
 
@@ -72,19 +72,22 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     final productItemModel = ref.watch(productItemProvider);
 
     ref.listen(productItemProvider, (prev, next) {
-      if (prev?.title != next.title) {
-        _titleController.text = next.title ?? '';
+      // 이전 제목과 다를 때만 컨트롤러의 text 값을 업데이트
+      if (prev?.name != next.name) {
+        _titleController.text = next.name ?? '';
       }
+      // 이전 설명과 다를 때만 컨트롤러의 text 값을 업데이트
       if (prev?.description != next.description) {
         _descriptionController.text = next.description ?? '';
       }
+      // 이전 가격과 다를 때만 컨트롤러의 text 값을 업데이트
       if (prev?.price != next.price) {
         _priceController.text = next.price?.toString() ?? '';
       }
     });
 
-    if (_isOn && productItemModel.isLoading) {
-      _animationController.repeat();
+    if (productItemModel.isOn && productItemModel.isLoading) {
+      _animationController.repeat(period: const Duration(seconds: 2));
     } else {
       _animationController.stop();
     }
@@ -102,7 +105,8 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
             ],
           ),
         ),
-        if (_isOn && productItemModel.isLoading) _buildLoadingOverlay(context),
+        if (productItemModel.isOn && productItemModel.isLoading)
+          _buildLoadingOverlay(context),
       ],
     );
   }
@@ -160,6 +164,8 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
   }
 
   Widget _buildAiController() {
+    final isOn = ref.watch(productItemProvider.select((model) => model.isOn));
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.deepPurpleAccent.withOpacity(0.1),
@@ -192,15 +198,13 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                   Transform.scale(
                     scale: 0.8,
                     child: Switch(
-                      value: _isOn,
+                      value: isOn,
                       activeColor: Colors.white, // 슬라이드 버튼 원 색
                       activeTrackColor: Colors.deepPurpleAccent, // 활성화 배경
                       inactiveThumbColor: Colors.grey.shade200, // 비활성화 원 색
                       inactiveTrackColor: Colors.grey.shade400, // 비활성화 배경
                       onChanged: (value) {
-                        setState(() {
-                          _isOn = value;
-                        });
+                        ref.read(productItemProvider.notifier).setOn(value);
                       },
                     ),
                   ),
@@ -223,23 +227,30 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           if (imageList.length < _maxImageUpload)
             InkWell(
               onTap: _uploadImage,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    CupertinoIcons.camera_fill,
-                    size: 24,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "${productItemModel.images.length}/$_maxImageUpload",
-                    style: const TextStyle(
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black,
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                    color: Colors.deepPurpleAccent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8)),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      CupertinoIcons.camera_fill,
+                      size: 24,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      "${productItemModel.images.length}/$_maxImageUpload",
+                      style: const TextStyle(
+                        fontSize: 12.0,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           const SizedBox(
@@ -261,15 +272,15 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                   ),
                 ),
                 Positioned.fill(
-                  child: Center(
-                    child: IconButton(
-                      onPressed: () {
-                        ref
-                            .read(productItemProvider.notifier)
-                            .removeImage(imagePath);
-                      },
-                      icon: const Icon(Icons.cancel, color: Colors.white),
-                    ),
+                  top: -35,
+                  right: -35,
+                  child: IconButton(
+                    onPressed: () {
+                      ref
+                          .read(productItemProvider.notifier)
+                          .removeImage(imagePath);
+                    },
+                    icon: const Icon(Icons.cancel, color: Colors.white),
                   ),
                 )
               ]),
@@ -291,7 +302,9 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
         TextField(
           controller: _titleController,
           decoration: InputDecoration(
-              hintText: productItemModel.title ?? '제목',
+              hintText: productItemModel.isOn
+                  ? 'AI가 추천한 제목이 여기에 표시됩니다.'
+                  : '상품의 제목을 입력해주세요',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
@@ -304,8 +317,9 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           minLines: 5,
           controller: _descriptionController,
           decoration: InputDecoration(
-              hintText: productItemModel.description ??
-                  '여기는 상품에 대한 정보가 담기느 부분입니다 판매 금지 된 물품이나 등록 선정에 부적절한 물픔은 등록을 삼가 해주시기바랍니다 ',
+              hintText: productItemModel.isOn
+                  ? 'AI가 추천한 상품 설명이 여기에 표시됩니다.'
+                  : '상품의 설명을 입력해주세요',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
@@ -316,7 +330,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
         TextField(
           controller: _priceController,
           decoration: InputDecoration(
-              hintText: productItemModel.price.toString() ?? 'W 상품 가격을 입력해주세요',
+              hintText: '상품의 가격을 입력해주세요',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
