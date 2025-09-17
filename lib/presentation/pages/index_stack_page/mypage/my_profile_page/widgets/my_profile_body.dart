@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import 'package:markit_place_front/_core/dtos/api_service.dart';
+import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/my_profile_page/review_list_screen.dart';
+import 'package:dio/dio.dart';
 
 class MyProfileBody extends StatefulWidget {
   const MyProfileBody({super.key});
@@ -9,13 +12,114 @@ class MyProfileBody extends StatefulWidget {
 }
 
 class _MyProfileBodyState extends State<MyProfileBody> {
-  int _retransactionRate = 89;
+  int _currentMannerScore = 50;
+  int _retransactionRate = 0;
+  bool _isPraiseButtonEnabled = true;
 
-  // 따뜻한 봄 웜톤 팔레트
+  final Dio _dio = Dio();
+  final ApiService _apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchInitialData();
+  }
+
+  // 매너 칭찬하기
+  Future<void> _addPraise() async {
+    if (!_isPraiseButtonEnabled) return;
+
+    final url = 'http://localhost:8080/api/v1/praise';
+
+    // 사용자 ID와 거래 ID로 대체
+    final requestBody = {
+      "praisedMemberId": 1,
+      "praiserId": 2,
+      "tradeId": 1,
+      "isBuyer": true,
+      "praiseCategory": [1, 2],
+      "customContent": "정말 좋은 거래였습니다!"
+    };
+
+    try {
+      final response = await _dio.post(
+        url,
+        data: requestBody,
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        if (responseData['isSuccess']) {
+          setState(() {
+            _currentMannerScore = responseData['updatedMannerScore'];
+            _retransactionRate = responseData['updatedRetransactionRate'];
+            _isPraiseButtonEnabled = false; // 성공 시 버튼 비활성화
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(responseData['message']),
+          ));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(responseData['message'])),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("매너 칭찬에 실패했습니다. 다시 시도해주세요.")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("네트워크 오류가 발생했습니다.")),
+      );
+    }
+  }
+
+  // 초기 데이터를 가져오는 함수 (앱 시작 시 호출)
+  Future<void> _fetchInitialData() async {
+    try {
+      final int memberId = 1; //실제 로그인 사용자의 ID를 넣어줘야함
+      final latestProfile = await _apiService.fetchUserProfile(memberId);
+
+      // 상태 업데이트
+      setState(() {
+        _currentMannerScore = latestProfile.mannerScore;
+        _retransactionRate = latestProfile.retransactionRate;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("초기 프로필 데이터를 불러오는데 실패했습니다")),
+      );
+    }
+  }
+
+  // 새로고침 함수
+  Future<void> _onRefresh() async {
+    try {
+      final int memberId = 1;
+      final latestProfile = await _apiService.fetchUserProfile(memberId);
+
+      setState(() {
+        _currentMannerScore = latestProfile.mannerScore;
+        _retransactionRate = latestProfile.retransactionRate;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("프로필이 새로고침 되었습니다")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("프로필 새로고침에 실패했습니다: $e")),
+      );
+    }
+
+    await Future.delayed(const Duration(seconds: 1));
+  }
+
   static const Color primaryColor = Color(0xFFF96666);
+  static const Color backgroundColor = Color(0xFFFFFFFF);
   static const Color profileAvatarColor = Color(0xFFF5E6E6);
-  static const Color accentColor = Color(0xFFFFF7F7);
-  static const Color lightGrey = Color(0xFFFFFFFF);
   static const Color redHeartColor = Colors.red;
   static const Color secondaryTextColor = Colors.grey;
   static const Color dividerColor = Color(0xFFEDE0E0);
@@ -27,9 +131,9 @@ class _MyProfileBodyState extends State<MyProfileBody> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: lightGrey,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: lightGrey,
+        backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
@@ -39,67 +143,69 @@ class _MyProfileBodyState extends State<MyProfileBody> {
         ),
         title: CustomWidget.buildTitle("프로필", size: 18),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: Colors.black),
-            onPressed: () {
-              // 더보기 메뉴 기능
-            },
-          ),
-        ],
+        actions: [],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              // 프로필 섹션
-              _buildProfileSection(),
-              const SizedBox(height: verticalSpacing),
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                // 프로필 섹션
+                _buildProfileSection(),
+                const SizedBox(height: verticalSpacing),
 
-              // 재거래 및 응답률 섹션
-              _buildRateSection(),
-              const SizedBox(height: verticalSpacing),
+                // 재거래 및 응답률 섹션
+                _buildRateSection(),
+                const SizedBox(height: verticalSpacing),
 
-              // 판매 물품 섹션
-              _buildListTile(
-                title: "판매 물품",
-                subTitle: "판매 중인 물품이 없습니다",
-                onTap: () {},
-              ),
-              const SizedBox(height: verticalSpacing),
+                // 판매 물품 섹션
+                _buildListTile(
+                  title: "판매 물품",
+                  subTitle: "판매 중인 물품이 없습니다",
+                  onTap: () {},
+                ),
+                const SizedBox(height: verticalSpacing),
 
-              // 받은 매너 평가 섹션
-              _buildListTile(
-                title: "받은 매너 평가",
-                onTap: () {},
-              ),
-              const SizedBox(height: 10),
+                // 받은 매너 평가 섹션
+                _buildListTile(
+                  title: "받은 매너 평가",
+                  onTap: () {},
+                ),
+                const SizedBox(height: 10),
 
-              _buildMannerSection(),
-              const SizedBox(height: verticalSpacing),
+                _buildMannerSection(),
+                const SizedBox(height: verticalSpacing),
 
-              // 받은 거래 후기 섹션
-              _buildListTile(
-                title: "받은 거래 후기",
-                subTitle: "32",
-                onTap: () {},
-              ),
-              const SizedBox(height: 10),
+                // 받은 거래 후기 섹션
+                _buildListTile(
+                  title: "받은 거래 후기",
+                  subTitle: "32",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ReviewListScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 10),
 
-              // 거래 후기 댓글
-              _buildReviewSection(),
-              const SizedBox(height: verticalSpacing),
-            ],
+                // 거래 후기 댓글
+                _buildReviewSection(),
+                const SizedBox(height: verticalSpacing),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // 거래 후기 섹션 위젯
   Widget _buildReviewSection() {
     return Column(
       children: [
@@ -119,24 +225,33 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     );
   }
 
-  // 거래 후기 댓글 위젯
   Widget _buildReviewComment(String text, String author) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: accentColor,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomWidget.buildTitle(text, size: 14, color: mainTextColor, weight: FontWeight.normal),
+          CustomWidget.buildTitle(text,
+              size: 14, color: mainTextColor, weight: FontWeight.normal),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              CustomWidget.buildTitle("- $author", size: 12, color: secondaryTextColor),
+              CustomWidget.buildTitle("- $author",
+                  size: 12, color: secondaryTextColor),
             ],
           ),
         ],
@@ -144,73 +259,94 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     );
   }
 
-  // 프로필 섹션 위젯
   Widget _buildProfileSection() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            const CircleAvatar(
-              radius: 40,
-              backgroundColor: profileAvatarColor,
-              child: Icon(Icons.person, size: 50, color: Colors.white),
-            ),
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(color: secondaryTextColor),
-              ),
-              child: Icon(Icons.camera_alt, color: secondaryTextColor, size: 16),
-            ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            alignment: Alignment.bottomRight,
             children: [
-              CustomWidget.buildTitle("바보임당", size: 20, weight: FontWeight.w700),
-              CustomWidget.buildTitle("#zsswie5", size: 14, color: secondaryTextColor),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: accentColor),
-                        backgroundColor: accentColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: CustomWidget.buildTitle("매너 칭찬하기", size: 12, color: mainTextColor, weight: FontWeight.normal),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: accentColor),
-                        backgroundColor: accentColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: CustomWidget.buildTitle("모아보기", size: 12, color: mainTextColor, weight: FontWeight.normal),
-                    ),
-                  ),
-                ],
+              const CircleAvatar(
+                radius: 40,
+                backgroundColor: profileAvatarColor,
+                child: Icon(Icons.person, size: 50, color: Colors.white),
+              ),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: secondaryTextColor),
+                ),
+                child:
+                    Icon(Icons.camera_alt, color: secondaryTextColor, size: 16),
               ),
             ],
           ),
-        ),
-      ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomWidget.buildTitle("바보임당",
+                    size: 20, weight: FontWeight.w700),
+                CustomWidget.buildTitle("#zsswie5",
+                    size: 14, color: secondaryTextColor),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _isPraiseButtonEnabled ? _addPraise : null,
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                              color: _isPraiseButtonEnabled
+                                  ? primaryColor
+                                  : Colors.grey),
+                          backgroundColor: _isPraiseButtonEnabled
+                              ? primaryColor
+                              : Colors.grey,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: CustomWidget.buildTitle("매너 칭찬하기",
+                            size: 12,
+                            color: backgroundColor,
+                            weight: FontWeight.normal),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {},
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: primaryColor),
+                          backgroundColor: primaryColor,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: CustomWidget.buildTitle("모아보기",
+                            size: 12,
+                            color: backgroundColor,
+                            weight: FontWeight.normal),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  // 재거래 및 응답률 섹션 위젯
   Widget _buildRateSection() {
     return Row(
       children: [
@@ -239,19 +375,29 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     );
   }
 
-  // 매너 평가 섹션 위젯
   Widget _buildMannerSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildMannerRow(icon: Icons.favorite, count: 8, text: "친절하고 매너가 좋아요.", iconColor: redHeartColor),
-        _buildMannerRow(icon: Icons.access_time_filled, count: 5, text: "시간 약속을 잘 지켜요.", iconColor: mainTextColor),
-        _buildMannerRow(icon: Icons.wechat_rounded, count: 5, text: "응답이 빨라요.", iconColor: mainTextColor),
+        _buildMannerRow(
+            icon: Icons.favorite,
+            count: 8,
+            text: "친절하고 매너가 좋아요.",
+            iconColor: redHeartColor),
+        _buildMannerRow(
+            icon: Icons.access_time_filled,
+            count: 5,
+            text: "시간 약속을 잘 지켜요.",
+            iconColor: mainTextColor),
+        _buildMannerRow(
+            icon: Icons.wechat_rounded,
+            count: 5,
+            text: "응답이 빨라요.",
+            iconColor: mainTextColor),
       ],
     );
   }
 
-  // 재거래/응답률 박스 위젯
   Widget _buildRateBox({
     required IconData icon,
     required String rate,
@@ -263,8 +409,16 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: accentColor,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -273,19 +427,21 @@ class _MyProfileBodyState extends State<MyProfileBody> {
             children: [
               Icon(icon, size: 16, color: iconColor),
               const SizedBox(width: 5),
-              CustomWidget.buildTitle(text, size: 14, color: textColor, weight: FontWeight.normal),
+              CustomWidget.buildTitle(text,
+                  size: 14, color: textColor, weight: FontWeight.normal),
             ],
           ),
           const SizedBox(height: 8),
-          CustomWidget.buildTitle(rate, size: 22, color: textColor, weight: FontWeight.w700),
+          CustomWidget.buildTitle(rate,
+              size: 22, color: textColor, weight: FontWeight.w700),
           const SizedBox(height: 8),
-          CustomWidget.buildTitle(subText, size: 12, color: secondaryTextColor, weight: FontWeight.normal),
+          CustomWidget.buildTitle(subText,
+              size: 12, color: secondaryTextColor, weight: FontWeight.normal),
         ],
       ),
     );
   }
 
-  // 리스트 타일 위젯 (판매 물품, 매너 평가, 후기 등)
   Widget _buildListTile({
     required String title,
     String? subTitle,
@@ -303,7 +459,10 @@ class _MyProfileBodyState extends State<MyProfileBody> {
             CustomWidget.buildTitle(title, size: 16, weight: FontWeight.w700),
             const SizedBox(width: 8),
             if (subTitle != null)
-              CustomWidget.buildTitle(subTitle, size: 16, color: secondaryTextColor, weight: FontWeight.normal),
+              CustomWidget.buildTitle(subTitle,
+                  size: 16,
+                  color: secondaryTextColor,
+                  weight: FontWeight.normal),
             const Spacer(),
             Icon(Icons.arrow_forward_ios, size: 16, color: secondaryTextColor),
           ],
@@ -312,7 +471,6 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     );
   }
 
-  // 매너 평가 태그 위젯
   Widget _buildMannerRow({
     required IconData icon,
     required int count,
@@ -326,21 +484,39 @@ class _MyProfileBodyState extends State<MyProfileBody> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: accentColor,
+              color: backgroundColor,
               shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Icon(icon, color: iconColor ?? primaryColor, size: 20),
           ),
           const SizedBox(width: 12),
-          CustomWidget.buildTitle(count.toString(), size: 16, weight: FontWeight.w700),
+          CustomWidget.buildTitle(count.toString(),
+              size: 16, weight: FontWeight.w700),
           const SizedBox(width: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: accentColor,
+              color: backgroundColor,
               borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
-            child: CustomWidget.buildTitle(text, size: 12, color: mainTextColor, weight: FontWeight.normal),
+            child: CustomWidget.buildTitle(text,
+                size: 12, color: mainTextColor, weight: FontWeight.normal),
           ),
         ],
       ),

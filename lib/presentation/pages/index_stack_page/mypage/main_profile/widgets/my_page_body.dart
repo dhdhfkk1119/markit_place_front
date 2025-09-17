@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import '../../../../../../domain/providers/auth_form/SessionNotifier.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
+import '../qna_screen.dart';
+import '../notice_screen.dart';
+import '../sales_list_screen.dart';
+import '../purchase_list_screen.dart';
+import '../favorite_list_screen.dart';
 
 class MyPageBody extends ConsumerStatefulWidget {
   const MyPageBody({super.key});
@@ -16,7 +21,6 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
 
   @override
   Widget build(BuildContext context) {
-    // 새로운 색상 팔레트 (봄 웜톤)
     const Color primaryColor = Color(0xFFF96666);
     const Color profileAvatarColor = Color(0xFFF5E6E6);
     const Color accentColor = Color(0xFFFFF7F7);
@@ -33,8 +37,6 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 20),
-
-              // 프로필 섹션 (중앙 배치)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16.0),
                 child: Center(
@@ -45,7 +47,8 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                           CircleAvatar(
                             radius: 50,
                             backgroundColor: profileAvatarColor,
-                            child: const Icon(Icons.person, size: 60, color: Colors.white),
+                            child: const Icon(Icons.person,
+                                size: 60, color: Colors.white),
                           ),
                           Positioned(
                             bottom: 0,
@@ -115,8 +118,6 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                   ),
                 ),
               ),
-
-              // "O-pay" 배너
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -136,8 +137,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Icon(Icons.paid_outlined,
-                          size: 32, color: primaryColor),
+                      Icon(Icons.paid_outlined, size: 32, color: primaryColor),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,41 +158,65 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                   ),
                 ),
               ),
-
               const Divider(height: 30),
-
-              // 아이콘 메뉴 섹션
               Padding(
                 padding:
                 const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildIconButton(
-                      icon: Icons.shopping_bag_outlined,
-                      text: "판매 내역",
-                      color: accentColor,
-                      iconColor: primaryColor,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SalesListScreen(),
+                          ),
+                        );
+                      },
+                      child: _buildIconButton(
+                        icon: Icons.shopping_bag_outlined,
+                        text: "판매 내역",
+                        color: accentColor,
+                        iconColor: primaryColor,
+                      ),
                     ),
-                    _buildIconButton(
-                      icon: Icons.shopping_cart_outlined,
-                      text: "구매 내역",
-                      color: accentColor,
-                      iconColor: primaryColor,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PurchaseListScreen(),
+                          ),
+                        );
+                      },
+                      child: _buildIconButton(
+                        icon: Icons.shopping_cart_outlined,
+                        text: "구매 내역",
+                        color: accentColor,
+                        iconColor: primaryColor,
+                      ),
                     ),
-                    _buildIconButton(
-                      icon: Icons.favorite_border,
-                      text: "관심 목록",
-                      color: accentColor,
-                      iconColor: primaryColor,
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FavoriteListScreen(),
+                          ),
+                        );
+                      },
+                      child: _buildIconButton(
+                        icon: Icons.favorite_border,
+                        text: "관심 목록",
+                        color: accentColor,
+                        iconColor: primaryColor,
+                      ),
                     ),
                   ],
                 ),
               ),
-
               const Divider(height: 30),
-
-              // 동네 설정 및 기타 메뉴 섹션
               _buildMenuTile(
                 icon: Icons.my_location_outlined,
                 text: "내 동네 설정",
@@ -206,15 +230,35 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                 text: "키워드 등록",
               ),
               const Divider(height: 30),
-              _buildMenuTile(
-                icon: Icons.headphones_outlined,
-                text: "고객 센터",
-                showArrow: true,
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const QnaScreen(),
+                    ),
+                  );
+                },
+                child: _buildMenuTile(
+                  icon: Icons.headphones_outlined,
+                  text: "고객 센터",
+                  showArrow: true,
+                ),
               ),
-              _buildMenuTile(
-                icon: Icons.announcement_outlined,
-                text: "공지 사항",
-                showArrow: true,
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const NoticeScreen(),
+                    ),
+                  );
+                },
+                child: _buildMenuTile(
+                  icon: Icons.announcement_outlined,
+                  text: "공지 사항",
+                  showArrow: true,
+                ),
               ),
               InkWell(
                 onTap: () async {
