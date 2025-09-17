@@ -24,4 +24,20 @@ class ChatRoomDTO {
       createdAt: dto.createdAt,
     );
   }
+
+  ChatRoomDTO copyWith({
+    int? roomId,
+    int? otherUserId,
+    String? otherUserName,
+    String? lastMessage,
+    String? createdAt,
+  }) {
+    return ChatRoomDTO(
+      roomId: roomId ?? this.roomId,
+      otherUserId: otherUserId ?? this.otherUserId,
+      otherUserName: otherUserName ?? this.otherUserName,
+      lastMessage: lastMessage ?? this.lastMessage,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
