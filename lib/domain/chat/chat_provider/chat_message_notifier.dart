@@ -5,14 +5,14 @@ import 'package:markit_place_front/domain/chat/chat_provider/chat_room_notifier.
 import 'package:markit_place_front/domain/chat/chat_repository/chat_repository.dart';
 import 'package:markit_place_front/domain/providers/SessionNotifier.dart';
 
-class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
+class ChatNotifier extends StateNotifier<ChatMessageDto?> {
   final ChatRepository repository;
   final int myId;
   int? _roomId;
   final Function(ChatMessageModel) onNewMessage; // 메세지 보내실 업데이트
 
   ChatNotifier(this.repository, this.myId, {required this.onNewMessage})
-      : super([]);
+      : super(null);
 
   // RoomId를 설정하는 메서드
   void setRoomId(int? roomId) {
@@ -30,7 +30,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
       onMessageReceived: (json) {
         final model = ChatMessageModel.fromJson(json);
         final dto = ChatMessageDto.fromModel(model, myId);
-        state = ;
+        state = dto;
         onNewMessage(model);
       },
     );
@@ -54,7 +54,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
 }
 
 final chatProvider =
-    StateNotifierProvider.family<ChatNotifier, List<ChatMessageDto>, int?>(
+    StateNotifierProvider.family<ChatNotifier, ChatMessageDto?, int?>(
   (ref, roomId) {
     final session = ref.watch(sessionProvider);
     final myId = session.user?.id ?? 1;

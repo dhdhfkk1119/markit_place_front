@@ -32,8 +32,8 @@ class ChatDetailNotifier extends ChangeNotifier {
     }
   }
 
-  void addNewMessages(List<ChatMessageDto> newMessages) {
-    messages = [...messages, ...newMessages];
+  void addNewMessages(ChatMessageDto newMessages) {
+    messages = [...messages, newMessages];
     notifyListeners();
   }
 }

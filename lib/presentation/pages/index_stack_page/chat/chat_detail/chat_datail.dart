@@ -48,7 +48,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     }
     return Consumer(builder: (context, ref, child) {
       ref.listen(chatProvider(widget.room.roomId), (previous, next) {
-        if (next.isNotEmpty && mounted) {
+        if (next != null && mounted) {
           ref.read(chatDetailNotifierProvider).addNewMessages(next);
 
           Future.delayed(const Duration(milliseconds: 100), () {
