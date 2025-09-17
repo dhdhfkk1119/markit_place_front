@@ -34,10 +34,14 @@ void setupInterceptors(AuthNotifier authNotifier) {
           '/members/login',
           '/members/register',
           '/members/check-id', // 아이디 중복 확인
-          '/email/register/send-code', // 이메일 인증 코드 발송
-          '/email/register/confirm-code', // 이메일 인증 코드 확인
-          '/email/account/find-id/masked', // 경로 수정됨
-          '/email/account/find-id/send-email', // 경로 수정됨
+          '/email/register/send-code', // 회원가입시 이메일 인증 코드 발송
+          '/email/register/confirm-code', // 회원가입시 이메일 인증 코드 확인
+          '/email/account/find-id/masked', // 아이디 찾기 (마스킹)
+          '/email/account/find-id/send-email', // 아이디 찾기 (전체 아이디 이메일 발송)
+          // --- 비밀번호 재설정 관련 공개 경로 추가 ---
+          '/email/account/password/send-code', // 비밀번호 재설정 코드 발송
+          '/email/account/password/confirm-code', // 비밀번호 재설정 코드 확인
+          '/email/account/password/reset', // 비밀번호 최종 재설정
           // 소셜 로그인 경로가 있다면 추가 (예: '/members/login/social')
         ];
 
