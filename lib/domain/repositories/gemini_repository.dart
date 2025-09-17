@@ -93,8 +93,7 @@ class GeminiRepository {
     };
 
     final requestJson = json.encode(requestData);
-    final response =
-        await dio.post("$_baseUrl/image/$userId", data: requestJson);
+    await dio.post("$_baseUrl/image/$userId", data: requestJson);
   }
 
   Future<List<Map<String, dynamic>>> _convertBase64Images(

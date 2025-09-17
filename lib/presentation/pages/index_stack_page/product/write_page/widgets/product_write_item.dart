@@ -10,6 +10,8 @@ import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
 
+import '../../../../../../_core/utils/notification_util.dart';
+
 class ProductWriteItem extends ConsumerStatefulWidget {
   const ProductWriteItem({super.key});
 
@@ -51,6 +53,15 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     _descriptionController.dispose();
     _priceController.dispose();
     super.dispose();
+  }
+
+  void listenNotifications() {
+    NotificationUtil.notificationStream.stream.listen((String? payload) {
+      if (payload != null && mounted) {
+        print("Received payload: $payload");
+        Navigator.pushNamed(context, "/message", arguments: payload);
+      }
+    });
   }
 
   Future<void> _uploadImage() async {
