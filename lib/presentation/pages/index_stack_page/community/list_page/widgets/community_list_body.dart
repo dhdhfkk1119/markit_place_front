@@ -60,13 +60,15 @@ class _CommunityListBodyState extends ConsumerState<CommunityListBody> {
                           ? Center(child: Text('에러: ${notifier.errorMessage}'))
                           : ListView.separated(
                               itemCount: notifier.communityList.length,
-                              itemBuilder: (context, index) =>
-                                  CommunityListItem(
-                                notifier.communityList[index],
-                                widget.isFilterVisible,
+                              itemBuilder: (context, index) => Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CommunityListItem(
+                                  notifier.communityList[index],
+                                  widget.isFilterVisible,
+                                ),
                               ),
                               separatorBuilder: (_, __) => const Divider(
-                                height: 1,
+                                height: 32,
                                 thickness: 1,
                                 color: Colors.grey,
                               ),
