@@ -148,7 +148,7 @@ class MemberAuthRepository {
       final dioResponse = await _dio.post(
         '/members/login',
         data: {
-          'loginId': loginId,
+          'identity': loginId, // <<< CHANGED HERE
           'password': password,
         },
       );
