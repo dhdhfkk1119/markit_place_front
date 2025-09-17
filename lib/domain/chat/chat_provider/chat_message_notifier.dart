@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_model/chat_message.dart';
+import 'package:markit_place_front/domain/chat/chat_provider/chat_room_notifier.dart';
 import 'package:markit_place_front/domain/chat/chat_repository/chat_repository.dart';
 import 'package:markit_place_front/domain/providers/SessionNotifier.dart';
 
@@ -8,8 +9,10 @@ class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
   final ChatRepository repository;
   final int myId;
   int? _roomId;
+  final Function(ChatMessageModel) onNewMessage; // 메세지 보내실 업데이트
 
-  ChatNotifier(this.repository, this.myId) : super([]);
+  ChatNotifier(this.repository, this.myId, {required this.onNewMessage})
+      : super([]);
 
   // RoomId를 설정하는 메서드
   void setRoomId(int? roomId) {
@@ -20,7 +23,6 @@ class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
   }
 
   void connect() {
-    // roomId가 null이면 연결하지 않습니다. 첫 메시지를 보내기 전에는 연결이 불필요합니다.
     if (_roomId == null) return;
 
     repository.connect(
@@ -28,16 +30,14 @@ class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
       onMessageReceived: (json) {
         final model = ChatMessageModel.fromJson(json);
         final dto = ChatMessageDto.fromModel(model, myId);
-        state = [dto];
+        state = ;
+        onNewMessage(model);
       },
     );
   }
 
   // 이제 sendMessage 메서드가 roomId를 필수 인자로 받도록 변경
   void sendMessage({required int receiverId, required String message}) async {
-    // 첫 메시지 전송 시에는 roomId가 null입니다.
-    // 이 경우 ChatRepository가 방 생성 및 메시지 전송을 모두 처리합니다.
-
     // ChatRepository의 sendMessage를 호출할 때 roomId를 함께 전달합니다.
     repository.sendMessage(
       roomId: _roomId, // roomId가 null일 수 있습니다.
@@ -58,7 +58,17 @@ final chatProvider =
   (ref, roomId) {
     final session = ref.watch(sessionProvider);
     final myId = session.user?.id ?? 1;
-    final notifier = ChatNotifier(ChatRepository(), myId);
+
+    final chatRoomNotifier = ref.read(chatRoomNotifierProvider);
+
+    final notifier = ChatNotifier(
+      ChatRepository(),
+      myId,
+      onNewMessage: (messageModel) {
+        final messageDto = ChatMessageDto.fromModel(messageModel, myId);
+        chatRoomNotifier.updateLastMessage(messageDto, messageModel.roomId);
+      },
+    );
 
     // 만약 roomId가 있다면 초기화 시 바로 설정
     if (roomId != null) {

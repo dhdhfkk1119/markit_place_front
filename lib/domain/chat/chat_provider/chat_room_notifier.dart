@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_room_dto.dart';
+import 'package:markit_place_front/domain/chat/chat_model/chat_message.dart';
 import 'package:markit_place_front/domain/chat/chat_repository/chat_repository.dart';
 import 'package:markit_place_front/domain/chat/chat_repository/chat_room_repository.dart';
 
@@ -55,6 +56,26 @@ class ChatRoomNotifier extends ChangeNotifier {
       message: message,
     );
     await fetchMyChatRooms();
+  }
+
+  // 메세지를 받으면 새로 업데이트
+  Future<void> updateLastMessage(ChatMessageDto message, int roomId) async {
+    final index = chatRooms.indexWhere((room) => room.roomId == roomId);
+    if (index != -1) {
+      final updatedRoom = chatRooms[index].copyWith(
+        lastMessage: message.content,
+      );
+
+      // 목록에서 해당 채팅방을 가장 위로 이동시킵니다.
+      chatRooms.removeAt(index);
+      chatRooms.insert(0, updatedRoom);
+
+      notifyListeners();
+    } else {
+      // 만약 채팅방이 없다면, 새로운 방을 생성해야 할 수도 있습니다.
+      // 이 로직은 백엔드 응답에 따라 달라질 수 있으므로, 필요시 추가 구현합니다.
+      fetchMyChatRooms();
+    }
   }
 }
 

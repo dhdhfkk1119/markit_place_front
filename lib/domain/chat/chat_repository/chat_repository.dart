@@ -33,7 +33,7 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig(
-        url: baseUrl + '/ws-stomp',
+        url: baseUrl + 'api/ws-stomp',
         useSockJS: true,
         onConnect: (StompFrame frame) {
           print("[ChatRepository] STOMP connected successfully!");
