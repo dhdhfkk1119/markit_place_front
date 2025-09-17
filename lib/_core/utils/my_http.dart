@@ -36,6 +36,8 @@ void setupInterceptors(AuthNotifier authNotifier) {
           '/members/check-id', // 아이디 중복 확인
           '/email/register/send-code', // 이메일 인증 코드 발송
           '/email/register/confirm-code', // 이메일 인증 코드 확인
+          '/email/account/find-id/masked', // 경로 수정됨
+          '/email/account/find-id/send-email', // 경로 수정됨
           // 소셜 로그인 경로가 있다면 추가 (예: '/members/login/social')
         ];
 
