@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+// import 'dart:convert'; // 삭제 (json.encode가 삭제된 메소드에서만 사용됨)
+// import 'package:flutter_naver_login/flutter_naver_login.dart'; // 삭제 (네이버 로그인 관련)
 import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
 import 'package:markit_place_front/_core/dtos/error_dto.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart';
@@ -8,24 +10,19 @@ import 'package:markit_place_front/domain/members/dtos/member_register_request.d
 import 'package:markit_place_front/domain/members/dtos/member_register_response.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart';
 import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dart';
-// Import for the new DTO
 import 'package:markit_place_front/domain/members/dtos/access_token_response.dto.dart';
 
 class MemberAuthRepository {
   final Dio _dio = dio; // Use global dio instance
 
   MemberAuthRepository() {
-    // _dio is already the configured global instance.
-    // BaseUrl is set in the global dio.
-    // The auth interceptor is set on the global dio in my_http.dart.
-
-    // Add LogInterceptor to the (now global) _dio instance.
-    // This assumes MemberAuthRepository is effectively a singleton.
-    _dio.interceptors
-        .add(LogInterceptor(requestBody: true, responseBody: true));
+    if (!_dio.interceptors
+        .any((interceptor) => interceptor is LogInterceptor)) {
+      _dio.interceptors
+          .add(LogInterceptor(requestBody: true, responseBody: true));
+    }
   }
 
-  // 아이디 중복 확인 메소드
   Future<bool> checkIdAvailability(String loginId) async {
     try {
       final dioResponse = await _dio.get(
@@ -151,7 +148,7 @@ class MemberAuthRepository {
       final dioResponse = await _dio.post(
         '/members/login',
         data: {
-          'loginId': loginId,
+          'loginId': loginId, // <<< REVERTED HERE
           'password': password,
         },
       );
@@ -221,116 +218,6 @@ class MemberAuthRepository {
     }
   }
 
-  Future<void> requestEmailVerification(String email) async {
-    try {
-      final dioResponse = await _dio.post(
-        '/email/register/send-code',
-        data: {'email': email},
-      );
-
-      final apiResponse = ApiResponseDto<String>.fromJson(
-        dioResponse.data as Map<String, dynamic>,
-      );
-
-      if (apiResponse.success) {
-        print('인증 코드 발송 요청 성공: $email, 응답 메시지: ${apiResponse.response}');
-      } else {
-        throw Exception(apiResponse.error?.message ?? '인증 코드 발송에 실패했습니다.');
-      }
-    } on DioException catch (e) {
-      String finalErrorMessage;
-      ErrorDto? parsedErrorDto;
-      if (e.response?.data != null &&
-          e.response!.data is Map<String, dynamic>) {
-        final responseData = e.response!.data as Map<String, dynamic>;
-        if (responseData.containsKey('error') &&
-            responseData['error'] != null &&
-            responseData['error'] is Map<String, dynamic>) {
-          try {
-            parsedErrorDto = ErrorDto.fromJson(
-                responseData['error'] as Map<String, dynamic>);
-          } catch (parseError) {
-            print(
-                '[RequestEmailVerification Error - DioException] Failed to parse ErrorDto: $parseError');
-          }
-        }
-      }
-      if (parsedErrorDto?.message != null &&
-          parsedErrorDto!.message!.isNotEmpty) {
-        finalErrorMessage = parsedErrorDto.message!;
-      } else {
-        finalErrorMessage = extractErrorMessage(e);
-      }
-      print(
-          '[RequestEmailVerification Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
-      if (parsedErrorDto != null) {
-        print(
-            '[RequestEmailVerification Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
-      }
-      throw Exception(finalErrorMessage);
-    } catch (e) {
-      final errorMessage = extractErrorMessage(e);
-      print('[RequestEmailVerification Error - General] $errorMessage ($e)');
-      throw Exception(errorMessage);
-    }
-  }
-
-  Future<bool> confirmEmailVerification(String email, String code) async {
-    try {
-      final dioResponse = await _dio.post(
-        '/email/register/confirm-code',
-        data: {'email': email, 'code': code},
-      );
-
-      final apiResponse = ApiResponseDto<String>.fromJson(
-        dioResponse.data as Map<String, dynamic>,
-      );
-
-      if (apiResponse.success) {
-        print('이메일 인증 성공: $email, 응답 메시지: ${apiResponse.response}');
-        return true;
-      } else {
-        throw Exception(apiResponse.error?.message ?? '인증 코드 확인에 실패했습니다.');
-      }
-    } on DioException catch (e) {
-      String finalErrorMessage;
-      ErrorDto? parsedErrorDto;
-      if (e.response?.data != null &&
-          e.response!.data is Map<String, dynamic>) {
-        final responseData = e.response!.data as Map<String, dynamic>;
-        if (responseData.containsKey('error') &&
-            responseData['error'] != null &&
-            responseData['error'] is Map<String, dynamic>) {
-          try {
-            parsedErrorDto = ErrorDto.fromJson(
-                responseData['error'] as Map<String, dynamic>);
-          } catch (parseError) {
-            print(
-                '[ConfirmEmailVerification Error - DioException] Failed to parse ErrorDto: $parseError');
-          }
-        }
-      }
-      if (parsedErrorDto?.message != null &&
-          parsedErrorDto!.message!.isNotEmpty) {
-        finalErrorMessage = parsedErrorDto.message!;
-      } else {
-        finalErrorMessage = extractErrorMessage(e);
-      }
-      print(
-          '[ConfirmEmailVerification Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
-      if (parsedErrorDto != null) {
-        print(
-            '[ConfirmEmailVerification Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
-      }
-      throw Exception(finalErrorMessage);
-    } catch (e) {
-      final errorMessage = extractErrorMessage(e);
-      print('[ConfirmEmailVerification Error - General] $errorMessage ($e)');
-      throw Exception(errorMessage);
-    }
-  }
-
-  // New method for token re-issuance
   Future<String?> reissueToken() async {
     try {
       final dioResponse = await _dio.post('/members/reissue');

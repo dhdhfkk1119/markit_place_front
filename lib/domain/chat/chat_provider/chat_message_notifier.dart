@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_model/chat_message.dart';
 import 'package:markit_place_front/domain/chat/chat_repository/chat_repository.dart';
-import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
+import 'package:markit_place_front/domain/providers/SessionNotifier.dart';
 
 class ChatNotifier extends StateNotifier<List<ChatMessageDto>> {
   final ChatRepository repository;

@@ -1,5 +1,8 @@
+// detail_item_image.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import 'package:markit_place_front/_core/constants/assets.dart'; // 기본 이미지 에셋 경로를 위해 추가
 
 import 'fullscreen_gallery.dart';
 
@@ -21,12 +24,16 @@ class _DetailItemImageState extends State<DetailItemImage> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.imagePaths.isEmpty) {
+      // If there are no images, display a placeholder.
+      return _buildDefaultImage();
+    }
+
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.5,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          // 화면 내 썸네일 슬라이드
           PageView.builder(
             controller: _pageController,
             itemCount: widget.imagePaths.length,
@@ -36,9 +43,9 @@ class _DetailItemImageState extends State<DetailItemImage> {
               });
             },
             itemBuilder: (context, index) {
+              final imageUrl = widget.imagePaths[index];
               return InkWell(
                 onTap: () {
-                  // 클릭 시 전체 화면 확대+슬라이드
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -49,16 +56,10 @@ class _DetailItemImageState extends State<DetailItemImage> {
                     ),
                   );
                 },
-                // 경로에 있는 이미지 보여주기(index 리스트 형식으로)
-                child: Image.asset(
-                  widget.imagePaths[index],
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                ),
+                child: _buildImage(imageUrl),
               );
             },
           ),
-          // 현재 페이지 표시
           Positioned(
             bottom: 12,
             child: Container(
@@ -76,6 +77,47 @@ class _DetailItemImageState extends State<DetailItemImage> {
           ),
         ],
       ),
+    );
+  }
+
+  // Base64 또는 네트워크 이미지를 처리하는 함수
+  Widget _buildImage(String imageUrl) {
+    if (imageUrl.startsWith('data:image/')) {
+      // The provided Base64 URL starts with 'data:image/...'.
+      // Check for the comma to safely split the string.
+      try {
+        final commaIndex = imageUrl.indexOf(',');
+        if (commaIndex != -1) {
+          final base64String = imageUrl.substring(commaIndex + 1);
+          final imageBytes = base64Decode(base64String);
+          return Image.memory(
+            imageBytes,
+            fit: BoxFit.cover,
+            width: double.infinity,
+          );
+        }
+      } catch (e) {
+        print('Base64 이미지 디코딩 실패: $e');
+        return _buildDefaultImage();
+      }
+    }
+
+    // If it's not a valid Base64 URL, or if decoding failed,
+    // try to load it as a network image.
+    // Replace this with a robust network image loader.
+    return Image.asset(
+      Assets.Images.product,
+      fit: BoxFit.cover,
+      width: double.infinity,
+    );
+  }
+
+  // 기본 이미지를 만드는 헬퍼 함수
+  Widget _buildDefaultImage() {
+    return Image.asset(
+      Assets.Images.product,
+      fit: BoxFit.cover,
+      width: double.infinity,
     );
   }
 }

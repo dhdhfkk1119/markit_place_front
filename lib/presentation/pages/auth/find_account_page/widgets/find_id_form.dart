@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
 import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
-
-import '../../../../../_core/constants/assets.dart'; // 새로운 위젯 임포트
+import 'package:markit_place_front/_core/constants/assets.dart';
+// Provider import
+import 'package:markit_place_front/domain/members/providers/find_id_provider.dart';
 
 class FindIdForm extends ConsumerStatefulWidget {
   const FindIdForm({super.key});
@@ -17,71 +18,71 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
-  String _maskedId = '';
-  bool _isLoadingShowMaskedId = false;
-  bool _isLoadingSendEmail = false;
-  String _message = '';
-
   @override
   void dispose() {
     _emailController.dispose();
+    // 위젯이 화면에서 사라질 때 notifier의 상태를 초기화 할 수 있습니다. (선택 사항)
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   if (mounted) {
+    //     ref.read(findIdNotifierProvider.notifier).resetState();
+    //   }
+    // });
     super.dispose();
   }
 
-  Future<void> _handleShowMaskedId() async {
+  // --- Button Handlers ---
+  void _handleShowMaskedId() {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoadingShowMaskedId = true;
-        _message = '';
-        _maskedId = '';
-      });
-      await Future.delayed(
-          const Duration(milliseconds: 500)); // Simulate API call
-      _maskedId = "ide***********"; // 샘플 마스킹 아이디
-      if (!mounted) return;
-      setState(() {
-        _isLoadingShowMaskedId = false;
-      });
+      ref
+          .read(findIdNotifierProvider.notifier)
+          .fetchMaskedId(_emailController.text);
     }
   }
 
-  Future<void> _handleSendFullIdByEmail() async {
+  void _handleSendFullIdByEmail() {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoadingSendEmail = true;
-        _message = '';
-      });
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
-      bool success = true; // API 호출 결과에 따라 설정
-      if (!mounted) return;
-      if (success) {
-        _message = '이메일로 아이디 정보가 발송되었습니다.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(_message,
-                  style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
-        );
-      } else {
-        _message = '이메일 발송에 실패했습니다. 다시 시도해주세요.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(_message,
-                  style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontFamily: Assets.Fonts.cookieRun))),
-        );
-      }
-      setState(() {
-        _isLoadingSendEmail = false;
-      });
+      ref
+          .read(findIdNotifierProvider.notifier)
+          .sendLoginIdToEmail(_emailController.text);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cookieRunTextStyle = TextStyle(fontFamily: Assets.Fonts.cookieRun);
     final cookieRunPrimaryColorTextStyle = TextStyle(
         fontFamily: Assets.Fonts.cookieRun, color: theme.colorScheme.primary);
+
+    final findIdState = ref.watch(findIdNotifierProvider);
+
+    ref.listen<FindIdState>(findIdNotifierProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage!.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(next.errorMessage!,
+                  style: cookieRunTextStyle.copyWith(
+                      color: theme.colorScheme.error)),
+              duration: const Duration(seconds: 3)),
+        );
+        // 메시지 표시 후 상태에서 메시지 제거
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted)
+            ref.read(findIdNotifierProvider.notifier).clearMessages();
+        });
+      }
+      if (next.infoMessage != null && next.infoMessage!.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(next.infoMessage!, style: cookieRunTextStyle),
+              duration: const Duration(seconds: 3)),
+        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted)
+            ref.read(findIdNotifierProvider.notifier).clearMessages();
+        });
+      }
+    });
 
     return Padding(
       padding: const EdgeInsets.all(medium),
@@ -108,64 +109,57 @@ class _FindIdFormState extends ConsumerState<FindIdForm> {
                 if (value == null || value.isEmpty) {
                   return '이메일 주소를 입력해주세요.';
                 }
-                if (!value.contains('@') || !value.contains('.')) {
+                final emailRegExp = RegExp(
+                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+$");
+                if (!emailRegExp.hasMatch(value)) {
                   return '유효한 이메일 형식이 아닙니다.';
                 }
                 return null;
               },
             ),
             const SizedBox(height: medium),
-            if (_message.isNotEmpty &&
-                _maskedId.isEmpty &&
-                !_isLoadingSendEmail &&
-                !_isLoadingShowMaskedId)
+
+            // 마스킹된 아이디 표시
+            if (findIdState.maskedId != null &&
+                findIdState.maskedId!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: small),
                 child: Text(
-                  _message,
-                  style: TextStyle(
-                      fontFamily: Assets.Fonts.cookieRun,
-                      color:
-                          _message.contains("실패") || _message.contains("없습니다")
-                              ? theme.colorScheme.error
-                              : theme.colorScheme.onSurface),
-                ),
-              ),
-            if (_maskedId.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: small),
-                child: Text(
-                  '확인된 아이디: $_maskedId',
+                  '확인된 아이디: ${findIdState.maskedId}',
                   style: theme.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       fontFamily: Assets.Fonts.cookieRun),
                 ),
               ),
+
             const SizedBox(height: large),
-            if (_maskedId.isEmpty)
+
+            // 조건에 따라 버튼 표시
+            if (findIdState.maskedId == null || findIdState.maskedId!.isEmpty)
               CustomButtonLarge(
                 text: '화면에 마스킹된 아이디 보기',
-                onPressed: _isLoadingShowMaskedId || _isLoadingSendEmail
+                isLoading: findIdState.isLoadingMaskedId,
+                onPressed: findIdState.isLoadingMaskedId ||
+                        findIdState.isLoadingSendEmail
                     ? null
-                    : () {
-                        _handleShowMaskedId();
-                      },
+                    : _handleShowMaskedId,
               )
             else
               CustomButtonLarge(
                 text: '아이디로 로그인하기',
-                onPressed: _isLoadingShowMaskedId
-                    ? null
-                    : () {
-                        Navigator.pushNamed(context, '/account-login');
-                      },
+                isLoading: false, // 이 버튼 자체는 로딩 상태가 직접 연관되지 않을 수 있음
+                onPressed: () {
+                  // 로그인 페이지로 이동하기 전에 상태 초기화 (선택 사항)
+                  // ref.read(findIdNotifierProvider.notifier).resetState();
+                  Navigator.pushNamed(context, '/account-login');
+                },
               ),
             const SizedBox(height: small),
             Center(
               child: CustomLInkGrey(
-                // StyledLinkTextButton으로 변경
                 text: '이메일로 전체 아이디 전송',
-                onPressed: _isLoadingSendEmail || _isLoadingShowMaskedId
+                onPressed: findIdState.isLoadingSendEmail ||
+                        findIdState.isLoadingMaskedId
                     ? null
                     : _handleSendFullIdByEmail,
               ),

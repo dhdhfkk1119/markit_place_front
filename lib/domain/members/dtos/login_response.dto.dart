@@ -6,15 +6,14 @@ class LoginResponseDataDto {
   final int id;
   final String loginId;
   final String? name; // 이름은 nullable일 수 있음
-  final String? email; // 이메일은 nullable일 수 있음
-  // final String role;
+  final String role; // 역할 필드 추가 (non-nullable)
+  // 서버 응답에 status 필드도 있었지만, SessionUser에서 현재 사용하지 않으므로 DTO에서도 일단 제외하거나 필요시 추가
 
   LoginResponseDataDto({
     required this.id,
     required this.loginId,
     this.name,
-    this.email,
-    // required this.role,
+    required this.role, // 생성자에 role 추가
   });
 
   factory LoginResponseDataDto.fromJson(Map<String, dynamic> json) {
@@ -22,18 +21,17 @@ class LoginResponseDataDto {
       id: json['id'] as int,
       loginId: json['loginId'] as String,
       name: json['name'] as String?,
-      email: json['email'] as String?,
-      // role: json['role'] as String, // 서버 응답에 role이 없을 수 있고, 클라이언트에서 사용 안 함
+      role: json['role'] as String, // fromJson에 role 추가
     );
   }
 
   // 이 DTO를 SessionUser 모델로 변환하는 메소드
   SessionUser toSessionUser() {
     return SessionUser(
-      memberId: id, // SessionUser의 memberId 필드 사용
+      memberId: id,
       loginId: loginId,
       name: name,
-      // role: role, // SessionUser 모델에서도 role 필드를 주석/제거 예정
+      role: role, // SessionUser 생성자에 role 전달
     );
   }
 
@@ -43,8 +41,7 @@ class LoginResponseDataDto {
       'id': id,
       'loginId': loginId,
       'name': name,
-      'email': email,
-      // 'role': role,
+      'role': role, // toJson에 role 추가
     };
   }
 }

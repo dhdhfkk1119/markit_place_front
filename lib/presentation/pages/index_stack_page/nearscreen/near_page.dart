@@ -1,144 +1,61 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
-import 'package:location/location.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../domain/providers/naver_map_notifier.dart';
 
-class NearPage extends StatefulWidget {
+class NearPage extends ConsumerStatefulWidget {
   const NearPage({super.key});
 
   @override
-  State<NearPage> createState() => _NearPageState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _NearPageState();
 }
 
-class _NearPageState extends State<NearPage> {
-  Future<LocationData?>? _locationFuture;
-  NLatLng? _currentPosition;
-  late final NaverMapController _mapController;
-
+class _NearPageState extends ConsumerState<NearPage> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsFlutterBinding.ensureInitialized();
-    _initNaverMap();
-    _locationFuture = _fetchPosition();
-  }
-
-  Future<void> _initNaverMap() async {
-    await FlutterNaverMap().init(
-        clientId: dotenv.env['NAVER_CLIENT_ID']!,
-        onAuthFailed: (ex) {
-          print("인증 실패: $ex");
-        });
-  }
-
-  Future<LocationData?> _fetchPosition() async {
-    final location = Location();
-    try {
-      var serviceEnabled = await location.serviceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await location.requestService();
-        if (!serviceEnabled) {
-          return null;
-        }
-      }
-
-      var permissionGranted = await location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
-        permissionGranted = await location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) {
-          return null;
-        }
-      }
-
-      return await location.getLocation();
-    } catch (e) {
-      print("위치 정보를 가져오는 데 실패했습니다: $e");
-      return null;
-    }
-  }
+  void initState() {}
 
   @override
   Widget build(BuildContext context) {
-    LocationData? _locationData = null;
+    final currentTrackingMode = ref.watch(naverMapProvider);
+
+    final IconData fabIcon;
+    switch (currentTrackingMode) {
+      case NLocationTrackingMode.face:
+        fabIcon = Icons.explore;
+        break;
+      default:
+        fabIcon = Icons.my_location;
+    }
+
+    final Color fabColor = (currentTrackingMode == NLocationTrackingMode.none)
+        ? Colors.black54
+        : Colors.blue;
 
     return Scaffold(
-      body: Stack(children: [
-        FutureBuilder<LocationData?>(
-          future: _locationFuture,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text("현재 위치를 가져오는 중..."),
-                  ],
-                ),
-              );
-            }
-
-            if (snapshot.data == null) {
-              return const Center(
-                child: Text("위치 권한을 허용해주세요."),
-              );
-            }
-
-            _locationData = snapshot.data!;
-            print("${_locationData!.latitude} / ${_locationData!.longitude}");
-            _currentPosition =
-                NLatLng(_locationData!.latitude!, _locationData!.longitude!);
-
-            if (_currentPosition == null) {
-              return const Placeholder();
-            }
-
-            return NaverMap(
-              options: NaverMapViewOptions(
-                initialCameraPosition: NCameraPosition(
-                    target: _currentPosition!,
-                    zoom: 15,
-                    bearing: _locationData!.heading!),
-              ),
-              onMapReady: (controller) {
-                _mapController = controller;
-                final marker = NMarker(
-                  id: "my_location",
-                  size: Size(50, 50),
-                  icon: NOverlayImage.fromAssetImage(Assets.Images.marker),
-                  position: _currentPosition!,
-                  caption: const NOverlayCaption(text: "내 위치"),
-                );
-                controller.addOverlay(marker);
-                print("네이버 맵 준비 완료! 현재 위치에 마커 표시!");
-              },
-            );
-          },
+      body: NaverMap(
+        options: const NaverMapViewOptions(
+          mapType: NMapType.basic,
         ),
-      ]),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (_currentPosition != null) {
-            final cameraUpdate = NCameraUpdate.withParams(
-                target: _currentPosition!,
-                zoom: 15,
-                bearing: _locationData!.heading);
-
-            cameraUpdate.setAnimation(
-                animation: NCameraAnimation.fly,
-                duration: const Duration(seconds: 2));
-
-            _mapController.updateCamera(cameraUpdate);
+        onMapReady: (controller) {
+          ref.read(naverMapProvider.notifier).setMapController(controller);
+          ref.read(naverMapProvider.notifier).cycleTrackingMode();
+        },
+        onCameraChange: (reason, animated) {
+          if (reason == NCameraUpdateReason.gesture) {
+            ref.read(naverMapProvider.notifier).onCameraChangeByGesture();
           }
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
+        onPressed: () {
+          ref.read(naverMapProvider.notifier).cycleTrackingMode();
+        },
+        child: Icon(
+          fabIcon,
+          color: fabColor,
         ),
-        child: const Icon(Icons.gps_fixed_rounded),
       ),
     );
   }
