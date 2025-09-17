@@ -1,8 +1,6 @@
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/naver_map/location_tracking_mode.dart';
-
 class NaverMapNotifier extends Notifier<NLocationTrackingMode> {
   NaverMapController? _controller;
 

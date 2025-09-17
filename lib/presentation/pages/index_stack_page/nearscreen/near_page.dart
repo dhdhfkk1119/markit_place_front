@@ -1,15 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../domain/models/naver_map/location_tracking_mode.dart';
 import '../../../../domain/providers/naver_map_notifier.dart';
 
-class NearPage extends ConsumerWidget {
+class NearPage extends ConsumerStatefulWidget {
   const NearPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() => _NearPageState();
+}
+
+class _NearPageState extends ConsumerState<NearPage> {
+  @override
+  void initState() {}
+
+  @override
+  Widget build(BuildContext context) {
     final currentTrackingMode = ref.watch(naverMapProvider);
 
     final IconData fabIcon;
@@ -27,8 +33,12 @@ class NearPage extends ConsumerWidget {
 
     return Scaffold(
       body: NaverMap(
+        options: const NaverMapViewOptions(
+          mapType: NMapType.basic,
+        ),
         onMapReady: (controller) {
           ref.read(naverMapProvider.notifier).setMapController(controller);
+          ref.read(naverMapProvider.notifier).cycleTrackingMode();
         },
         onCameraChange: (reason, animated) {
           if (reason == NCameraUpdateReason.gesture) {
