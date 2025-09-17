@@ -3,12 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 
-// --- 사용하지 않는 Provider import 주석 처리 또는 삭제 ---
-// import 'package:markit_place_front/domain/providers/auth_form/SessionNotifier.dart';
-// import 'package:markit_place_front/domain/providers/auth_form/login_form_notifier.dart'; // 삭제됨
-
 // --- 새로운 Provider import ---
-import 'package:markit_place_front/domain/members/providers/member_login_form_provider.dart';
+import 'package:markit_place_front/domain/members/providers/member_login_form_provider.dart'; // 수정됨
 import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
 
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
@@ -28,6 +24,8 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
   final _formKey = GlobalKey<FormState>();
   bool _autoLogin = false;
 
+  // 컨트롤러 변수명은 _idController로 유지해도 되나, 명확성을 위해 _loginInputController 등으로 변경도 고려 가능
+  // 여기서는 _idController를 그대로 사용. 이 컨트롤러가 이제 아이디 또는 이메일 입력을 받음.
   final _idController = TextEditingController(text: 'user1');
   final _passwordController = TextEditingController(text: 'user1234');
 
@@ -69,13 +67,17 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
           const SizedBox(height: xLarge),
           CustomTextFormField(
             controller: _idController,
-            onChanged: (value) => memberLoginFormNotifier.updateUsername(value),
+            // 1. onChanged 콜백에서 updateLoginInput 호출로 변경
+            onChanged: (value) =>
+                memberLoginFormNotifier.updateLoginInput(value),
             decoration: InputDecoration(
-              labelText: '아이디',
+              // 2. labelText 변경: "아이디" -> "아이디 또는 이메일"
+              labelText: '아이디 또는 이메일',
               border: const OutlineInputBorder(),
-              errorText: memberLoginFormState.usernameError.isEmpty
+              // 3. errorText를 loginInputError에서 가져오도록 변경
+              errorText: memberLoginFormState.loginInputError.isEmpty
                   ? null
-                  : memberLoginFormState.usernameError,
+                  : memberLoginFormState.loginInputError,
             ),
           ),
           const SizedBox(height: medium),
@@ -112,10 +114,13 @@ class _AccountLoginFormState extends ConsumerState<AccountLoginForm> {
             isLoading:
                 ref.watch(authNotifierProvider).status == AuthStatus.loading,
             onPressed: () {
-              memberLoginFormNotifier.updateUsername(_idController.text);
+              // 4. 로그인 버튼 클릭 시 updateLoginInput 호출로 변경
+              memberLoginFormNotifier.updateLoginInput(_idController.text);
               memberLoginFormNotifier.updatePassword(_passwordController.text);
 
               if (memberLoginFormNotifier.validateForm()) {
+                // login 메소드로 전달되는 _idController.text 값은 변경 없음
+                // (이 값은 아이디 또는 이메일 문자열 그대로 전달됨)
                 ref.read(authNotifierProvider.notifier).login(
                       _idController.text,
                       _passwordController.text,
