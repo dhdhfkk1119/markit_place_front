@@ -9,7 +9,7 @@ import 'package:markit_place_front/presentation/pages/auth/social_login_page/soc
 import 'package:markit_place_front/presentation/pages/auth/terms_page/terms_page.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/main_screen.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
-import 'package:markit_place_front/presentation/pages/splash/splash_page.dart';
+import 'package:markit_place_front/_core/utils/notification_util.dart';
 
 // AuthNotifier import 추가
 import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
@@ -20,17 +20,19 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  _initNaverMap();
+  _init();
   setupInterceptors(AuthNotifier());
   runApp(const ProviderScope(child: MyApp()));
 }
 
-void _initNaverMap() async {
+void _init() async {
   await FlutterNaverMap().init(
       clientId: dotenv.env['NAVER_CLIENT_ID']!,
       onAuthFailed: (ex) {
         print("인증 실패: $ex");
       });
+
+  await NotificationUtil.init();
 }
 
 class MyApp extends StatelessWidget {
