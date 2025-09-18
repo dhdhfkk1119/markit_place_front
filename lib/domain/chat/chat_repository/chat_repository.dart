@@ -5,7 +5,7 @@ import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 import 'chat_room_repository.dart';
 
-String baseUrl = "http://192.168.0.128:8080";
+String baseUrl = baseUrl;
 
 class ChatRepository {
   final _storage = const FlutterSecureStorage();
@@ -33,7 +33,7 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig(
-        url: baseUrl + 'api/ws-stomp',
+        url: baseUrl + '/api/ws-stomp',
         useSockJS: true,
         onConnect: (StompFrame frame) {
           print("[ChatRepository] STOMP connected successfully!");

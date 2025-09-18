@@ -69,11 +69,12 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
                 final message = _controller.text.trim();
                 if (message.isEmpty) return;
 
-                final roomId = widget.roomId; // ChatDetail에서 전달받은 roomId
                 final receiverId =
                     widget.receiverId; // ChatDetail에서 전달받은 receiverId
 
-                ref.read(chatProvider(roomId).notifier).sendMessage(
+                await ref
+                    .read(chatProvider(widget.roomId).notifier)
+                    .sendMessage(
                       receiverId: receiverId,
                       message: message,
                     );

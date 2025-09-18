@@ -5,7 +5,7 @@ import '../chat_model/chat_message.dart';
 
 final _storage = FlutterSecureStorage();
 
-String baseUrl = "http://192.168.0.128:8080/api";
+String baseUrl = baseUrl;
 
 class ChatDetailRepository {
   Future<List<ChatMessageDto>> getMyRoomMessage({
@@ -35,10 +35,17 @@ class ChatDetailRepository {
         final List<dynamic> chatList = data["content"] ?? [];
         print("[Repository] chatList 길이: ${chatList.length}");
 
-        final rooms = chatList.map((data) {
-          final model = ChatMessageModel.fromJson(data);
-          return ChatMessageDto.fromModel(model, myId);
-        }).toList();
+        final rooms = <ChatMessageDto>[];
+        for (var data in chatList) {
+          try {
+            final model = ChatMessageModel.fromJson(data);
+            final dto = ChatMessageDto.fromModel(model, myId);
+            rooms.add(dto);
+          } catch (e) {
+            print("메시지 파싱 중 오류 발생: $e, 데이터: $data");
+            // 문제가 있는 데이터는 건너뛰고 계속 진행
+          }
+        }
 
         print("[Repository] 메시지 파싱 완료: ${rooms.length}개");
         return rooms;

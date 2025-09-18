@@ -37,13 +37,23 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
   }
 
   // 이제 sendMessage 메서드가 roomId를 필수 인자로 받도록 변경
-  void sendMessage({required int receiverId, required String message}) async {
-    // ChatRepository의 sendMessage를 호출할 때 roomId를 함께 전달합니다.
-    repository.sendMessage(
+  Future<int> sendMessage({
+    required int receiverId,
+    required String message,
+  }) async {
+    // ChatRepository의 sendMessage가 반환하는 roomId를 그대로 리턴
+    final int newRoomId = await repository.sendMessage(
       roomId: _roomId, // roomId가 null일 수 있습니다.
       receiverId: receiverId,
       message: message,
     );
+
+    // 메시지 전송 후, ChatNotifier의 roomId를 새로 받은 값으로 업데이트합니다.
+    if (_roomId == null) {
+      setRoomId(newRoomId);
+      connect(); // 새로운 roomId로 WebSocket 연결을 맺습니다.
+    }
+    return newRoomId;
   }
 
   // 방이 생성되거나 기존 방 ID를 받아왔을 때, Notifier의 상태를 업데이트하는 메서드
