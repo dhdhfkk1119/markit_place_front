@@ -6,6 +6,8 @@ import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_detail_notifier.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
 import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
+import 'package:markit_place_front/domain/product/providers/product_detail_notifier.dart';
+import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/widgets/detail_bottom_sheet.dart';
 
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
@@ -43,6 +45,14 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   @override
   Widget build(BuildContext context) {
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
+    final itemInfoNotifier =
+        ref.watch(productDetailProvider(widget.room.itemId));
+
+    final item = itemInfoNotifier.productDetail;
+
+    if (itemInfoNotifier.isLoading) return CircularProgressIndicator();
+    if (itemInfoNotifier.errorMessage != null)
+      return Text(itemInfoNotifier.errorMessage!);
 
     if (chatDetailNotifier.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -132,13 +142,13 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Column(
+                      Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("rtx 3080ti 새삥 [미사용]"),
+                          Text("${item?.productList.title}"),
                           Row(children: [
-                            Text("550,000원"),
+                            Text("${item?.productList.price}원"),
                             Text(
                               "(가격제안불가)",
                               style: TextStyle(color: Colors.grey),
