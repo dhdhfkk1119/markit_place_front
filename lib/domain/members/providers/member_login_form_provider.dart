@@ -1,14 +1,10 @@
-// D:/workspace-flutter/markit_place_front/lib/domain/members/providers/member_login_form_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// validator_util.dart를 import 합니다. validatePassword를 사용하기 위함입니다.
 import 'package:markit_place_front/_core/utils/validator_util.dart';
 
 class MemberLoginFormModel {
-  // 필드명을 loginInput으로 변경하여 아이디 또는 이메일 입력 필드임을 명확히 합니다.
   final String loginInput;
   final String password;
 
-  // 에러 메시지 필드명도 loginInputError로 변경합니다.
   final String loginInputError;
   final String passwordError;
 
@@ -43,7 +39,7 @@ class MemberLoginFormNotifier
     extends AutoDisposeNotifier<MemberLoginFormModel> {
   @override
   MemberLoginFormModel build() {
-    // 초기 모델 생성 시 필드명에 맞춰 빈 문자열로 초기화합니다.
+    // 초기 모델 생성 시 필드명에 맞춰 빈 문자열로 초기화
     return MemberLoginFormModel("", "", "", "");
   }
 
