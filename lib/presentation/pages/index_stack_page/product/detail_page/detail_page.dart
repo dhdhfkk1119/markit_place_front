@@ -47,7 +47,9 @@ class _DetailPageState extends ConsumerState<DetailPage> {
   @override
   Widget build(BuildContext context) {
     final productState = ref.watch(productDetailProvider(widget.productId));
+
     final sellerId = productState.productDetail?.sellerId ?? 0;
+    final itemId = productState.itemId;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -70,6 +72,7 @@ class _DetailPageState extends ConsumerState<DetailPage> {
           scrollController: _scrollController, productId: widget.productId),
       bottomSheet: DetailBottomSheet(
         receiverId: sellerId,
+        itemId: itemId,
       ),
     );
   }

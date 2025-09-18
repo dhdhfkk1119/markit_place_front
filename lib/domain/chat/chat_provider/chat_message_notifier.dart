@@ -40,12 +40,14 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
   Future<int> sendMessage({
     required int receiverId,
     required String message,
+    required int itemId,
   }) async {
     // ChatRepository의 sendMessage가 반환하는 roomId를 그대로 리턴
     final int newRoomId = await repository.sendMessage(
       roomId: _roomId, // roomId가 null일 수 있습니다.
       receiverId: receiverId,
       message: message,
+      itemId: itemId,
     );
 
     // 메시지 전송 후, ChatNotifier의 roomId를 새로 받은 값으로 업데이트합니다.

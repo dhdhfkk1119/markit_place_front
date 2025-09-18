@@ -32,7 +32,8 @@ class MyPage extends StatelessWidget {
               // 톱니바퀴 버튼을 눌렀을 때 프로필 수정 페이지로 이동
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MyProfileEditPage()),
+                MaterialPageRoute(
+                    builder: (context) => const MyProfileEditPage()),
               );
             },
             icon: const Icon(Icons.settings, color: Colors.grey),

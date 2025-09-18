@@ -11,6 +11,7 @@ class ChatMessageModel {
   final String createdAt;
   final MessageType messageType;
   final List<String> imageUrls;
+  final int itemId;
 
   ChatMessageModel({
     required this.messageId,
@@ -21,6 +22,7 @@ class ChatMessageModel {
     required this.createdAt,
     required this.messageType,
     required this.imageUrls,
+    required this.itemId,
   });
 
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
@@ -45,6 +47,7 @@ class ChatMessageModel {
         (e) => e.toString() == 'MessageType.${json['messageType']}',
       ),
       imageUrls: List<String>.from(json['imageUrls'] ?? []),
+      itemId: json["itemId"],
     );
   }
 }

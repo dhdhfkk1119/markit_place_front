@@ -42,12 +42,17 @@ class ProductListItem extends ConsumerWidget {
 
   // 상품에대한 대표 이미지를 만드는 함수
   Widget _buildProductImage(String? thumbnailUrl) {
+    // product.id를 기준으로 1~10까지 순환
+    final imageIndex = (product.id % 10) + 1;
+    final imagePath = 'assets/product$imageIndex.jpg';
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.asset(
-        Assets.Images.product,
+        imagePath,
         width: 100,
         height: 100,
+        fit: BoxFit.cover,
       ),
     );
   }

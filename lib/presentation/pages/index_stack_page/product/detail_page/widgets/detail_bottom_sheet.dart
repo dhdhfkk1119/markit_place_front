@@ -7,9 +7,11 @@ import 'package:markit_place_front/presentation/widgets/custom_text_form_field.d
 
 class DetailBottomSheet extends ConsumerStatefulWidget {
   final int receiverId; // 현재 대화할 상대방 ID
+  final int itemId;
 
   const DetailBottomSheet({
     required this.receiverId,
+    required this.itemId,
     super.key,
   });
 
@@ -65,6 +67,8 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
             IconButton(
               icon: const Icon(Icons.send, color: Colors.deepPurpleAccent),
               onPressed: () async {
+                print("해당 상품의 번호는 ${widget.itemId}");
+
                 final message = _controller.text.trim();
                 if (message.isEmpty) {
                   return;
@@ -72,6 +76,7 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
 
                 // receiverId는 widget.receiverId로 올바르게 전달받고 있습니다.
                 final receiverId = widget.receiverId;
+                final itemId = widget.itemId;
 
                 // sendMessage 호출 (새로운 방이 생성될 경우 roomId를 반환받음)
                 final chatNotifier = ref.read(
@@ -79,6 +84,7 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
                 await chatNotifier.sendMessage(
                   receiverId: receiverId,
                   message: message,
+                  itemId: itemId,
                 );
 
                 // 메시지 전송 후, ChatRoomNotifier를 통해 채팅방 목록을 새로고침합니다.

@@ -5,7 +5,7 @@ import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 import 'chat_room_repository.dart';
 
-String baseUrl = baseUrl;
+String Url = "http://192.168.0.128:8080/api";
 
 class ChatRepository {
   final _storage = const FlutterSecureStorage();
@@ -33,7 +33,7 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig(
-        url: baseUrl + '/api/ws-stomp',
+        url: Url + '/ws-stomp',
         useSockJS: true,
         onConnect: (StompFrame frame) {
           print("[ChatRepository] STOMP connected successfully!");
@@ -74,18 +74,16 @@ class ChatRepository {
     required int? roomId,
     required int receiverId,
     required String message,
+    required int itemId,
   }) async {
-    int currentRoomId =
-        roomId ?? await ChatRoomRepository.getOrCreateRoom(receiverId);
-
-    if (!isConnected) {
-      await connect(roomId: currentRoomId, onMessageReceived: (json) {});
-    }
+    int currentRoomId = roomId ??
+        await ChatRoomRepository.getOrCreateRoom(receiverId, itemId, message);
 
     final payload = {
       "roomId": currentRoomId,
       "receiveId": receiverId,
       "message": message,
+      "itemId": itemId,
     };
 
     _client?.send(

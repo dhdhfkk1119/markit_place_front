@@ -5,7 +5,7 @@ import '../chat_model/chat_message.dart';
 
 final _storage = FlutterSecureStorage();
 
-String baseUrl = baseUrl;
+String Url = "http://192.168.0.128:8080/api";
 
 class ChatDetailRepository {
   Future<List<ChatMessageDto>> getMyRoomMessage({
@@ -24,7 +24,7 @@ class ChatDetailRepository {
     try {
       print("[Repository] Dio 요청 시작");
       final response = await Dio().get(
-        baseUrl + '/chat/room/$roomId',
+        Url + '/chat/room/$roomId',
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 

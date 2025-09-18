@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_repository/chat_detail_repository.dart';
+import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
 
 class ChatDetailNotifier extends ChangeNotifier {
   final ChatDetailRepository repository = ChatDetailRepository();
@@ -32,7 +33,15 @@ class ChatDetailNotifier extends ChangeNotifier {
     }
   }
 
-  void addNewMessages(ChatMessageDto newMessages) {
+  void addNewMessages(ChatMessageDto newMessages, WidgetRef ref) {
+    final authState = ref.read(authNotifierProvider);
+
+    // 현재 사용자의 ID를 가져와서 isMine 속성을 업데이트
+    if (authState.user != null) {
+      newMessages = newMessages.copyWith(
+          isMine: newMessages.senderId == authState.user!.memberId);
+    }
+
     final newMessagesList = List<ChatMessageDto>.from(messages)
       ..add(newMessages);
     messages = newMessagesList;

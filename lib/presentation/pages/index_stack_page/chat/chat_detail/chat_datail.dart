@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_detail_notifier.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
@@ -54,7 +55,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     return Consumer(builder: (context, ref, child) {
       ref.listen(chatProvider(widget.room.roomId), (previous, next) {
         if (next != null && mounted) {
-          ref.read(chatDetailNotifierProvider).addNewMessages(next);
+          ref.read(chatDetailNotifierProvider).addNewMessages(next, ref);
 
           Future.delayed(const Duration(milliseconds: 100), () {
             _scrollController.addListener(() {
@@ -177,6 +178,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
         bottomSheet: DetailBottomSheet(
           receiverId: widget.room.otherUserId,
           roomId: widget.room.roomId,
+          itemId: widget.room.itemId,
         ),
       );
     });
@@ -223,6 +225,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
               child: Text(message.content),
             ),
           ),
+          CustomWidget.buildTitle(message.time,
+              size: 11, color: Colors.black87),
         ],
       ),
     );
@@ -235,6 +239,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          CustomWidget.buildTitle(message.time,
+              size: 11, color: Colors.black87),
           Container(
             constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.7),

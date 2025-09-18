@@ -6,12 +6,14 @@ class ChatRoom {
   final User otherUser;
   final String lastMessage;
   final String createdAt;
+  final int itemId;
 
   ChatRoom({
     required this.roomId,
     required this.otherUser,
     required this.lastMessage,
     required this.createdAt,
+    required this.itemId,
   });
 
   factory ChatRoom.fromJson(Map<String, dynamic> data) {
@@ -25,6 +27,7 @@ class ChatRoom {
       ),
       lastMessage: data['lastMessage'],
       createdAt: data['lastMessageCreatedAt'],
+      itemId: data['itemId'],
     );
   }
 }

@@ -7,10 +7,12 @@ import 'package:markit_place_front/presentation/widgets/custom_text_form_field.d
 class DetailBottomSheet extends ConsumerStatefulWidget {
   final int receiverId; // 현재 대화할 상대방 ID
   final int? roomId;
+  final int itemId;
 
   const DetailBottomSheet({
     required this.receiverId,
     this.roomId,
+    required this.itemId,
     super.key,
   });
 
@@ -71,12 +73,14 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
 
                 final receiverId =
                     widget.receiverId; // ChatDetail에서 전달받은 receiverId
+                final itemId = widget.itemId;
 
                 await ref
                     .read(chatProvider(widget.roomId).notifier)
                     .sendMessage(
                       receiverId: receiverId,
                       message: message,
+                      itemId: itemId,
                     );
                 _controller.clear();
               },

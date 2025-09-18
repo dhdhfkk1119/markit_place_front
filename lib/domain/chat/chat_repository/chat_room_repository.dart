@@ -6,28 +6,27 @@ import 'package:markit_place_front/domain/chat/chat_model/chat_room.dart';
 
 final _storage = FlutterSecureStorage();
 
-String baseUrl = baseUrl;
+String Url = "http://192.168.0.128:8080/api";
 
 class ChatRoomRepository {
   // 서버에 room 요청 (없으면 생성, 있으면 기존 roomId 반환)
-  static Future<int> getOrCreateRoom(int receiverId) async {
+  static Future<int> getOrCreateRoom(
+      int receiverId, int itemId, String message) async {
     final token = await _storage.read(key: "accessToken");
 
     final response = await dio.post(
-      baseUrl + '/chat/send', // 메시지 전송용 엔드포인트
+      Url + '/chat/rooms/create',
       options: Options(
         headers: {"Authorization": "Bearer $token"},
       ),
-      data: {
-        "receiveId": receiverId,
-        "message": "",
-      },
+      data: {"receiveId": receiverId, "itemId": itemId, "message": message},
     );
 
     if (response.statusCode == 200) {
       final data = response.data;
-      // 서버에서 반환하는 roomId를 받아옴
-      return data['roomId'];
+      final roomId = data['roomId'] ?? data['id'];
+      if (roomId == null) throw Exception("roomId가 응답에 없습니다");
+      return roomId;
     } else {
       throw Exception("채팅방을 가져오거나 생성할 수 없습니다.");
     }
