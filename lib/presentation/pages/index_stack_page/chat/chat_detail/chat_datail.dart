@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_detail_notifier.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
-import 'package:markit_place_front/domain/providers/SessionNotifier.dart';
+import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/widgets/detail_bottom_sheet.dart';
 
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
@@ -25,13 +25,16 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   @override
   void initState() {
     super.initState();
+    print("[ChatDetail] initState 호출됨");
 
     Future.microtask(() {
-      final session = ref.read(sessionProvider);
-      if (session.user != null) {
-        ref
-            .read(chatDetailNotifierProvider)
-            .fetchMessages(roomId: widget.room.roomId, myId: session.user!.id);
+      final authState = ref.read(authNotifierProvider);
+
+      if (authState.user != null) {
+        ref.read(chatDetailNotifierProvider).fetchMessages(
+            roomId: widget.room.roomId, myId: authState.user!.memberId);
+      } else {
+        print("[ChatDetail] fetchMessages 호출 실패: 세션 사용자 정보가 없음");
       }
     });
   }
@@ -43,20 +46,26 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     if (chatDetailNotifier.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
+
     if (chatDetailNotifier.errorMessage.isNotEmpty) {
       return Center(child: Text(chatDetailNotifier.errorMessage));
     }
+
     return Consumer(builder: (context, ref, child) {
       ref.listen(chatProvider(widget.room.roomId), (previous, next) {
         if (next != null && mounted) {
           ref.read(chatDetailNotifierProvider).addNewMessages(next);
 
           Future.delayed(const Duration(milliseconds: 100), () {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
+            _scrollController.addListener(() {
+              if (_scrollController.hasClients) {
+                _scrollController.animateTo(
+                  _scrollController.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              }
+            });
           });
         }
       });

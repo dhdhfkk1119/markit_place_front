@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
+import 'package:markit_place_front/domain/chat/chat_provider/chat_room_notifier.dart';
 import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
 
 class DetailBottomSheet extends ConsumerStatefulWidget {
@@ -68,11 +69,22 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
                 if (message.isEmpty) {
                   return;
                 }
-                final tempRoomId = 1;
+
+                // receiverId는 widget.receiverId로 올바르게 전달받고 있습니다.
                 final receiverId = widget.receiverId;
-                ref
-                    .read(chatProvider(tempRoomId).notifier)
-                    .sendMessage(receiverId: receiverId, message: message);
+
+                // sendMessage 호출 (새로운 방이 생성될 경우 roomId를 반환받음)
+                final chatNotifier = ref.read(
+                    chatProvider(null).notifier); // roomId가 없을 수도 있으므로 null 전달
+                await chatNotifier.sendMessage(
+                  receiverId: receiverId,
+                  message: message,
+                );
+
+                // 메시지 전송 후, ChatRoomNotifier를 통해 채팅방 목록을 새로고침합니다.
+                // 이렇게 하면 새로운 방이 생성되었을 때 리스트가 업데이트됩니다.
+                await ref.read(chatRoomNotifierProvider).fetchMyChatRooms();
+
                 _controller.clear();
               },
             ),
