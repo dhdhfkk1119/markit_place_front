@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:markit_place_front/_core/utils/my_http.dart';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 import 'chat_room_repository.dart';
 
-String Url = "http://192.168.0.128:8080/api";
+String Url = baseUrl;
 
 class ChatRepository {
   final _storage = const FlutterSecureStorage();

@@ -6,7 +6,7 @@ import 'package:markit_place_front/domain/chat/chat_model/chat_room.dart';
 
 final _storage = FlutterSecureStorage();
 
-String Url = "http://192.168.0.128:8080/api";
+String Url = baseUrl;
 
 class ChatRoomRepository {
   // 서버에 room 요청 (없으면 생성, 있으면 기존 roomId 반환)

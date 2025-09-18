@@ -8,7 +8,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
+import 'package:markit_place_front/domain/product/providers/product_category_notifier.dart';
 import 'package:markit_place_front/domain/product/providers/product_item_notifier.dart';
+import 'package:markit_place_front/domain/product/providers/product_write_notifier.dart';
 
 import '../../../../../../_core/utils/notification_util.dart';
 
@@ -28,9 +30,14 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
   late final TextEditingController _descriptionController;
   late final TextEditingController _priceController;
 
+  String? _selectedCategoryName;
+  int? _selectedCategoryId;
+
   @override
   void initState() {
     super.initState();
+    ref.read(productCategoryProvider.notifier);
+
     ref.read(productItemProvider.notifier).subscribe(userId: 1);
 
     _animationController = AnimationController(
@@ -122,7 +129,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     }
 
     return Scaffold(
-      // Scaffold로 감싸서 UI 깨짐 방지
       body: Stack(
         children: [
           Padding(
@@ -370,7 +376,133 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
+        Padding(
+          padding: const EdgeInsets.only(top: 24.0, bottom: 12.0),
+          child: IntrinsicWidth(
+            child: InkWell(
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  builder: (context) {
+                    return _buildCategorySelector(context);
+                  },
+                );
+              },
+              child: Row(
+                children: [
+                  CustomWidget.buildTitle(
+                      _selectedCategoryName ?? "상품 카테고리를 선택해주세요",
+                      size: 16,
+                      weight: FontWeight.w500),
+                  SizedBox(
+                    width: 8,
+                  ),
+                  Icon(
+                    CupertinoIcons.chevron_down,
+                    size: 20,
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildCategorySelector(BuildContext context) {
+    final asyncCategories = ref.watch(productCategoryProvider);
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 32.0),
+            child: Row(
+              children: [
+                Icon(Icons.title, size: 24, color: Colors.deepPurpleAccent),
+                CustomWidget.buildTitle("카테고리를 선택해주세요", size: 18),
+              ],
+            ),
+          ),
+          // 비동기 상태에 따라 다른 UI를 보여줍니다.
+          asyncCategories.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(child: Text('카테고리 로딩 에러: $err')),
+            data: (categories) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: categories.map((category) {
+                      return _buildListItem(
+                          category.name, category.id); // ID도 함께 전달
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              );
+            },
+          ),
+          InkWell(
+            onTap: () {
+              Navigator.pop(context); // 바텀시트 닫기
+            },
+            child: Padding(
+              padding: EdgeInsets.zero,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.close,
+                    color: Colors.grey,
+                    weight: 20,
+                  ),
+                  const SizedBox(width: 32),
+                  CustomWidget.buildTitle("닫기"),
+                ],
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListItem(String text, int id) {
+    // 선택된 카테고리 이름과 현재 텍스트를 비교하여 선택 상태를 결정합니다.
+    final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
+    bool isSelected = selectedCategoryId == id;
+
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          ref.read(selectedCategoryIdProvider.notifier).state = id;
+          setState(() {
+            _selectedCategoryName = text;
+          });
+          print("해당 상품의 번호 , 이름 ${id} , ${text}");
+        });
+        Navigator.pop(context); // 바텀시트 닫기
+      },
+      child: CustomWidget.buildTitle(text,
+          color: isSelected ? Colors.white : Colors.black,
+          weight: FontWeight.w200,
+          size: 14),
+      style: TextButton.styleFrom(
+        backgroundColor: isSelected ? Colors.black : Colors.white,
+        padding: EdgeInsets.only(top: 8, bottom: 8, left: 12, right: 12),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
     );
   }
 }

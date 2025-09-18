@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:markit_place_front/_core/utils/my_http.dart';
 
-const String baseUrl = "http://192.168.0.128:8080";
+const String Url = baseUrl;
 const FlutterSecureStorage _storage = FlutterSecureStorage();
 
 class ProductDetailRepository {
@@ -15,7 +15,7 @@ class ProductDetailRepository {
 
     try {
       final response = await dio.get(
-        baseUrl + '/api/items/${itemId}',
+        baseUrl + '/items/${itemId}',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
