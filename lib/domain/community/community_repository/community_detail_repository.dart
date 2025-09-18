@@ -7,15 +7,14 @@ const FlutterSecureStorage _storage = FlutterSecureStorage();
 class CommunityDetailRepository {
   final Dio _dio = dio;
 
-  Future<Map<String, dynamic>> communityDetail(
-      {required int communityId}) async {
+  Future<Map<String, dynamic>> communityDetail({required int postId}) async {
     final token = await _storage.read(key: "accessToken");
     if (token == null) {
       throw Exception('토큰 정보가 존재하지 않습니다.');
     }
     try {
       final response = await _dio.get(
-        '/community/posts/${communityId}',
+        '/community/posts/${postId}',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),

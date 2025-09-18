@@ -1,29 +1,26 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import '../../../../../../_core/constants/assets.dart';
-import '../../../../../../_core/constants/custom_popup.dart';
+import 'package:markit_place_front/_core/constants/custom_popup.dart';
 import 'community_detail_item.dart';
 import 'community_detail_item_image.dart';
 import 'community_detail_reply.dart';
 
-class CommunityDetailBody extends StatefulWidget {
-  const CommunityDetailBody({super.key});
+class CommunityDetailBody extends StatelessWidget {
+  final int postId;
+  const CommunityDetailBody({required this.postId, super.key});
 
-  @override
-  State<CommunityDetailBody> createState() => _CommunityDetailBodyState();
-}
-
-class _CommunityDetailBodyState extends State<CommunityDetailBody> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // 기본 뒤로가기 버튼 제거
+        automaticallyImplyLeading: false,
         actions: [
-          _buildLeftAppBarIcon(),
-          const Spacer(), // Spacer를 사용하여 양쪽 끝으로 밀어냅니다.
-          _buildRightAppBarIcon(),
+          _buildLeftAppBarIcon(context),
+          const Spacer(),
+          _buildRightAppBarIcon(context),
         ],
       ),
       body: SingleChildScrollView(
@@ -33,7 +30,9 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  const CommunityDetailItem(),
+                  // 상태 구독 및 상세 아이템 호출
+                  CommunityDetailItem(postId: postId),
+                  const SizedBox(height: 16),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: CommunityDetailItemImage(
@@ -48,22 +47,15 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-              child: Column(
-                children: [_buildSide()],
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: _buildSide(),
             ),
-            Divider(
-              thickness: 5,
-              color: Colors.grey.withOpacity(0.3),
-            ),
+            Divider(thickness: 5, color: Colors.grey.withOpacity(0.3)),
             Padding(
-              padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-              child: CommunityDetailReply(3),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: CommunityDetailReply(0),
             ),
-            const SizedBox(
-              height: 100,
-            ),
+            const SizedBox(height: 100),
           ],
         ),
       ),
@@ -71,7 +63,6 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
     );
   }
 
-  // 메세지 보내는 필드
   Widget _buildChatInput() {
     return SafeArea(
       child: Container(
@@ -83,7 +74,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               color: Colors.grey.withOpacity(0.5),
               spreadRadius: 2,
               blurRadius: 5,
-              offset: const Offset(0, -3), // 위쪽에 그림자
+              offset: const Offset(0, -3),
             ),
           ],
         ),
@@ -114,93 +105,70 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
     );
   }
 
-  // Left 아이콘
-  Widget _buildLeftAppBarIcon() {
+  Widget _buildLeftAppBarIcon(BuildContext context) {
     return SafeArea(
       child: Row(
         children: [
-          _buildIcon(
-              const Icon(
-                CupertinoIcons.back,
-              ), onPressed: () {
+          _buildIcon(const Icon(CupertinoIcons.back), onPressed: () {
             Navigator.pop(context);
           }),
-          _buildTitle(
-            "커뮤니티",
-          ),
+          _buildTitle("커뮤니티"),
         ],
       ),
     );
   }
 
-  // Right 아이콘
-  Widget _buildRightAppBarIcon() {
+  Widget _buildRightAppBarIcon(BuildContext context) {
     return SafeArea(
       child: Row(
         children: [
-          _buildIcon(const Icon(
-            CupertinoIcons.profile_circled,
-            color: Colors.black,
-          )),
-          _buildIcon(const Icon(CupertinoIcons.heart, color: Colors.black)),
           _buildIcon(
-            const Icon(Icons.more_vert),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (context) =>
-                    CustomPopUp.buildAppBarPopUp(context, "조정우", "상품 이름적기", 1),
-              );
-            },
-          )
+              const Icon(CupertinoIcons.profile_circled, color: Colors.black)),
+          _buildIcon(const Icon(CupertinoIcons.heart, color: Colors.black)),
+          _buildIcon(const Icon(Icons.more_vert), onPressed: () {
+            showModalBottomSheet(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              builder: (context) =>
+                  CustomPopUp.buildAppBarPopUp(context, "조정우", "상품 이름적기", 1),
+            );
+          }),
         ],
       ),
     );
   }
 
-  // 조회수 및 좋아요 누르기
   Widget _buildSide() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           children: [
-            const Icon(
-              Icons.remove_red_eye_outlined,
-              color: Colors.grey,
-              size: 16,
-            ),
-            const SizedBox(
-              width: 4,
-            ),
+            const Icon(Icons.remove_red_eye_outlined,
+                color: Colors.grey, size: 16),
+            const SizedBox(width: 4),
             CustomWidget.buildTitle("135명이나 봤어요",
-                size: 12, color: Colors.grey, weight: FontWeight.w200)
+                size: 12, color: Colors.grey, weight: FontWeight.w200),
           ],
         ),
         Row(
           children: [
             InkWell(
-              onTap: () {
-                // 아이콘을 탭했을 때 수행할 동작
-              },
-              // 탭 효과를 보기 위해 원형으로 자를 수 있습니다.
+              onTap: () {},
               borderRadius: BorderRadius.circular(20),
               child: const Padding(
-                // 아이콘 주변에 원하는 만큼 패딩을 줄 수 있습니다.
                 padding: EdgeInsets.all(8.0),
                 child: Icon(CupertinoIcons.heart),
               ),
             ),
           ],
-        )
+        ),
       ],
     );
   }
 
-  // 텍스트 처리
   Widget _buildTitle(String title, {Color? color, FontWeight? weight}) {
     return Text(
       title,
@@ -213,20 +181,12 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
     );
   }
 
-  // 아이콘 처리
-  Widget _buildIcon(
-    Icon icon, {
-    double? size,
-    Color? color,
-    VoidCallback? onPressed,
-  }) {
+  Widget _buildIcon(Icon icon,
+      {double? size, Color? color, VoidCallback? onPressed}) {
     return IconButton(
       onPressed: onPressed ?? () {},
-      icon: Icon(
-        icon.icon,
-        size: size ?? icon.size,
-        color: color ?? icon.color,
-      ),
+      icon:
+          Icon(icon.icon, size: size ?? icon.size, color: color ?? icon.color),
     );
   }
 }

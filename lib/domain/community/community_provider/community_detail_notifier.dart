@@ -30,19 +30,18 @@ class CommunityDetailState {
 
 class CommunityDetailNotifier extends ChangeNotifier {
   final CommunityDetailRepository _repository = CommunityDetailRepository();
-  final int communityId;
+  final int postId;
 
   CommunityDetailState state = CommunityDetailState();
 
-  CommunityDetailNotifier({required this.communityId});
+  CommunityDetailNotifier({required this.postId});
 
   Future<void> getCommunityDetailInfo() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     notifyListeners();
 
     try {
-      final response =
-          await _repository.communityDetail(communityId: communityId);
+      final response = await _repository.communityDetail(postId: postId);
       final communityDetail = CommunityDetail.fromMap(response);
       final dto = CommunityDetailDto.fromModel(communityDetail);
 
@@ -62,5 +61,5 @@ class CommunityDetailNotifier extends ChangeNotifier {
 
 final communityDetailProvider =
     ChangeNotifierProvider.family<CommunityDetailNotifier, int>(
-  (ref, communityId) => CommunityDetailNotifier(communityId: communityId),
+  (ref, postId) => CommunityDetailNotifier(postId: postId),
 );
