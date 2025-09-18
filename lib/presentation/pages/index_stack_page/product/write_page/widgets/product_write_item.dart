@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
+import 'package:markit_place_front/domain/product/providers/product_item_notifier.dart';
 
 import '../../../../../../_core/utils/notification_util.dart';
 
@@ -83,17 +83,35 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     final productItemModel = ref.watch(productItemProvider);
 
     ref.listen(productItemProvider, (prev, next) {
-      // 이전 제목과 다를 때만 컨트롤러의 text 값을 업데이트
+      // 제목 업데이트
       if (prev?.name != next.name) {
-        _titleController.text = next.name ?? '';
+        _titleController.text = next.name;
       }
-      // 이전 설명과 다를 때만 컨트롤러의 text 값을 업데이트
-      if (prev?.description != next.description) {
-        _descriptionController.text = next.description ?? '';
+
+      // 실시간 스트리밍 텍스트 업데이트 (커서 위치 고정!)
+      if (prev?.streamingText != next.streamingText &&
+          next.streamingText.isNotEmpty) {
+        _descriptionController.value = TextEditingValue(
+          text: next.streamingText,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: next.streamingText.length),
+          ),
+        );
       }
-      // 이전 가격과 다를 때만 컨트롤러의 text 값을 업데이트
+
+      // 최종 설명 텍스트 업데이트 (커서 위치 고정!)
+      if (prev?.description != next.description &&
+          next.description.isNotEmpty) {
+        _descriptionController.value = TextEditingValue(
+          text: next.description,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: next.description.length),
+          ),
+        );
+      }
+
       if (prev?.price != next.price) {
-        _priceController.text = next.price?.toString() ?? '';
+        _priceController.text = next.price.toString();
       }
     });
 
@@ -103,26 +121,31 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
       _animationController.stop();
     }
 
-    return Stack(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ListView(
-            children: [
-              _buildAiController(),
-              const SizedBox(height: 16),
-              _buildImageUpload(productItemModel),
-              _buildProductInfo(productItemModel),
-            ],
+    return Scaffold(
+      // Scaffold로 감싸서 UI 깨짐 방지
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView(
+              children: [
+                _buildAiController(),
+                const SizedBox(height: 16),
+                _buildImageUpload(productItemModel),
+                _buildProductInfo(productItemModel),
+              ],
+            ),
           ),
-        ),
-        if (productItemModel.isOn && productItemModel.isLoading)
-          _buildLoadingOverlay(context),
-      ],
+          // --- 2. 호출할 때 productItemModel을 전달해준다 ---
+          if (productItemModel.isOn && productItemModel.isLoading)
+            _buildLoadingOverlay(context, productItemModel),
+        ],
+      ),
     );
   }
 
-  Widget _buildLoadingOverlay(BuildContext context) {
+  Widget _buildLoadingOverlay(
+      BuildContext context, ProductItemModel productItemModel) {
     return Positioned.fill(
       child: Container(
         color: Colors.black.withOpacity(0.5),
@@ -149,7 +172,8 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      CustomWidget.buildTitle("AI가 분석 중입니다..."),
+                      // --- 3. 하드코딩된 텍스트 대신 model의 thinkingMessage를 사용! ---
+                      CustomWidget.buildTitle(productItemModel.thinkingMessage),
                     ],
                   ),
                 ),
@@ -291,7 +315,8 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                           .read(productItemProvider.notifier)
                           .removeImage(imagePath);
                     },
-                    icon: const Icon(Icons.cancel, color: Colors.white),
+                    icon: const Icon(Icons.cancel,
+                        color: Color.fromARGB(255, 179, 0, 0)),
                   ),
                 )
               ]),

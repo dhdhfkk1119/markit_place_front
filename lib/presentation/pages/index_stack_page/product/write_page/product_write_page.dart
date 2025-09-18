@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/providers/product_item_notifier.dart';
+import 'package:markit_place_front/domain/product/providers/product_item_notifier.dart';
 import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_body.dart';
 
 import '../../../../../_core/constants/custom_widget.dart';
