@@ -1,17 +1,18 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
 import 'package:markit_place_front/_core/dtos/error_dto.dart';
 import 'package:markit_place_front/_core/utils/error_utils.dart';
 import 'package:markit_place_front/_core/utils/my_http.dart';
-import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart'; // For SessionUser
+import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart'; // SessionUser 생성을 위해 유지
+import 'social_login_request_dto.dart';
 
 /// 소셜 로그인 관련 API 요청을 처리하는 리포지토리입니다.
-///
-/// 현재 네이버 소셜 로그인을 지원하며, 추후 다른 소셜 로그인 플랫폼 확장이 가능합니다.
 class SocialLoginRepository {
-  final Dio _dio = dio; // 전역 dio 인스턴스 사용
+  final Dio _dio = dio;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(); // GoogleSignIn 인스턴스 추가
 
   SocialLoginRepository() {
     if (!_dio.interceptors
@@ -21,7 +22,7 @@ class SocialLoginRepository {
     }
   }
 
-  // --- 네이버 소셜 로그인 기능 (MemberAuthRepository에서 이전 방식과 유사하게 수정) ---
+  // --- 네이버 소셜 로그인 기능 ---
   Future<Map<String, dynamic>?> signInWithNaver() async {
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
@@ -29,42 +30,70 @@ class SocialLoginRepository {
           "[NaverLogin] SDK Result: Status: ${result.status}, AccountID: ${result.account.id}");
 
       if (result.status == NaverLoginStatus.loggedIn) {
-        return await _loginToServerWithNaverToken(result); // 내부 메소드 호출 변경
+        // SocialLoginRequestDto 사용 및 공통 헬퍼 메소드 호출로 변경
+        final requestDto = SocialLoginRequestDto(
+          provider: "NAVER",
+          providerId: result.account.id,
+          email: result.account.email,
+        );
+        return await _loginToServerWithSocialToken(requestDto);
       } else {
         print(
             "[NaverLogin] Naver login attempt was not successful. Status: ${result.status}, Message: ${result.errorMessage}");
         if (result.errorMessage != null && result.errorMessage!.isNotEmpty) {
-          // Repository에서는 Exception을 발생시키거나, null을 반환하여 Notifier에서 처리하도록 유도
           throw Exception("네이버 로그인 실패: ${result.errorMessage}");
         }
-        return null; // 사용자가 취소했거나 SDK 레벨에서 로그인 실패 시 null 반환
+        return null;
       }
     } catch (e) {
       print("[NaverLogin] signInWithNaver Error: $e");
-      // extractErrorMessage 유틸리티 사용
       throw Exception("네이버 로그인 중 오류 발생: ${extractErrorMessage(e)}");
     }
   }
 
-  // 내부 헬퍼 메소드 (MemberAuthRepository의 _loginToServerWithNaverToken 방식과 유사)
-  Future<Map<String, dynamic>?> _loginToServerWithNaverToken(
-      NaverLoginResult naverResult) async {
-    // 파라미터 타입 NaverLoginResult로 변경
-    final requestData = {
-      "provider": "NAVER",
-      "providerId": naverResult.account.id, // naverResult.account 사용
-      "email": naverResult.account.email, // naverResult.account 사용
-    };
+  // --- 구글 소셜 로그인 기능 (신규 추가) ---
+  Future<Map<String, dynamic>?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // 사용자가 로그인을 취소한 경우
+        print("[GoogleLogin] Google sign in cancelled by user.");
+        return null;
+      }
+      print(
+          "[GoogleLogin] SDK Result: User Email: ${googleUser.email}, User ID: ${googleUser.id}");
 
+      // SocialLoginRequestDto 생성
+      final requestDto = SocialLoginRequestDto(
+        provider: "GOOGLE",
+        providerId: googleUser.id,
+        email: googleUser.email,
+      );
+      // 공통 헬퍼 메소드 호출
+      return await _loginToServerWithSocialToken(requestDto);
+    } catch (e) {
+      print("[GoogleLogin] signInWithGoogle Error: $e");
+      // 필요시 GoogleSignInAuthentication 토큰 정보 (idToken, accessToken) 사용 가능
+      // final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      throw Exception("구글 로그인 중 오류 발생: ${extractErrorMessage(e)}");
+    }
+  }
+
+  // --- 소셜 토큰으로 서버에 로그인하는 공통 내부 헬퍼 메소드 ---
+  // (기존 _loginToServerWithNaverToken을 일반화하여 SocialLoginRequestDto 사용)
+  Future<Map<String, dynamic>?> _loginToServerWithSocialToken(
+      SocialLoginRequestDto requestDto) async {
+    // 파라미터 변경
     try {
       print(
-          "[NaverLogin] Attempting to login to our server with Naver data: ${json.encode(requestData)}");
+          "[SocialLoginRepo] Attempting to login to our server with ${requestDto.provider} data: ${json.encode(requestDto.toJson())}");
       final dioResponse = await _dio.post(
-        "/members/login/social",
-        data: requestData,
+        "/members/login/social", // 소셜 로그인 공통 엔드포인트
+        data: requestDto.toJson(), // DTO의 toJson 메소드 사용
       );
 
       final String? token = dioResponse.headers.value('Authorization');
+      // LoginResponseDataDto는 SessionUser 생성을 위해 그대로 사용 (서버 응답 구조가 동일하다고 가정)
       final apiResponse = ApiResponseDto<LoginResponseDataDto>.fromJson(
         dioResponse.data as Map<String, dynamic>,
         fromJsonT: LoginResponseDataDto.fromJson,
@@ -76,29 +105,34 @@ class SocialLoginRepository {
           apiResponse.response != null) {
         final sessionUser = apiResponse.response!.toSessionUser();
         print(
-            "[NaverLogin] Our server login success! User: ${sessionUser.loginId}, Token (start): ${token.substring(0, token.length > 10 ? 10 : token.length)}...");
+            "[SocialLoginRepo] Server login success! User: ${sessionUser.loginId}, Provider: ${requestDto.provider}, Token (start): ${token.substring(0, token.length > 10 ? 10 : token.length)}...");
         return {
           'sessionUser': sessionUser,
           'token': token.replaceFirst('Bearer ', ''),
         };
       } else if (!apiResponse.success && apiResponse.error != null) {
         print(
-            "[NaverLogin] Our server login failed: ${apiResponse.error!.message}");
-        throw Exception(apiResponse.error!.message ?? '네이버 소셜 로그인 처리 중 서버 오류');
+            "[SocialLoginRepo] Server login failed for ${requestDto.provider}: ${apiResponse.error!.message}");
+        throw Exception(apiResponse.error!.message ??
+            '${requestDto.provider} 소셜 로그인 처리 중 서버 오류');
       } else if (token == null || token.isEmpty) {
         print(
-            "[NaverLogin] Our server login failed: Token missing in response");
-        throw Exception('네이버 소셜 로그인 응답에 토큰이 없습니다.');
+            "[SocialLoginRepo] Server login failed for ${requestDto.provider}: Token missing in response");
+        throw Exception('${requestDto.provider} 소셜 로그인 응답에 토큰이 없습니다.');
       } else {
-        print("[NaverLogin] Our server login failed: Unknown reason");
-        throw Exception('알 수 없는 이유로 네이버 소셜 로그인에 실패했습니다.');
+        print(
+            "[SocialLoginRepo] Server login failed for ${requestDto.provider}: Unknown reason");
+        throw Exception('알 수 없는 이유로 ${requestDto.provider} 소셜 로그인에 실패했습니다.');
       }
     } on DioException catch (e) {
-      final errorMessage = _handleDioError(e, '[NaverLogin DioException]');
+      final errorMessage = _handleDioError(
+          e, '[SocialLoginRepo DioException - ${requestDto.provider}]');
       throw Exception(errorMessage);
     } catch (e) {
-      print("[NaverLogin] _loginToServerWithNaverToken Error: $e");
-      throw Exception("네이버 정보로 서버 로그인 중 오류: ${extractErrorMessage(e)}");
+      print(
+          "[SocialLoginRepo] _loginToServerWithSocialToken (${requestDto.provider}) Error: $e");
+      throw Exception(
+          "${requestDto.provider} 정보로 서버 로그인 중 오류: ${extractErrorMessage(e)}");
     }
   }
 

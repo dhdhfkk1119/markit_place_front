@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // Added for ConsumerWidget
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:markit_place_front/_core/constants/assets.dart';
 import 'package:markit_place_front/_core/constants/size.dart';
 import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
 import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
-// Import AuthNotifier
 import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-// UserRepository import is no longer needed
-// import 'package:markit_place_front/domain/repositories/auth_repository/user_repository.dart';
+import 'package:markit_place_front/presentation/widgets/snackbar_util.dart';
 
-// Changed from StatelessWidget to ConsumerWidget
 class SocialLoginForm extends ConsumerWidget {
   const SocialLoginForm({super.key});
 
+  /// 소셜 로그인 아이콘을 생성하는 위젯 빌더 메소드
   Widget _buildSocialIcon(BuildContext context,
       {required String iconAssetPath,
       required VoidCallback onPressed,
@@ -33,22 +31,35 @@ class SocialLoginForm extends ConsumerWidget {
   }
 
   @override
-  // Added WidgetRef ref
   Widget build(BuildContext context, WidgetRef ref) {
-    // It's good practice to listen to AuthState changes for UI feedback (e.g., navigation, SnackBar)
-    // Similar to AccountLoginForm, you might want to add:
-    // ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-    //   if (next.status == AuthStatus.authenticated) {
-    //     SnackBarUtil.showSuccess(context, "소셜 로그인 성공!");
-    //     Navigator.pushReplacementNamed(context, "/main");
-    //   } else if (next.status == AuthStatus.error) {
-    //     SnackBarUtil.showError(context, next.errorMessage ?? "소셜 로그인에 실패했습니다.");
-    //   }
-    // });
+    // 인증 상태 변경 감지 리스너
+    ref.listen<AuthState>(authNotifierProvider, (previous, next) {
+      // 로그인 성공 상태로 변경되었을 때 처리
+      if (next.status == AuthStatus.authenticated &&
+          previous?.status != AuthStatus.authenticated) {
+        // 소셜 로그인(구글, 네이버 등) 성공 시 특화된 성공 메시지 표시
+        if (next.loginType == LoginType.social) {
+          String successMessage = "소셜 로그인 성공!";
+          // TODO: 향후 확장 시, next.user.loginId를 분석하여 특정 소셜 서비스(구글, 네이버)별 메시지 차별화 가능
+          // 예: if (next.user?.loginId.startsWith("google_") ?? false) successMessage = "구글 로그인 성공!";
+          // else if (next.user?.loginId.startsWith("naver_") ?? false) successMessage = "네이버 로그인 성공!";
+          SnackBarUtil.showSuccess(context, successMessage);
+        }
+        // 로그인 유형(자동, 소셜, 계정)에 관계없이 인증 완료 시 메인 화면으로 이동하고 이전 스택 제거
+        Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
+      }
+      // 에러 상태로 변경되었을 때 처리
+      else if (next.status == AuthStatus.error &&
+          previous?.status != AuthStatus.error) {
+        String errorMessage = next.errorMessage ?? "소셜 로그인에 실패했습니다.";
+        SnackBarUtil.showError(context, errorMessage);
+      }
+    });
 
     return Column(
       children: [
         const SizedBox(height: medium),
+        // 소셜 로그인 아이콘 (구글, 네이버, 카카오)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -56,10 +67,8 @@ class SocialLoginForm extends ConsumerWidget {
               context,
               iconAssetPath: Assets.Svgs.google,
               onPressed: () {
-                // TODO: 구글 로그인 로직 구현 (AuthNotifier 사용)
-                print("구글 로그인 클릭");
-                // 예시: ref.read(authNotifierProvider.notifier).signInWithGoogle();
-                // Navigator.pushNamed(context, "product/list"); // 성공 시 AuthState 리스너가 처리
+                print("구글 로그인 버튼 클릭");
+                ref.read(authNotifierProvider.notifier).signInWithGoogle();
               },
             ),
             const SizedBox(width: large),
@@ -67,8 +76,7 @@ class SocialLoginForm extends ConsumerWidget {
               context,
               iconAssetPath: Assets.Svgs.naver,
               onPressed: () {
-                print("네이버 로그인 클릭");
-                // Changed to use AuthNotifier
+                print("네이버 로그인 버튼 클릭");
                 ref.read(authNotifierProvider.notifier).signInWithNaver();
               },
             ),
@@ -77,32 +85,23 @@ class SocialLoginForm extends ConsumerWidget {
               context,
               iconAssetPath: Assets.Svgs.kakao,
               onPressed: () {
-                // TODO: 카카오 로그인 로직 구현 (AuthNotifier 사용)
                 print("카카오 로그인 클릭");
-                // 예시: ref.read(authNotifierProvider.notifier).signInWithKakao();
-                // Navigator.pushNamed(context, "product/list"); // 성공 시 AuthState 리스너가 처리
+                SnackBarUtil.showInfo(context, "카카오 로그인은 현재 지원되지 않습니다.");
               },
             ),
           ],
         ),
         const SizedBox(height: medium),
+        // 아이디/이메일(계정) 로그인 버튼
         CustomButtonLarge(
-          text: "일반이메일 로그인",
+          text: "아이디/이메일 로그인",
           onPressed: () {
-            print("일반이메일 로그인 클릭됨");
+            print("아이디/이메일 로그인 클릭됨");
             Navigator.pushNamed(context, "/account-login");
           },
         ),
         const SizedBox(height: small),
-        Center(
-          child: CustomLInkGrey(
-            text: '아이디로 로그인하기',
-            onPressed: () {
-              Navigator.pushNamed(context, "/account-login");
-            },
-          ),
-        ),
-        const SizedBox(height: small),
+        // 회원가입 링크
         Center(
           child: CustomLInkGrey(
             text: '아직 아이디가 없으신가요? 회원가입',
@@ -112,6 +111,7 @@ class SocialLoginForm extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: xSmall),
+        // 계정찾기 링크
         Center(
           child: CustomLInkGrey(
             text: '아이디/비밀번호가 생각나지 않으세요? 계정찾기',
