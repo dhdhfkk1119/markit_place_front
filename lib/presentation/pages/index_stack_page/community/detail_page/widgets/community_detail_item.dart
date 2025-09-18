@@ -1,49 +1,76 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:markit_place_front/_core/constants/assets.dart';
+import 'package:markit_place_front/domain/community/community_dto/community_detail_dto.dart';
+import 'package:markit_place_front/domain/community/community_provider/community_detail_notifier.dart';
 
 import '../../../../../../_core/constants/custom_widget.dart';
 
-class CommunityDetailItem extends StatefulWidget {
-  const CommunityDetailItem({super.key});
+class CommunityDetailItem extends ConsumerStatefulWidget {
+  final int postId;
+  const CommunityDetailItem({required this.postId, super.key});
 
   @override
-  State<CommunityDetailItem> createState() => _CommunityDetailItemState();
+  ConsumerState<CommunityDetailItem> createState() =>
+      _CommunityDetailItemState();
 }
 
-class _CommunityDetailItemState extends State<CommunityDetailItem> {
+class _CommunityDetailItemState extends ConsumerState<CommunityDetailItem> {
   @override
-  Widget build(BuildContext) {
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(communityDetailProvider(widget.postId).notifier)
+          .getCommunityDetailInfo();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final notifier = ref.watch(communityDetailProvider(widget.postId));
+
+    if (notifier.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (notifier.errorMessage != null) {
+      return Center(child: Text('오류발생: ${notifier.errorMessage}'));
+    }
+
+    if (notifier.communityDetail == null) {
+      // 아직 데이터 안 온 상태
+      return const Center(child: Text("데이터를 불러오는 중입니다..."));
+    }
+
+    final post = notifier.communityDetail!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildProfile(),
+        _buildProfile(post),
         const SizedBox(
           height: 16,
         ),
         CustomWidget.buildTitle(
-          "상품 상세 정보",
+          "${post.title}",
           size: 20,
         ),
         const SizedBox(height: 8),
-        const Text(
-          "이 상품은 아주 좋은 상품입니다. 상세한 내용은 아래와 같습니다.",
+        Text(
+          "${post.title}",
           style: TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 16),
-        const Text(
-          "조정우 바보 멍청이 똥깨 말미잘 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. 이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-          "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-          "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-          "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-          "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다. "
-          "여기에 스크롤될 만큼 많은 내용이 들어갑니다. 스크롤을 내리면 이 텍스트가 위로 올라가고, 스크롤 가능한 모든 내용이 나타납니다. "
-          "이 부분은 스크롤 기능을 확인하기 위한 더미 텍스트입니다.",
+        Text(
+          "${post.content}",
+          style: TextStyle(fontSize: 13),
         ),
       ],
     );
   }
 
-  Widget _buildProfile() {
+  Widget _buildProfile(CommunityDetailDto dto) {
     return InkWell(
       child: Row(
         // 자식 위젯들을 양 끝으로 정렬
@@ -64,9 +91,9 @@ class _CommunityDetailItemState extends State<CommunityDetailItem> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomWidget.buildTitle("사용자 이름",
+                    CustomWidget.buildTitle("${dto.writerName}",
                         size: 16, weight: FontWeight.w500),
-                    CustomWidget.buildTitle("연제구 연산제 8동",
+                    CustomWidget.buildTitle("${dto.location}",
                         size: 12, color: Colors.grey, weight: FontWeight.w200),
                   ],
                 ),

@@ -9,6 +9,7 @@ import '../../detail_page/community_detail_page.dart';
 class CommunityListItem extends StatefulWidget {
   final CommunityListDTO list;
   final bool isFilterVisible;
+
   const CommunityListItem(this.list, this.isFilterVisible, {super.key});
 
   @override
@@ -20,12 +21,13 @@ class _CommunityListItemState extends State<CommunityListItem> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        print("해당 게시글의 ID: ${widget.list.id}");
         Navigator.push(
           context,
           // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
-            builder: (context) =>
-                const CommunityDetailPageDetailPage(), // DetailPage()는 상세 페이지 위젯입니다.
+            builder: (context) => CommunityDetailPageDetailPage(
+                postId: widget.list.id), // DetailPage()는 상세 페이지 위젯입니다.
           ),
         );
       },

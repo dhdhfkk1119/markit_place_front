@@ -1,6 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart';
 import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import 'package:markit_place_front/domain/community/community_dto/community_detail_dto.dart';
+import 'package:markit_place_front/domain/community/community_provider/community_detail_notifier.dart';
 import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_popup.dart';
 import 'community_detail_item.dart';
@@ -8,7 +12,8 @@ import 'community_detail_item_image.dart';
 import 'community_detail_reply.dart';
 
 class CommunityDetailBody extends StatefulWidget {
-  const CommunityDetailBody({super.key});
+  final int postId;
+  const CommunityDetailBody({required this.postId, super.key});
 
   @override
   State<CommunityDetailBody> createState() => _CommunityDetailBodyState();
@@ -33,7 +38,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  const CommunityDetailItem(),
+                  CommunityDetailItem(postId: widget.postId),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: CommunityDetailItemImage(
@@ -59,7 +64,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 16.0, right: 16.0),
-              child: CommunityDetailReply(3),
+              child: CommunityDetailReply(0),
             ),
             const SizedBox(
               height: 100,
@@ -133,7 +138,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
     );
   }
 
-  // Right 아이콘
+  // Right 아이콘 + (신고)
   Widget _buildRightAppBarIcon() {
     return SafeArea(
       child: Row(
@@ -166,6 +171,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // 조회수
         Row(
           children: [
             const Icon(
@@ -173,20 +179,22 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               color: Colors.grey,
               size: 16,
             ),
-            const SizedBox(
-              width: 4,
+            const SizedBox(width: 4),
+            CustomWidget.buildTitle(
+              "135명이나 봤어요",
+              size: 12,
+              color: Colors.grey,
+              weight: FontWeight.w200,
             ),
-            CustomWidget.buildTitle("135명이나 봤어요",
-                size: 12, color: Colors.grey, weight: FontWeight.w200)
           ],
         ),
+        // 좋아요
         Row(
           children: [
             InkWell(
               onTap: () {
-                // 아이콘을 탭했을 때 수행할 동작
+                // 좋아요 누르기 처리
               },
-              // 탭 효과를 보기 위해 원형으로 자를 수 있습니다.
               borderRadius: BorderRadius.circular(20),
               child: const Padding(
                 // 아이콘 주변에 원하는 만큼 패딩을 줄 수 있습니다.
@@ -195,7 +203,7 @@ class _CommunityDetailBodyState extends State<CommunityDetailBody> {
               ),
             ),
           ],
-        )
+        ),
       ],
     );
   }
