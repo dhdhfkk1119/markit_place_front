@@ -1,11 +1,12 @@
 // D:/workspace-flutter/markit_place_front/lib/domain/social_login/social_login_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+import '../../_core/utils/error_utils.dart';
 import '../members/models/session_user.dart';
 import '../members/providers/member_auth_provider.dart';
 import '../members/providers/profile_provider.dart';
 import './social_login_repository.dart'; // Repository import
-import '../../_core/utils/error_utils.dart';
 
 // Provider 정의를 이곳으로 이동
 final socialLoginRepositoryProvider = Provider<SocialLoginRepository>((ref) {
@@ -20,8 +21,7 @@ class SocialLoginNotifier extends Notifier<void> {
 
   @override
   void build() {
-    _socialLoginRepository = ref
-        .watch(socialLoginRepositoryProvider); // 이제 이 파일 내에 Provider가 정의되어 있음
+    _socialLoginRepository = ref.watch(socialLoginRepositoryProvider);
     _authNotifier = ref.watch(authNotifierProvider.notifier);
     _profileNotifier = ref.watch(profileNotifierProvider.notifier);
   }
@@ -36,9 +36,10 @@ class SocialLoginNotifier extends Notifier<void> {
         final String? token = socialLoginResult['token'] as String?;
 
         if (serverUser != null && token != null && token.isNotEmpty) {
-          await _authNotifier.storeSessionUser(serverUser, token);
-          _authNotifier.updateUserAndAuthStatus(
-              serverUser, AuthStatus.authenticated, LoginType.social);
+          // storeSessionUser 호출은 삭제됨
+          await _authNotifier.updateUserAndAuthStatus(
+              serverUser, AuthStatus.authenticated, LoginType.social,
+              newToken: token); // <<< newToken 전달
           print("[SocialLoginNotifier] 네이버 소셜 로그인 성공: ${serverUser.loginId}");
           await _profileNotifier.fetchMyProfileAndUpdateAuthNotifier(
               showLoading: false);
@@ -46,7 +47,7 @@ class SocialLoginNotifier extends Notifier<void> {
           throw Exception("네이버 소셜 로그인 처리 중 서버 응답 데이터가 누락되었습니다.");
         }
       } else {
-        _authNotifier.updateUserAndAuthStatus(
+        await _authNotifier.updateUserAndAuthStatus(
             null, AuthStatus.unauthenticated, LoginType.none);
         print("[SocialLoginNotifier] 네이버 소셜 로그인이 완료되지 않았습니다 (사용자 취소 등).");
       }
@@ -60,6 +61,8 @@ class SocialLoginNotifier extends Notifier<void> {
   Future<void> signInWithGoogle() async {
     _authNotifier.setLoading();
     try {
+      await _socialLoginRepository.signOutFromGoogle();
+
       final Map<String, dynamic>? googleLoginData =
           await _socialLoginRepository.signInWithGoogleAndGetAccount();
 
@@ -74,9 +77,10 @@ class SocialLoginNotifier extends Notifier<void> {
             token != null &&
             token.isNotEmpty &&
             googleUserAccount != null) {
-          await _authNotifier.storeSessionUser(serverUser, token);
-          _authNotifier.updateUserAndAuthStatus(
-              serverUser, AuthStatus.authenticated, LoginType.social);
+          // storeSessionUser 호출은 삭제됨
+          await _authNotifier.updateUserAndAuthStatus(
+              serverUser, AuthStatus.authenticated, LoginType.social,
+              newToken: token); // <<< newToken 전달
           print("[SocialLoginNotifier] 구글 소셜 로그인 성공: ${serverUser.loginId}");
 
           bool needsServerUpdate = false;
@@ -87,7 +91,8 @@ class SocialLoginNotifier extends Notifier<void> {
               serverUser.name != googleDisplayName) {
             needsServerUpdate = true;
           }
-          if (googlePhotoUrl != null) {
+          if (googlePhotoUrl != null &&
+              serverUser.profileImageUrl != googlePhotoUrl) {
             needsServerUpdate = true;
           }
 
@@ -108,7 +113,7 @@ class SocialLoginNotifier extends Notifier<void> {
           throw Exception("구글 소셜 로그인 처리 중 필요한 데이터(유저/토큰/구글계정정보)가 누락되었습니다.");
         }
       } else {
-        _authNotifier.updateUserAndAuthStatus(
+        await _authNotifier.updateUserAndAuthStatus(
             null, AuthStatus.unauthenticated, LoginType.none);
         print(
             "[SocialLoginNotifier] 구글 소셜 로그인이 완료되지 않았습니다 (사용자 취소 또는 SDK 오류 등).");
@@ -116,7 +121,7 @@ class SocialLoginNotifier extends Notifier<void> {
     } catch (e) {
       final errorMessage = extractErrorMessage(e);
       _authNotifier.setError("구글 로그인 실패: $errorMessage");
-      print("[SocialLoginNotifier] 구글 소셜 로그인 실패: $errorMessage");
+      print("[SocialLognNotifier] 구글 소셜 로그인 실패: $errorMessage");
     }
   }
 

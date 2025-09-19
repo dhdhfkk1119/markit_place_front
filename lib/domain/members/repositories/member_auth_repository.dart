@@ -4,23 +4,19 @@ import '../../../_core/dtos/api_response_dto.dart';
 import '../../../_core/dtos/error_dto.dart';
 import '../../../_core/utils/error_utils.dart';
 import '../../../_core/utils/my_http.dart';
-// import '../models/member.dart'; // 삭제
 import '../models/session_user.dart';
-// import '../dtos/member_register_request.dto.dart'; // 삭제
-// import '../dtos/member_register_response.dto.dart'; // 삭제
 import '../dtos/login_response.dto.dart';
-// import '../dtos/id_check_response.dto.dart'; // 삭제
-import '../dtos/access_token_response.dto.dart';
+// import '../dtos/access_token_response.dto.dart'; // 제거됨
 
 class MemberAuthRepository {
   final Dio _dio = dio;
 
   MemberAuthRepository() {
-    if (!_dio.interceptors
-        .any((interceptor) => interceptor is LogInterceptor)) {
-      _dio.interceptors
-          .add(LogInterceptor(requestBody: true, responseBody: true));
-    }
+    // Dio 인터셉터는 my_http.dart에서 전역적으로 설정되므로,
+    // 개별 Repository에서 LogInterceptor를 중복으로 추가할 필요는 없습니다.
+    // 만약 특정 Repository에만 적용하고 싶은 인터셉터가 있다면 여기에 추가할 수 있습니다.
+    // 기존 코드에서는 LogInterceptor 추가 로직이 있었으나, my_http.dart에서 이미 처리하고 있을 가능성이 높습니다.
+    // 여기서는 일단 해당 중복 추가 로직을 제거하고, 필요시 my_http.dart 설정을 확인합니다.
   }
 
   Future<Map<String, dynamic>> login(String loginId, String password) async {
@@ -65,31 +61,7 @@ class MemberAuthRepository {
     }
   }
 
-  Future<String?> reissueToken() async {
-    try {
-      final dioResponse = await _dio.post('/members/reissue');
-      final apiResponse = ApiResponseDto<AccessTokenResponseDataDto>.fromJson(
-        dioResponse.data as Map<String, dynamic>,
-        fromJsonT: AccessTokenResponseDataDto.fromJson,
-      );
-      if (apiResponse.success && apiResponse.response != null) {
-        return apiResponse.response!.accessToken;
-      } else if (!apiResponse.success && apiResponse.error != null) {
-        throw Exception(apiResponse.error!.message ?? '토큰 재발급 중 알 수 없는 서버 오류');
-      } else {
-        throw Exception('토큰 재발급 중 알 수 없는 오류 (서버 응답 형식 확인 필요)');
-      }
-    } on DioException catch (e) {
-      final errorMessage = _handleDioError(
-          e, '[MemberAuthRepository ReissueToken Error - DioException]');
-      throw Exception(errorMessage);
-    } catch (e) {
-      final errorMessage = extractErrorMessage(e);
-      print(
-          '[MemberAuthRepository ReissueToken Error - General] $errorMessage ($e)');
-      throw Exception(errorMessage);
-    }
-  }
+  // reissueToken 메소드 전체가 제거됨
 
   String _handleDioError(DioException e, String logPrefix) {
     String finalErrorMessage;
