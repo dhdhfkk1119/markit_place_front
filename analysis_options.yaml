@@ -11,7 +11,7 @@ analyzer:
     prefer_const_declarations: info
     prefer_const_constructors_in_immutables: info
     prefer_const_literals_to_create_immutables: info
-    always_specify_types: warning
+    always_specify_types: ignore
     prefer_relative_imports: error
 
 linter:
