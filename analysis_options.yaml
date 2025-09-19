@@ -7,6 +7,12 @@ analyzer:
     dead_code: error
     unused_field: info
     unused_element: info
+    prefer_const_constructors: info
+    prefer_const_declarations: info
+    prefer_const_constructors_in_immutables: info
+    prefer_const_literals_to_create_immutables: info
+    always_specify_types: warning
+    prefer_relative_imports: error
 
 linter:
   # 여기서 검사할 규칙 목록을 직접 관리
@@ -17,3 +23,9 @@ linter:
     - dead_code
     - unused_field
     - unused_element
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_const_constructors_in_immutables
+    - prefer_const_literals_to_create_immutables
+    - always_specify_types
+    - prefer_relative_imports
