@@ -98,6 +98,5 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
         ),
       ),
     );
-    ;
   }
 }
