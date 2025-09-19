@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import 'custom_widget.dart';
 
 class CustomPopUp {
   static buildAppUpdatePop(BuildContext context, String? title) {

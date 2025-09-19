@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
+import '../../_core/utils/my_http.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:logger/logger.dart';
 import 'dart:convert';

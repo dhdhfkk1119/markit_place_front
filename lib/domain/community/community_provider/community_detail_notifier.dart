@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_detail_dto.dart';
-import 'package:markit_place_front/domain/community/community_model/community_detail.dart';
-import 'package:markit_place_front/domain/community/community_repository/community_detail_repository.dart';
+import '../community_dto/community_detail_dto.dart';
+import '../community_model/community_detail.dart';
+import '../community_repository/community_detail_repository.dart';
 
 class CommunityDetailState {
   final CommunityDetailDto? communityDetail;

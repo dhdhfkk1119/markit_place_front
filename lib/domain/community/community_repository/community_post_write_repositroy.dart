@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_post_write_dto.dart';
+import '../../../_core/utils/my_http.dart';
+import '../community_dto/community_post_write_dto.dart';
 
 const FlutterSecureStorage _storage = FlutterSecureStorage();
 

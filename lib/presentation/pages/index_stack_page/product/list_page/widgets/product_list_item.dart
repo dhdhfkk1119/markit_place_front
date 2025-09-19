@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/_core/constants/custom_popup.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_popup.dart';
 
 import '../../../../../../domain/product/dtos/product_list_dtos.dart';
 import '../../detail_page/detail_page.dart';

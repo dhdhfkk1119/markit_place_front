@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:markit_place_front/domain/repositories/gemini_repository.dart';
+import '../../repositories/gemini_repository.dart';
 
 class ProductItemModel {
   final List<XFile> images;
@@ -63,6 +63,18 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
     });
     return ProductItemModel(
         images: [], name: "", description: "", price: 0, errorMessage: "");
+  }
+
+  void updateDescription(String? newDescription) {
+    state = state.copyWith(description: newDescription);
+  }
+
+  void updateName(String? newtitle) {
+    state = state.copyWith(name: newtitle);
+  }
+
+  void updatePrice(int? newPrice) {
+    state = state.copyWith(price: newPrice);
   }
 
   void uploadImages({required List<XFile> images, required bool isOn}) {

@@ -1,36 +1,27 @@
-// community_write_item.dart 파일 내용
-
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
+
 import '../../../../../../_core/constants/assets.dart';
 
 class CommunityWriteItem extends StatefulWidget {
-  final TextEditingController titleController;
-  final TextEditingController descriptionController;
-  final ValueChanged<List<String?>> onImageChanged;
-  final ValueChanged<String> onCategorySelected;
-  final List<String?> imageList;
-
-  const CommunityWriteItem({
-    super.key,
-    required this.titleController,
-    required this.descriptionController,
-    required this.onImageChanged,
-    required this.onCategorySelected,
-    required this.imageList,
-  });
+  const CommunityWriteItem({super.key});
 
   @override
   State<CommunityWriteItem> createState() => _CommunityWriteItemState();
 }
 
 class _CommunityWriteItemState extends State<CommunityWriteItem> {
-  // 상태 관리를 위해 필요한 변수만 남깁니다.
+  Color Backcolors = Colors.white;
+  Color Fontcolors = Colors.black;
+
   String _categoryTitle = "게시글 주제를 선택해주세여";
-  final int _maxImageUpload = 10;
+  int _imageIndex = 0;
+  int _maxImageUpload = 10;
+  List<String?> imageList = [];
 
   final Map<String, bool> _placeFilters = {
     '맛집': false,
@@ -53,17 +44,17 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
   };
 
   Future<void> _uploadImage() async {
-    // 이미지 리스트 길이를 상위 위젯에서 받아온 값으로 확인
-    if (widget.imageList.length >= _maxImageUpload) return;
+    if (_imageIndex >= _maxImageUpload) return; // 최대 이미지 수 초과 시 종료
 
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await picker.pickImage(source: ImageSource.gallery); // 갤러리에서 이미지 선택
 
     if (pickedFile != null) {
-      // 새로운 이미지 경로를 기존 리스트에 추가
-      List<String?> updatedList = List.from(widget.imageList)..add(pickedFile.path);
-      // 콜백 함수를 호출하여 상위 위젯의 상태를 업데이트
-      widget.onImageChanged(updatedList);
+      setState(() {
+        imageList.add(pickedFile.path);
+        _imageIndex = imageList.length;
+      });
     }
   }
 
@@ -113,7 +104,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                   ),
                   TextSpan(
                     text:
-                    "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
+                        "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
                     style: TextStyle(
                       fontSize: 14,
                       fontFamily: Assets.Fonts.cookieRun,
@@ -134,7 +125,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
       child: Row(
         children: [
           // Add image button (only shown if not at max)
-          if (widget.imageList.length < _maxImageUpload)
+          if (_imageIndex < _maxImageUpload)
             InkWell(
               onTap: _uploadImage,
               child: Container(
@@ -153,7 +144,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "${widget.imageList.length}/$_maxImageUpload",
+                      "$_imageIndex/$_maxImageUpload",
                       style: TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
@@ -167,7 +158,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
           const SizedBox(
             width: 15,
           ),
-          ...widget.imageList.map((imagePath) {
+          ...imageList.map((imagePath) {
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Container(
@@ -197,7 +188,6 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
           child: CustomWidget.buildTitle("제목", size: 14),
         ),
         TextField(
-          controller: widget.titleController, // `widget`을 통해 상위 위젯의 컨트롤러에 접근
           decoration: InputDecoration(
               hintText: '제목',
               border: OutlineInputBorder(
@@ -210,10 +200,9 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
         TextField(
           maxLines: null,
           minLines: 5,
-          controller: widget.descriptionController, // `widget`을 통해 상위 위젯의 컨트롤러에 접근
           decoration: InputDecoration(
               hintText:
-              '여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다',
+                  '여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
@@ -226,7 +215,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                   context: context,
                   shape: const RoundedRectangleBorder(
                     borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(16)),
+                        BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   builder: (context) {
                     return _buildAppUpdatePop(context, "카테고리를 선택해주시기바랍니다");
@@ -335,8 +324,6 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
 
     return TextButton(
       onPressed: () {
-        // 콜백 함수를 호출하여 상위 위젯의 상태를 업데이트
-        widget.onCategorySelected(text);
         setState(() {
           _categoryTitle = text;
           Navigator.pop(context);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/pages/auth/terms_page/widgets/terms_form.dart';
+import '../../../../../_core/constants/size.dart';
+import 'terms_form.dart';
 
 // 약관 동의 페이지의 본문 레이아웃을 담당하는 위젯
 class TermsBody extends StatelessWidget {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/domain/chat/chat_provider/chat_room_notifier.dart';
-import 'package:markit_place_front/domain/providers/SessionNotifier.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/chat_datail.dart';
+import '../../../../../_core/constants/assets.dart';
+import '../../../../../domain/chat/chat_provider/chat_room_notifier.dart';
+import '../../../../../domain/providers/SessionNotifier.dart';
+import '../chat_detail/chat_datail.dart';
 
 class ChatList extends ConsumerStatefulWidget {
   const ChatList({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // ConsumerWidget 사용을 위해 추가
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart'; // AuthNotifierProvider 사용을 위해 추가
+import '../../../../domain/members/providers/member_auth_provider.dart'; // AuthNotifierProvider 사용을 위해 추가
 import '../../../../_core/constants/assets.dart';
 import 'widgets/social_login_body.dart';
 

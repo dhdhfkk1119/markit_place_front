@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/_core/constants/theme.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/domain/members/models/term.dart';
-import 'package:markit_place_front/domain/members/providers/terms_provider.dart';
+import '../../../../../_core/constants/size.dart';
+import '../../../../../_core/constants/theme.dart';
+import '../../../../widgets/custom_button_large.dart';
+import '../../../../../domain/members/models/term.dart';
+import '../../../../../domain/members/providers/terms_provider.dart';
 
 import '../../../../../_core/constants/assets.dart';
 

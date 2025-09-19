@@ -1,28 +1,31 @@
-# This file configures the analyzer, which statically analyzes Dart code to
-# check for errors, warnings, and lints.
-#
-# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
-# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
-# invoked from the command line by running `flutter analyze`.
-
-# The following line activates a set of recommended lints for Flutter apps,
-# packages, and plugins designed to encourage good coding practices.
-include: package:flutter_lints/flutter.yaml
+analyzer:
+  # 여기서 특정 linter 규칙을 '경고(warning)'나 '에러(error)'로 강제로 지정
+  errors:
+    # 특정 규칙을 CI에서 실패를 유발하는 'error' 등급으로 격상
+    unnecessary_import: error
+    unused_import: info
+    dead_code: error
+    unused_field: info
+    unused_element: info
+    prefer_const_constructors: info
+    prefer_const_declarations: info
+    prefer_const_constructors_in_immutables: info
+    prefer_const_literals_to_create_immutables: info
+    always_specify_types: warning
+    prefer_relative_imports: error
 
 linter:
-  # The lint rules applied to this project can be customized in the
-  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
-  # included above or to enable additional rules. A list of all available lints
-  # and their documentation is published at https://dart.dev/lints.
-  #
-  # Instead of disabling a lint rule for the entire project in the
-  # section below, it can also be suppressed for a single line of code
-  # or a specific dart file by using the `// ignore: name_of_lint` and
-  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
-  # producing the lint.
+  # 여기서 검사할 규칙 목록을 직접 관리
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
-
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+    # 특정 규칙만 활성화하고, 나머지는 모두 무시
+    - unnecessary_import
+    - unused_import
+    - dead_code
+    - unused_field
+    - unused_element
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - prefer_const_constructors_in_immutables
+    - prefer_const_literals_to_create_immutables
+    - always_specify_types
+    - prefer_relative_imports

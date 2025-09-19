@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_category_dto.dart';
+import '../../../_core/utils/my_http.dart';
+import '../community_dto/community_category_dto.dart';
 import 'package:dio/dio.dart';
 
 

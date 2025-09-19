@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart' as path;
 
+import '../../_core/constants/message.dart';
 import '../../_core/utils/my_http.dart';
 
 class GeminiRepository {
@@ -81,10 +82,7 @@ class GeminiRepository {
       };
     }).toList();
 
-    final textPart = {
-      "text":
-          "너는 상품의 장점을 매력적으로 어필하는 전문 마케터야. 제시된 이미지들을 분석해서, 고객이 이 상품을 구매했을 때 얻게 될 경험이나 혜택을 중심으로 설득력 있는 판매글을 작성해 줘. 감성적이면서도 신뢰감을 주는 어조를 사용하고, 이모티콘은 문장의 의미를 해치지 않는 선에서 상징적인 의미로만 사용해. 형식은 반드시 [name]: name / [description]: description 이런 식으로 만들어줘야 해. 절대로 형식을 벗어나지 말아줘. 특히, description 부분은 문장이 중간에 끊기지 않게 완전한 문장으로 만들고, 문단은 줄바꿈 두 번(\\n\\n)으로 구분해줘."
-    };
+    final textPart = {"text": Message.prompt};
 
     // --- 요청 데이터 구조 수정 ---
     final requestData = {

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_report_dto.dart';
-import 'package:markit_place_front/domain/community/community_repository/community_comment_repository.dart';
+import '../community_dto/community_report_dto.dart';
+import '../community_repository/community_comment_repository.dart';
 
 import '../community_dto/community_comment_dto.dart';
 

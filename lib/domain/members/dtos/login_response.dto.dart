@@ -1,27 +1,29 @@
-import 'package:markit_place_front/domain/members/models/session_user.dart';
+import '../models/session_user.dart';
 
 // 로그인 API 성공 시 'response' 필드 내부의 실제 상세 데이터를 위한 DTO
 // 이 클래스는 ApiResponseDto<T>의 T로 사용됩니다.
 class LoginResponseDataDto {
   final int id;
-  final String loginId;
-  final String? name; // 이름은 nullable일 수 있음
-  final String role; // 역할 필드 추가 (non-nullable)
-  // 서버 응답에 status 필드도 있었지만, SessionUser에서 현재 사용하지 않으므로 DTO에서도 일단 제외하거나 필요시 추가
+  final String? loginId; // String -> String? 으로 변경
+  final String? name; // 이미 String?으로 잘 되어 있음
+  final String role;
+  final String? status; // 서버 응답에 status 필드가 있었으므로 DTO에 추가 (nullable)
 
   LoginResponseDataDto({
     required this.id,
-    required this.loginId,
+    this.loginId,
     this.name,
-    required this.role, // 생성자에 role 추가
+    required this.role,
+    this.status, // 생성자에 status 추가
   });
 
   factory LoginResponseDataDto.fromJson(Map<String, dynamic> json) {
     return LoginResponseDataDto(
       id: json['id'] as int,
-      loginId: json['loginId'] as String,
+      loginId: json['loginId'] as String?, // String -> String? 으로 변경
       name: json['name'] as String?,
-      role: json['role'] as String, // fromJson에 role 추가
+      role: json['role'] as String,
+      status: json['status'] as String?, // status 필드 파싱 추가
     );
   }
 
@@ -29,9 +31,9 @@ class LoginResponseDataDto {
   SessionUser toSessionUser() {
     return SessionUser(
       memberId: id,
-      loginId: loginId,
+      loginId: loginId, // SessionUser.loginId가 String?이므로, null 값을 그대로 전달
       name: name,
-      role: role, // SessionUser 생성자에 role 전달
+      role: role,
     );
   }
 
@@ -41,7 +43,8 @@ class LoginResponseDataDto {
       'id': id,
       'loginId': loginId,
       'name': name,
-      'role': role, // toJson에 role 추가
+      'role': role,
+      'status': status, // toJson에 status 추가
     };
   }
 }

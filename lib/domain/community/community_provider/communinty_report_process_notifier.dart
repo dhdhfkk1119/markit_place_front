@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_report_dto.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_report_process_dto.dart';
+import '../community_dto/community_report_dto.dart';
+import '../community_dto/community_report_process_dto.dart';
 
 class CommunityReportProcessNotifier
     extends StateNotifier<List<CommunityReportProcessDTO>> {

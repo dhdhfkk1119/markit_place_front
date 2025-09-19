@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/main_profile/widgets/my_page_body.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/main_profile/widgets/my_profile_edit_page.dart';
+import 'widgets/my_page_body.dart';
+import 'widgets/my_profile_edit_page.dart';
 import '../../../../../_core/constants/assets.dart';
 
 class MyPage extends StatelessWidget {

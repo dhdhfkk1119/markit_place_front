@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-import 'package:markit_place_front/domain/product/providers/product_category_notifier.dart';
-import 'package:markit_place_front/domain/product/providers/product_item_notifier.dart';
-import 'package:markit_place_front/domain/product/providers/product_write_notifier.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_body.dart';
+import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/product/providers/product_category_notifier.dart';
+import '../../../../../domain/product/providers/product_item_notifier.dart';
+import '../../../../../domain/product/providers/product_write_notifier.dart';
+import 'widgets/product_write_body.dart';
 
 import '../../../../../_core/constants/custom_widget.dart';
 
@@ -17,9 +17,6 @@ class ProductWritePage extends ConsumerStatefulWidget {
 }
 
 class _ProductWritePageState extends ConsumerState<ProductWritePage> {
-  final _priceController = TextEditingController(); // It was missing!
-  int? _selectedCategoryId;
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -44,58 +41,51 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
     );
   }
 
-  Future<void> _handleProductSubmit() async {
-    final productItemModel = ref.read(productItemProvider);
-    final selectedCategoryId = ref.read(selectedCategoryIdProvider);
+  Future<void> _handleProductSubmit(ProductItemModel productItem) async {
     final authState = ref.read(authNotifierProvider);
+    final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
 
-    if (productItemModel.images.isEmpty ||
-        _priceController.text.isEmpty ||
-        selectedCategoryId == null) {
+    if (productItem.name.isEmpty ||
+        productItem.description.isEmpty ||
+        productItem.price == null ||
+        productItem.images.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All fields are required.')),
+        const SnackBar(content: Text('모든 필수 항목을 입력해주세요.')),
       );
       return;
     }
 
     try {
       await ref.read(productWriteProvider.notifier).writeProduct(
-            selectedCategoryId: selectedCategoryId,
-            title: productItemModel.name, // Using AI-generated name
-            content:
-                productItemModel.description, // Using AI-generated description
-            price: int.parse(_priceController.text),
-            images: productItemModel.images,
-            memberId: authState.user!.memberId,
+            selectedCategoryId: selectedCategoryId!,
+            title: productItem.name,
+            content: productItem.description,
+            price: productItem.price!,
+            images: productItem.images,
+            memberAddressId: authState.user!.memberId,
           );
 
-      // 3. Navigate back on success
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product successfully submitted!')),
+        const SnackBar(content: Text('상품이 성공적으로 등록되었습니다!')),
       );
     } catch (e) {
-      // 4. Handle errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Submission failed: $e')),
+        SnackBar(content: Text('상품 등록 실패: $e')),
       );
     }
   }
 
-  // Inside _buildSubmitButton()
   Widget _buildSubmitButton() {
     final productItem = ref.watch(productItemProvider);
-    final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
-
     return Container(
       margin: const EdgeInsets.all(16.0),
       child: SizedBox(
         width: double.infinity,
         child: TextButton(
-          // Call the new method here
-          onPressed: () {
-            print("해당 상품의 번호 , 이름 ${selectedCategoryId}");
-          },
+          onPressed: productItem.isLoading
+              ? null
+              : () => _handleProductSubmit(productItem),
           style: TextButton.styleFrom(
             backgroundColor: Colors.deepPurpleAccent,
             shape: RoundedRectangleBorder(

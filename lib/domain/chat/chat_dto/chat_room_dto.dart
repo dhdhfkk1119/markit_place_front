@@ -1,4 +1,4 @@
-import 'package:markit_place_front/domain/chat/chat_model/chat_room.dart';
+import '../chat_model/chat_room.dart';
 
 class ChatRoomDTO {
   final int roomId;

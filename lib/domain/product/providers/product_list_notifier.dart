@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/product/dtos/product_list_dtos.dart';
-import 'package:markit_place_front/domain/product/models/product_list.dart';
-import 'package:markit_place_front/domain/product/repository/product_list_repository.dart';
+import '../dtos/product_list_dtos.dart';
+import '../models/product_list.dart';
+import '../repository/product_list_repository.dart';
 
 class ProductListNotifier extends ChangeNotifier {
   final ProductListRepository _repository = ProductListRepository();

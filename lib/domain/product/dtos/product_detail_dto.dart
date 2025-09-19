@@ -1,5 +1,5 @@
-import 'package:markit_place_front/domain/product/models/product_detail.dart';
-import 'package:markit_place_front/domain/product/models/product_list.dart';
+import '../models/product_detail.dart';
+import '../models/product_list.dart';
 
 class ProductDetailDto {
   final ProductList productList;

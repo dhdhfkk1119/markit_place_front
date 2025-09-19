@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/providers/SessionNotifier.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
 import '../qna_screen.dart';

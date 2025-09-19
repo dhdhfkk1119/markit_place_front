@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
-import 'package:markit_place_front/domain/chat/chat_repository/chat_detail_repository.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
+import '../chat_dto/chat_message_dto.dart';
+import '../chat_repository/chat_detail_repository.dart';
+import '../../members/providers/member_auth_provider.dart';
 
 class ChatDetailNotifier extends ChangeNotifier {
   final ChatDetailRepository repository = ChatDetailRepository();

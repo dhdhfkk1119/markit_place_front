@@ -1,8 +1,123 @@
+// D:/workspace-flutter/markit_place_front/lib/domain/members/providers/find_account_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/utils/validator_util.dart'; // validator_util.dart import 추가
-import 'package:markit_place_front/domain/members/repositories/find_account_repository.dart';
-import '../dtos/password_reset_dtos.dart';
+import '../../../_core/utils/error_utils.dart'; // For extractErrorMessage
+import '../../../_core/utils/validator_util.dart';
+import '../repositories/find_account_repository.dart';
+import '../dtos/password_reset_dtos.dart'; // From password_reset_provider
 
+// --- Repositories Provider ---
+final findAccountRepositoryProvider = Provider<FindAccountRepository>((ref) {
+  return FindAccountRepository();
+});
+
+// --- Find ID Related ---
+// State Definition for Find ID
+class FindIdState {
+  final bool isLoadingMaskedId;
+  final bool isLoadingSendEmail;
+  final String? maskedId;
+  final String? infoMessage; // For success messages like "ID sent to email"
+  final String? errorMessage;
+
+  FindIdState({
+    this.isLoadingMaskedId = false,
+    this.isLoadingSendEmail = false,
+    this.maskedId,
+    this.infoMessage,
+    this.errorMessage,
+  });
+
+  FindIdState copyWith({
+    bool? isLoadingMaskedId,
+    bool? isLoadingSendEmail,
+    String? maskedId,
+    String? infoMessage,
+    String? errorMessage,
+    bool clearMaskedId = false,
+    bool clearInfoMessage = false,
+    bool clearErrorMessage = false,
+  }) {
+    return FindIdState(
+      isLoadingMaskedId: isLoadingMaskedId ?? this.isLoadingMaskedId,
+      isLoadingSendEmail: isLoadingSendEmail ?? this.isLoadingSendEmail,
+      maskedId: clearMaskedId ? null : maskedId ?? this.maskedId,
+      infoMessage: clearInfoMessage ? null : infoMessage ?? this.infoMessage,
+      errorMessage:
+          clearErrorMessage ? null : errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
+// Notifier Definition for Find ID
+class FindIdNotifier extends Notifier<FindIdState> {
+  late FindAccountRepository _findAccountRepository;
+
+  @override
+  FindIdState build() {
+    _findAccountRepository = ref.watch(findAccountRepositoryProvider);
+    return FindIdState();
+  }
+
+  Future<void> fetchMaskedId(String email) async {
+    state = state.copyWith(
+      isLoadingMaskedId: true,
+      clearMaskedId: true,
+      clearErrorMessage: true,
+      clearInfoMessage: true,
+    );
+    try {
+      final fetchedMaskedId = await _findAccountRepository.getMaskedId(email);
+      state = state.copyWith(
+        isLoadingMaskedId: false,
+        maskedId: fetchedMaskedId,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoadingMaskedId: false,
+        errorMessage: extractErrorMessage(e),
+      );
+    }
+  }
+
+  Future<void> sendLoginIdToEmail(String email) async {
+    state = state.copyWith(
+      isLoadingSendEmail: true,
+      clearInfoMessage: true,
+      clearErrorMessage: true,
+      // Optional: clear maskedId if this action implies starting over
+      // clearMaskedId: true,
+    );
+    try {
+      final successMessage =
+          await _findAccountRepository.sendFullIdToEmail(email);
+      state = state.copyWith(
+        isLoadingSendEmail: false,
+        infoMessage: successMessage,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoadingSendEmail: false,
+        errorMessage: extractErrorMessage(e),
+      );
+    }
+  }
+
+  void clearMessages() {
+    state = state.copyWith(clearInfoMessage: true, clearErrorMessage: true);
+  }
+
+  void resetState() {
+    state = FindIdState();
+  }
+}
+
+// Provider Definition for Find ID
+final findIdNotifierProvider =
+    NotifierProvider<FindIdNotifier, FindIdState>(() {
+  return FindIdNotifier();
+});
+
+// --- Password Reset Related ---
 enum PasswordResetStep {
   enterIdentifier,
   enterCode,
@@ -88,28 +203,16 @@ class PasswordResetNotifier extends Notifier<PasswordResetState> {
   Future<void> confirmPasswordResetCode(String code) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      print('[PasswordResetNotifier] confirmPasswordResetCode CALLED.');
-      print(
-          '[PasswordResetNotifier] Current emailForCodeConfirmation: ${state.emailForCodeConfirmation}');
-      print('[PasswordResetNotifier] Current code from UI: $code');
-
       if (state.emailForCodeConfirmation == null ||
           state.emailForCodeConfirmation!.trim().isEmpty) {
-        print(
-            '[PasswordResetNotifier] Error: emailForCodeConfirmation is null or empty.');
         throw Exception("이메일 정보가 없습니다. 처음부터 다시 시도해주세요.");
       }
       if (code.trim().isEmpty) {
-        print('[PasswordResetNotifier] Error: code from UI is empty.');
         throw Exception("인증 코드를 입력해주세요.");
       }
 
       final requestDto = ConfirmPasswordResetCodeRequestDto(
           email: state.emailForCodeConfirmation!, code: code.trim());
-
-      print(
-          '[PasswordResetNotifier] Sending ConfirmPasswordResetCodeRequestDto: ${requestDto.toJson()}');
-
       final responseDto =
           await _repository.confirmPasswordResetCode(requestDto);
 
@@ -119,8 +222,6 @@ class PasswordResetNotifier extends Notifier<PasswordResetState> {
         step: PasswordResetStep.enterNewPassword,
       );
     } catch (e) {
-      print(
-          '[PasswordResetNotifier] Exception in confirmPasswordResetCode: ${e.toString()}');
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString().replaceFirst("Exception: ", ""),
@@ -131,16 +232,14 @@ class PasswordResetNotifier extends Notifier<PasswordResetState> {
 
   Future<void> resetPassword(
       String newPassword, String confirmNewPassword) async {
-    // 1. 빈 값 검사
     if (newPassword.isEmpty || confirmNewPassword.isEmpty) {
       state = state.copyWith(
           errorMessage: '새 비밀번호와 확인 비밀번호를 모두 입력해주세요.',
           step: PasswordResetStep.enterNewPassword,
-          clearError: false); // 이전 오류 메시지를 유지하지 않도록 clearError: false 또는 명시적 설정
+          clearError: false);
       return;
     }
 
-    // 2. 새 비밀번호 자체의 유효성 검사 (validator_util.dart 사용)
     final String passwordValidationError = validatePassword(newPassword);
     if (passwordValidationError.isNotEmpty) {
       state = state.copyWith(
@@ -150,7 +249,6 @@ class PasswordResetNotifier extends Notifier<PasswordResetState> {
       return;
     }
 
-    // 3. 일치 여부 검사
     if (newPassword != confirmNewPassword) {
       state = state.copyWith(
           errorMessage: '새 비밀번호가 일치하지 않습니다.',
@@ -159,18 +257,15 @@ class PasswordResetNotifier extends Notifier<PasswordResetState> {
       return;
     }
 
-    // 4. 임시 토큰 존재 여부 검사
     if (state.tempResetToken == null) {
       state = state.copyWith(
           errorMessage: '비밀번호 재설정을 위한 정보가 없습니다. 다시 시도해주세요.',
-          step: PasswordResetStep.error, // 이 경우는 복구 불가능한 오류로 간주
+          step: PasswordResetStep.error,
           clearError: false);
       return;
     }
 
-    // 모든 검사 통과 후 API 호출
-    state = state.copyWith(
-        isLoading: true, clearError: true); // API 호출 전에는 이전 오류 메시지 클리어
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final requestDto = PasswordResetRequestDto(
           tempToken: state.tempResetToken!,
@@ -186,7 +281,7 @@ class PasswordResetNotifier extends Notifier<PasswordResetState> {
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString().replaceFirst("Exception: ", ""),
-        step: PasswordResetStep.error, // API 호출 실패 시에도 복구 불가능한 오류로 간주
+        step: PasswordResetStep.error,
       );
     }
   }

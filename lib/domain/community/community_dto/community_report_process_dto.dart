@@ -1,4 +1,4 @@
-import 'package:markit_place_front/domain/community/community_dto/community_report_dto.dart';
+import 'community_report_dto.dart';
 
 class CommunityReportProcessDTO {
   final int? processId;

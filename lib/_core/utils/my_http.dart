@@ -1,13 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // Import AuthNotifier
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
+import '../../domain/members/providers/member_auth_provider.dart';
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
 /// 팀장 서버 주소 - http://192.168.0.128:8080/api
 /// 자기 서버 주소 - http://10.0.2.2:8080/api
 /// 모바일 테스트용 서버 - https://port-0-market-place-server-m9sgwbay02179a7c.sel4.cloudtype.app/api
-const baseUrl = "http://192.168.0.87:8080/api";
+const baseUrl = "http://192.168.0.128:8080/api";
 
 final dio = Dio(
   BaseOptions(

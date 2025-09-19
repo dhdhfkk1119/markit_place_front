@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-import 'package:markit_place_front/presentation/widgets/snackbar_util.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/size.dart';
+import '../../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../../domain/social_login/social_login_provider.dart'; // 수정: SocialLoginNotifier 사용 위해 추가
+import '../../../../widgets/custom_button_large.dart';
+import '../../../../widgets/custom_link_grey.dart';
+import '../../../../widgets/snackbar_util.dart';
 
 class SocialLoginForm extends ConsumerWidget {
   const SocialLoginForm({super.key});
@@ -32,34 +33,67 @@ class SocialLoginForm extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 인증 상태 변경 감지 리스너
+    // AuthState 리스닝은 그대로 유지 (SocialLoginNotifier가 AuthNotifier 상태를 변경하므로)
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-      // 로그인 성공 상태로 변경되었을 때 처리
       if (next.status == AuthStatus.authenticated &&
           previous?.status != AuthStatus.authenticated) {
-        // 소셜 로그인(구글, 네이버 등) 성공 시 특화된 성공 메시지 표시
         if (next.loginType == LoginType.social) {
           String successMessage = "소셜 로그인 성공!";
           // TODO: 향후 확장 시, next.user.loginId를 분석하여 특정 소셜 서비스(구글, 네이버)별 메시지 차별화 가능
-          // 예: if (next.user?.loginId.startsWith("google_") ?? false) successMessage = "구글 로그인 성공!";
-          // else if (next.user?.loginId.startsWith("naver_") ?? false) successMessage = "네이버 로그인 성공!";
           SnackBarUtil.showSuccess(context, successMessage);
         }
-        // 로그인 유형(자동, 소셜, 계정)에 관계없이 인증 완료 시 메인 화면으로 이동하고 이전 스택 제거
         Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
       }
-      // 에러 상태로 변경되었을 때 처리
+      // ==== 에러 상태 처리 로직 (동일하게 AuthNotifier의 errorMessage 사용) ====
       else if (next.status == AuthStatus.error &&
-          previous?.status != AuthStatus.error) {
-        String errorMessage = next.errorMessage ?? "소셜 로그인에 실패했습니다.";
-        SnackBarUtil.showError(context, errorMessage);
+          (previous?.status != AuthStatus.error ||
+              previous?.errorMessage != next.errorMessage)) {
+        final errorMessage = next.errorMessage ?? "소셜 로그인에 실패했습니다.";
+
+        if (errorMessage.contains("이미 사용 중인 이메일입니다")) {
+          String dialogTitle = "로그인 실패";
+          String dialogContent =
+              "선택하신 소셜 계정의 이메일이 이미 다른 방식으로 가입되어 있습니다.\n\n기존 방식으로 로그인하시거나, 다른 소셜 계정을 이용해주세요.";
+
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext dialogContext) {
+              return AlertDialog(
+                title: Text(dialogTitle),
+                content: Text(dialogContent),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('확인'),
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      // AuthNotifier의 에러 상태 초기화 (필요시 AuthNotifier에 clearError 메소드 구현)
+                      // ref.read(authNotifierProvider.notifier).clearError();
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('다른 Google 계정 선택'),
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      // 수정: socialLoginNotifierProvider 사용
+                      ref
+                          .read(socialLoginNotifierProvider.notifier)
+                          .trySignInWithDifferentGoogleAccount();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          SnackBarUtil.showError(context, errorMessage);
+        }
       }
     });
 
     return Column(
       children: [
         const SizedBox(height: medium),
-        // 소셜 로그인 아이콘 (구글, 네이버, 카카오)
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -68,7 +102,10 @@ class SocialLoginForm extends ConsumerWidget {
               iconAssetPath: Assets.Svgs.google,
               onPressed: () {
                 print("구글 로그인 버튼 클릭");
-                ref.read(authNotifierProvider.notifier).signInWithGoogle();
+                // 수정: socialLoginNotifierProvider 사용
+                ref
+                    .read(socialLoginNotifierProvider.notifier)
+                    .signInWithGoogle();
               },
             ),
             const SizedBox(width: large),
@@ -77,7 +114,10 @@ class SocialLoginForm extends ConsumerWidget {
               iconAssetPath: Assets.Svgs.naver,
               onPressed: () {
                 print("네이버 로그인 버튼 클릭");
-                ref.read(authNotifierProvider.notifier).signInWithNaver();
+                // 수정: socialLoginNotifierProvider 사용
+                ref
+                    .read(socialLoginNotifierProvider.notifier)
+                    .signInWithNaver();
               },
             ),
             const SizedBox(width: large),
@@ -92,7 +132,6 @@ class SocialLoginForm extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: medium),
-        // 아이디/이메일(계정) 로그인 버튼
         CustomButtonLarge(
           text: "아이디/이메일 로그인",
           onPressed: () {
@@ -101,7 +140,6 @@ class SocialLoginForm extends ConsumerWidget {
           },
         ),
         const SizedBox(height: small),
-        // 회원가입 링크
         Center(
           child: CustomLInkGrey(
             text: '아직 아이디가 없으신가요? 회원가입',
@@ -111,7 +149,6 @@ class SocialLoginForm extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: xSmall),
-        // 계정찾기 링크
         Center(
           child: CustomLInkGrey(
             text: '아이디/비밀번호가 생각나지 않으세요? 계정찾기',
