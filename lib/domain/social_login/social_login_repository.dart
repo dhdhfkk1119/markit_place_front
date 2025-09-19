@@ -79,6 +79,23 @@ class SocialLoginRepository {
     }
   }
 
+  /// 다음 로그인 시 사용자가 다른 계정을 선택할 수 있도록 Google에서 로그아웃합니다.
+  Future<void> signOutFromGoogle() async {
+    try {
+      // signOut만으로도 계정 선택기가 다시 표시될 수 있습니다.
+      // 그렇지 않다면, disconnect()가 더 강력하지만 권한도 철회합니다.
+      // 일단 signOut으로 시작합니다.
+      if (await _googleSignIn.isSignedIn()) {
+        await _googleSignIn.signOut();
+        print("[GoogleLoginRepo] Google에서 로그아웃했습니다.");
+      }
+    } catch (e) {
+      print("[GoogleLoginRepo] Google 로그아웃 중 오류 발생: $e");
+      // 필요에 따라 오류를 다시 발생시키거나 처리할 수 있지만,
+      // 이 흐름의 주 목적은 새로운 로그인 시도를 허용하는 것이므로 오류를 출력하는 것만으로도 충분할 수 있습니다.
+    }
+  }
+
   // --- 소셜 토큰으로 서버에 로그인하는 공통 내부 헬퍼 메소드 ---
   // (기존 _loginToServerWithNaverToken을 일반화하여 SocialLoginRequestDto 사용)
   Future<Map<String, dynamic>?> _loginToServerWithSocialToken(

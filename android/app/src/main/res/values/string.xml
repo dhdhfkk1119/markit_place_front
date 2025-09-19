@@ -3,4 +3,5 @@
     <string name="client_id">raxyDFfnwFUNY</string>
     <string name="client_secret">Efe2uSDFddyf</string>
     <string name="client_name">markit_place</string>
+    <string name="default_web_client_id" translatable="false">538078404208-bfabhoceg8erat2i8477vmvg0a717i9i.apps.googleusercontent.com</string>
 </resources>
