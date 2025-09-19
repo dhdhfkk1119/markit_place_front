@@ -36,6 +36,12 @@ class _CommunityDetailItemState extends ConsumerState<CommunityDetailItem> {
     }
 
     final post = notifier.communityDetail!;
+
+    print("해당 상품의 정보 ${post.title}");
+    print("해당 상품의 정보 ${post.id}");
+    print("해당 상품의 정보 ${post.content}");
+    print("해당 상품의 정보 ${post.comments}");
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
