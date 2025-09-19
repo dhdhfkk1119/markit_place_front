@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // For Provider
+// import 'package:flutter_riverpod/flutter_riverpod.dart'; // 삭제
 import '../../../_core/dtos/api_response_dto.dart';
 import '../../../_core/dtos/error_dto.dart';
 import '../../../_core/utils/error_utils.dart';
@@ -185,7 +185,7 @@ class FindAccountRepository {
   }
 }
 
-// Provider for FindAccountRepository
-final findAccountRepositoryProvider = Provider<FindAccountRepository>((ref) {
-  return FindAccountRepository();
-});
+// Provider for FindAccountRepository // 삭제
+// final findAccountRepositoryProvider = Provider<FindAccountRepository>((ref) { // 삭제
+//   return FindAccountRepository(); // 삭제
+// }); // 삭제

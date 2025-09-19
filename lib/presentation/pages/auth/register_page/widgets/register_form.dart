@@ -4,9 +4,10 @@ import '../../../../../_core/constants/custom_widget.dart';
 import '../../../../../_core/constants/size.dart';
 import '../../../../../domain/members/models/member.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/members/providers/email_verification_provider.dart';
+import '../../../../../domain/members/providers/register_provider.dart'; // 추가
 import '../../../../widgets/custom_button_large.dart';
 import '../../../../widgets/custom_button_medium.dart';
-
 import '../../../../../_core/constants/assets.dart';
 import './email_verification_section.dart';
 import '../../../../widgets/app_text_form_field.dart';
@@ -26,7 +27,7 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   final _passwordController = TextEditingController(text: 'user1234');
   final _passwordConfirmController = TextEditingController(text: 'user1234');
   final _emailController = TextEditingController(text: 'user3@gmail.com');
-  final _verificationCodeController = TextEditingController(text: 'user3');
+  final _verificationCodeController = TextEditingController();
 
   final _idFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
@@ -39,10 +40,11 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   late final List<TextEditingController> _allControllers;
   late final List<FocusNode> _allFocusNodes;
 
-  bool _isCheckingId = false;
-  String _idCheckMessage = '';
-  bool _isIdValidAndChecked = false;
-  Color _idCheckMessageColor = Colors.grey;
+  // 로컬 상태 변수들은 RegisterState를 통해 관리되도록 점진적으로 대체
+  // bool _isCheckingId = false; // -> registerState.status
+  // String _idCheckMessage = ''; // -> registerState.errorMessage
+  // bool _isIdValidAndChecked = false; // -> registerState.isIdChecked && registerState.status == RegisterStatus.idAvailable
+  // Color _idCheckMessageColor = Colors.grey; // -> registerState.status 기반
 
   final List<String> _suggestedDomains = [
     'gmail.com',
@@ -74,12 +76,16 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
       node.addListener(() => _ensureVisible(node));
     }
     _idController.addListener(() {
-      if (_isIdValidAndChecked || _idCheckMessage.isNotEmpty) {
-        setState(() {
-          _isIdValidAndChecked = false;
-          _idCheckMessage = '';
-          _idCheckMessageColor = Colors.grey;
-        });
+      // 아이디 변경 시, RegisterNotifier의 상태를 초기화하거나,
+      // 중복 확인 메시지를 UI에서 직접 관리하지 않고 RegisterState에 의존하도록 변경
+      // 현재는 이 리스너의 역할을 RegisterState.isIdChecked를 통해 간접적으로 처리
+      final registerState = ref.read(registerNotifierProvider);
+      if (registerState.isIdChecked == true ||
+          (registerState.errorMessage != null &&
+              registerState.errorMessage!.isNotEmpty)) {
+        // 사용자가 ID를 수정하면 RegisterNotifier의 상태를 리셋할 수 있도록 함
+        // ref.read(registerNotifierProvider.notifier).resetIdCheckStatus(); // 이런 메소드가 RegisterNotifier에 필요할 수 있음
+        // 또는 build 메소드에서 ID 변경 시 자동으로 UI가 업데이트되도록 함
       }
     });
     print("[RegisterForm initState] agreedTermIds: ${widget.agreedTermIds}");
@@ -153,72 +159,51 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   Future<void> _checkIdAvailability() async {
     final idValue = _idController.text;
     if (idValue.isEmpty) {
-      setState(() {
-        _idCheckMessage = '아이디를 입력해주세요.';
-        _idCheckMessageColor = Colors.red;
-        _isIdValidAndChecked = false;
-      });
+      // UI는 RegisterState의 변화를 통해 업데이트되므로 직접적인 setState 호출 줄임
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('아이디를 입력해주세요.',
+                style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
+      );
       return;
     }
     if (idValue.length < 4 || idValue.length > 20) {
-      setState(() {
-        _idCheckMessage = '아이디는 4자 이상 20자 이하로 입력해주세요.';
-        _idCheckMessageColor = Colors.red;
-        _isIdValidAndChecked = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('아이디는 4자 이상 20자 이하로 입력해주세요.',
+                style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
+      );
       return;
     }
     if (idValue.contains(' ')) {
-      setState(() {
-        _idCheckMessage = '아이디에 공백을 포함할 수 없습니다.';
-        _idCheckMessageColor = Colors.red;
-        _isIdValidAndChecked = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('아이디에 공백을 포함할 수 없습니다.',
+                style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
+      );
       return;
     }
-    setState(() {
-      _isCheckingId = true;
-      _idCheckMessage = '확인 중...';
-      _idCheckMessageColor = Colors.grey;
-    });
-    try {
-      final authNotifier = ref.read(authNotifierProvider.notifier);
-      final bool isAvailable = await authNotifier.checkIdAvailability(idValue);
-      if (isAvailable) {
-        setState(() {
-          _idCheckMessage = '사용 가능한 아이디입니다.';
-          _idCheckMessageColor = Colors.green;
-          _isIdValidAndChecked = true;
-        });
-      } else {
-        setState(() {
-          _idCheckMessage = '이미 사용 중인 아이디입니다.';
-          _idCheckMessageColor = Colors.red;
-          _isIdValidAndChecked = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _idCheckMessage = '오류: ${e.toString().split(': ').last}';
-        _idCheckMessageColor = Colors.red;
-        _isIdValidAndChecked = false;
-      });
-    } finally {
-      setState(() {
-        _isCheckingId = false;
-      });
-    }
+    // RegisterNotifier 호출로 변경
+    await ref
+        .read(registerNotifierProvider.notifier)
+        .checkIdAvailability(idValue);
+    // 결과 처리는 RegisterState를 watch/listen하여 UI 업데이트 (build 메소드 및 listener)
   }
 
   void _onRegisterButtonPressed() {
-    final authNotifier = ref.read(authNotifierProvider.notifier);
-    final currentAuthState = ref.read(authNotifierProvider);
+    final registerNotifier = ref.read(registerNotifierProvider.notifier);
+    final currentRegisterState = ref.read(registerNotifierProvider);
+    final emailVerificationState = ref.read(emailVerificationNotifierProvider);
+    final authState = ref.read(authNotifierProvider); // 자동 로그인 시 사용
 
-    if (currentAuthState.status == AuthStatus.loading) {
+    if (currentRegisterState.status == RegisterStatus.loading ||
+        authState.status == AuthStatus.loading) {
       return;
     }
 
-    if (!_isIdValidAndChecked) {
+    final idCheckState = ref.read(registerNotifierProvider);
+    if (!(idCheckState.isIdChecked == true &&
+        idCheckState.status == RegisterStatus.idAvailable)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('아이디 중복 확인을 해주세요.',
@@ -228,13 +213,13 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
       return;
     }
 
-    final freshAuthStateForEmailCheck = ref.read(authNotifierProvider);
-    if (!freshAuthStateForEmailCheck.isEmailVerifiedForRegistration) {
+    if (!emailVerificationState.isVerifiedForCurrentSession) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('이메일 인증을 먼저 완료해주세요.',
                 style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
       );
+      _emailFocusNode.requestFocus();
       return;
     }
 
@@ -249,19 +234,16 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
     }
 
     if (_formKey.currentState!.validate()) {
-      final freshAuthStateForRegister = ref.read(authNotifierProvider);
       final memberToRegister = Member.forRegistration(
         loginId: _idController.text,
         password: _passwordController.text,
         email: _emailController.text,
         agreedTermIds: widget.agreedTermIds,
-        isEmailVerified:
-            freshAuthStateForRegister.isEmailVerifiedForRegistration,
+        isEmailVerified: emailVerificationState.isVerifiedForCurrentSession,
       );
-      authNotifier.register(memberToRegister);
+      registerNotifier.register(memberToRegister);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        // 추가: 폼 유효성 검사 실패 시 스낵바
         SnackBar(
             content: Text('입력 내용을 다시 확인해주세요.',
                 style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
@@ -272,41 +254,103 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
-    final bool isEmailVerified = authState.isEmailVerifiedForRegistration;
+    final registerState = ref.watch(registerNotifierProvider);
+    final emailVerificationState = ref.watch(emailVerificationNotifierProvider);
+    final bool isEmailVerified =
+        emailVerificationState.isVerifiedForCurrentSession;
+
     final cookieRunTextStyle = TextStyle(fontFamily: Assets.Fonts.cookieRun);
 
+    // AuthState 리스너 (로그인 성공 및 일반 에러 처리)
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
       if (next.status == AuthStatus.error &&
           next.errorMessage != null &&
-          previous?.status != AuthStatus.error) {
+          (previous?.status != AuthStatus.error ||
+              previous?.errorMessage != next.errorMessage)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: Text(next.errorMessage!, style: cookieRunTextStyle)),
+              content: Text("로그인 오류: ${next.errorMessage!}",
+                  style: cookieRunTextStyle)),
         );
-      } else if (previous?.status == AuthStatus.loading &&
-          next.status == AuthStatus.unauthenticated &&
-          next.errorMessage == "회원가입 성공! 로그인해주세요.") {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(next.errorMessage!, style: cookieRunTextStyle)),
-        );
-        ref
-            .read(authNotifierProvider.notifier)
-            .clearRegistrationSuccessMessage();
-        ref.read(authNotifierProvider.notifier).resetEmailVerificationState();
-        final String registeredId = _idController.text;
-        final String registeredPassword = _passwordController.text;
-        ref
-            .read(authNotifierProvider.notifier)
-            .login(registeredId, registeredPassword);
       } else if (previous?.status != AuthStatus.authenticated &&
           next.status == AuthStatus.authenticated) {
         if (ModalRoute.of(context)?.settings.name == '/register') {
-          Navigator.pushNamedAndRemoveUntil(
-              context, "/product/list", (route) => false);
+          // 로그인 성공 시 이메일 인증 상태 초기화
+          ref
+              .read(emailVerificationNotifierProvider.notifier)
+              .resetEmailVerificationState();
+          Navigator.pushNamedAndRemoveUntil(context, "/main", (route) => false);
         }
       }
     });
+
+    // RegisterState 리스너 (회원가입 결과 및 ID 중복확인 결과 관련 UI 피드백)
+    ref.listen<RegisterState>(registerNotifierProvider, (previous, next) {
+      // 회원가입 성공 처리
+      if (previous?.status != RegisterStatus.success &&
+          next.status == RegisterStatus.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(next.successMessage ?? "회원가입 성공! 로그인해주세요.",
+                  style: cookieRunTextStyle)),
+        );
+        ref.read(registerNotifierProvider.notifier).consumeMessages(); // 메시지 소비
+
+        // EmailVerificationState 초기화 (회원가입 성공 시)
+        ref
+            .read(emailVerificationNotifierProvider.notifier)
+            .resetEmailVerificationState();
+
+        // 자동 로그인 시도 (AuthNotifier 사용)
+        final authNotifier = ref.read(authNotifierProvider.notifier);
+        authNotifier.updateLoginInput(_idController.text);
+        authNotifier.updatePassword(_passwordController.text);
+        authNotifier.login(); // AuthNotifier의 login() 호출
+      }
+      // 회원가입 실패 처리 (ID 중복확인 중 발생한 에러와 구분)
+      else if (next.status == RegisterStatus.error &&
+          next.isIdChecked != true) {
+        if (next.errorMessage != null &&
+            next.errorMessage!.isNotEmpty &&
+            (previous?.errorMessage != next.errorMessage ||
+                previous?.status != RegisterStatus.error)) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text("회원가입 오류: ${next.errorMessage!}",
+                    style: cookieRunTextStyle)),
+          );
+          ref.read(registerNotifierProvider.notifier).consumeMessages();
+        }
+      }
+      // ID 중복 확인 관련 메시지 (성공, 실패, 에러) - build 메소드에서 직접 처리하므로 여기서는 생략 가능
+      // 또는 특정 액션(e.g., 포커스 이동)이 필요하면 여기서 처리
+    });
+
+    // UI 결정 로직 (RegisterState 직접 사용)
+    bool isIdCheckInProgress = registerState.status == RegisterStatus.loading &&
+        registerState.isIdChecked != true;
+    bool isIdSuccessfullyChecked = registerState.isIdChecked == true &&
+        registerState.status == RegisterStatus.idAvailable;
+    String idFeedbackMessage = "";
+    Color idFeedbackColor = Colors.grey;
+
+    if (_idController.text.isNotEmpty) {
+      // 아이디 입력시에만 피드백 메시지 표시
+      if (registerState.status == RegisterStatus.idAvailable ||
+          registerState.status == RegisterStatus.idUnavailable ||
+          (registerState.status == RegisterStatus.error &&
+              registerState.isIdChecked == true)) {
+        idFeedbackMessage = registerState.errorMessage ?? "";
+        if (registerState.status == RegisterStatus.idAvailable) {
+          idFeedbackColor = Colors.green;
+        } else {
+          idFeedbackColor = Colors.red;
+        }
+      } else if (isIdCheckInProgress) {
+        idFeedbackMessage = "확인 중...";
+        idFeedbackColor = Colors.grey;
+      }
+    }
 
     return SingleChildScrollView(
       controller: _scrollController,
@@ -335,9 +379,11 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                           return '아이디는 4자 이상 20자 이하로 입력해주세요.';
                         }
                         if (value.contains(' ')) return '아이디에 공백을 포함할 수 없습니다.';
+                        // 중복 확인 성공 여부 validator에 추가 가능 (선택적)
+                        // if (!isIdSuccessfullyChecked) return '아이디 중복 확인을 해주세요.';
                         return null;
                       },
-                      readOnly: _isCheckingId,
+                      readOnly: isIdCheckInProgress,
                     ),
                   ),
                   Padding(
@@ -345,19 +391,20 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                         left: small, top: small, right: xSmall),
                     child: CustomButtonMedium(
                       text: '중복확인',
-                      isLoading: _isCheckingId,
-                      onPressed: _isCheckingId ? null : _checkIdAvailability,
+                      isLoading: isIdCheckInProgress,
+                      onPressed:
+                          isIdCheckInProgress ? null : _checkIdAvailability,
                     ),
                   ),
                 ],
               ),
-              if (_idCheckMessage.isNotEmpty)
+              if (idFeedbackMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 4.0, left: 12.0),
                   child: Text(
-                    _idCheckMessage,
+                    idFeedbackMessage,
                     style: TextStyle(
-                      color: _idCheckMessageColor,
+                      color: idFeedbackColor,
                       fontSize: 12.0,
                       fontFamily: Assets.Fonts.cookieRun,
                     ),
@@ -373,11 +420,10 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                   if (value == null || value.isEmpty) {
                     return '비밀번호를 입력해주세요.';
                   }
-                  // 비밀번호 유효성 검사: 영문, 숫자 필수, 특수문자(@$!%*?&) 허용, 4~20자
                   if (!RegExp(
                           r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&,.]{8,20}$')
                       .hasMatch(value)) {
-                    return '비밀번호는 8~16자, 영문, 숫자, 특수문자를 모두 포함해야 합니다.';
+                    return '비밀번호는 8~20자, 영문, 숫자를 포함해야 합니다.';
                   }
                   return null;
                 },
@@ -411,7 +457,8 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
               const SizedBox(height: medium),
               CustomButtonLarge(
                 text: '가입하기',
-                isLoading: authState.status == AuthStatus.loading,
+                isLoading: registerState.status == RegisterStatus.loading ||
+                    authState.status == AuthStatus.loading,
                 onPressed: _onRegisterButtonPressed,
               ),
             ],

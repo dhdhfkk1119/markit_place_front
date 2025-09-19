@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../_core/constants/assets.dart';
 import '../../../../../_core/constants/custom_widget.dart';
 import '../../../../../_core/constants/size.dart';
-import '../../../../../domain/members/providers/member_auth_provider.dart';
+// import '../../../../../domain/members/providers/member_auth_provider.dart'; // EmailVerificationNotifier를 사용하므로 주석 처리 또는 삭제
+import '../../../../../domain/members/providers/email_verification_provider.dart'; // 수정된 부분
 import '../../../../widgets/custom_button_medium.dart';
 // AppTextFormField import 추가
 import '../../../../widgets/app_text_form_field.dart';
@@ -58,8 +59,9 @@ class _EmailVerificationSectionState
     });
 
     try {
+      // 수정된 부분: emailVerificationNotifierProvider 사용
       await ref
-          .read(authNotifierProvider.notifier)
+          .read(emailVerificationNotifierProvider.notifier)
           .requestEmailVerification(email);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -71,23 +73,15 @@ class _EmailVerificationSectionState
       if (!mounted) return;
       String errorMessage = e.toString();
 
-      // "Exception: " 또는 유사한 접두사 제거
       if (errorMessage.startsWith("Exception: ")) {
         errorMessage = errorMessage.substring("Exception: ".length);
       } else if (errorMessage.startsWith("DioException [unknown]: ")) {
-        // 만약 Repository가 DioException을 그대로 던진다면 여기서 추가 파싱이 필요할 수 있으나,
-        // 현재는 Repository가 메시지를 Exception에 담아 보내주고 있다고 가정합니다.
+        // Error handling as before
       }
-      // "Error: " 접두사도 필요시 제거할 수 있습니다.
-      // else if (errorMessage.startsWith("Error: ")) {
-      //   errorMessage = errorMessage.substring("Error: ".length);
-      // }
 
-      // 서버가 준 메시지가 "이미 가입된 이메일입니다."인지 직접 확인
       if (errorMessage == "이미 가입된 이메일입니다.") {
-        // 특정 메시지일 경우 그대로 사용
+        // Specific message handling
       } else {
-        // 그 외의 경우, 일반적인 실패 메시지 형태로 가공
         errorMessage = '인증번호 발송 실패: $errorMessage';
       }
 
@@ -133,8 +127,9 @@ class _EmailVerificationSectionState
     });
 
     try {
+      // 수정된 부분: emailVerificationNotifierProvider 사용
       final isVerified = await ref
-          .read(authNotifierProvider.notifier)
+          .read(emailVerificationNotifierProvider.notifier)
           .confirmEmailVerification(email, code);
       if (!mounted) return;
 
@@ -146,21 +141,29 @@ class _EmailVerificationSectionState
         );
         widget.verificationCodeController.clear();
         FocusScope.of(context).unfocus();
+        // 여기에 추가: 인증 성공 상태를 상위 위젯(RegisterForm)에 알리거나,
+        // EmailVerificationState의 isVerifiedForCurrentSession를 직접 사용하도록 RegisterForm을 수정해야 할 수 있습니다.
+        // 예: ref.read(emailVerificationNotifierProvider.notifier).consumeVerificationSuccess(); (만약 상태 소비 로직이 있다면)
       }
+      // 인증 실패 시 (isVerified == false) EmailVerificationNotifier 내부에서 상태가 error로 설정되고
+      // errorMessage가 채워지므로, 여기서 별도 SnackBar 처리를 하지 않아도 Notifier의 상태 변화를 통해 UI에 반영될 수 있습니다.
+      // 만약 여기서 직접 SnackBar를 띄우고 싶다면, EmailVerificationNotifier의 confirmEmailVerification이
+      // false를 반환했을 때의 로직을 추가합니다.
+      // else {
+      //   if (!mounted) return;
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(
+      //         content: Text(ref.read(emailVerificationNotifierProvider).errorMessage ?? '인증번호가 일치하지 않습니다.',
+      //             style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
+      //   );
+      // }
     } catch (e) {
+      // Notifier에서 발생한 예외 (네트워크 오류 등)는 여기서 catch 가능
       if (!mounted) return;
       String errorMessage = e.toString();
       if (errorMessage.startsWith("Exception: ")) {
         errorMessage = errorMessage.substring("Exception: ".length);
       }
-      // 인증 실패 관련 특정 메시지 처리 (필요시)
-      // if (errorMessage == "인증번호가 일치하지 않습니다.") {
-      //   // 특정 메시지 처리
-      // } else {
-      //   errorMessage = '인증 실패: $errorMessage';
-      // }
-
-      // 현재는 모든 인증 실패를 일반적인 형태로 표시
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('인증 실패: $errorMessage',
@@ -180,6 +183,7 @@ class _EmailVerificationSectionState
     final cookieRunBlackTextStyle =
         TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black87);
     final currentIsEmailVerified = widget.isEmailAlreadyVerified;
+    // final emailVerificationState = ref.watch(emailVerificationNotifierProvider); // 상태를 직접 watch 할 수도 있음
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +200,8 @@ class _EmailVerificationSectionState
                 labelText: '이메일 주소',
                 keyboardType: TextInputType.emailAddress,
                 helperText: '예: example@markit.com',
-                readOnly: currentIsEmailVerified,
+                readOnly:
+                    currentIsEmailVerified, // || emailVerificationState.status == EmailVerificationStatus.verified,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return '이메일 주소를 입력해주세요.';
@@ -216,7 +221,8 @@ class _EmailVerificationSectionState
               child: CustomButtonMedium(
                 text: '인증번호 전송',
                 isLoading: _isSendingVerificationEmail,
-                onPressed: _isSendingVerificationEmail || currentIsEmailVerified
+                onPressed: _isSendingVerificationEmail ||
+                        currentIsEmailVerified // || emailVerificationState.status == EmailVerificationStatus.verified
                     ? null
                     : _handleSendVerificationEmail,
               ),
@@ -230,9 +236,10 @@ class _EmailVerificationSectionState
             runSpacing: xSmall,
             children: widget.suggestedDomains.map((domain) {
               return OutlinedButton(
-                onPressed: currentIsEmailVerified
-                    ? null
-                    : () => widget.onDomainSuggestionTap(domain),
+                onPressed:
+                    currentIsEmailVerified // || emailVerificationState.status == EmailVerificationStatus.verified
+                        ? null
+                        : () => widget.onDomainSuggestionTap(domain),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                       horizontal: small, vertical: xSmall),
@@ -257,10 +264,13 @@ class _EmailVerificationSectionState
                 labelText: '인증번호',
                 helperText: '이메일로 전송된 인증번호 6자리를 입력해주세요.',
                 keyboardType: TextInputType.number,
-                readOnly: currentIsEmailVerified,
+                readOnly:
+                    currentIsEmailVerified, // || emailVerificationState.status == EmailVerificationStatus.verified,
                 validator: (value) {
+                  // if (emailVerificationState.status != EmailVerificationStatus.verified && !currentIsEmailVerified && (value == null || value.isEmpty)) {
                   if (!currentIsEmailVerified &&
                       (value == null || value.isEmpty)) {
+                    // 임시로 기존 로직 유지
                     return '인증번호를 입력해주세요.';
                   }
                   return null;
@@ -271,12 +281,14 @@ class _EmailVerificationSectionState
               padding:
                   const EdgeInsets.only(left: small, top: small, right: xSmall),
               child: CustomButtonMedium(
-                text: currentIsEmailVerified ? '인증완료' : '인증확인',
+                text: currentIsEmailVerified
+                    ? '인증완료'
+                    : '인증확인', // emailVerificationState.status == EmailVerificationStatus.verified ? '인증완료' : '인증확인',
                 isLoading: _isConfirmingVerificationCode,
-                onPressed:
-                    _isConfirmingVerificationCode || currentIsEmailVerified
-                        ? null
-                        : _handleConfirmVerificationCode,
+                onPressed: _isConfirmingVerificationCode ||
+                        currentIsEmailVerified // || emailVerificationState.status == EmailVerificationStatus.verified
+                    ? null
+                    : _handleConfirmVerificationCode,
               ),
             ),
           ],
