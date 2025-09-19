@@ -17,12 +17,12 @@ class CommunityComment {
 
   factory CommunityComment.fromMap(Map<String, dynamic> json) {
     return CommunityComment(
-      id: json['id'],
-      content: json['content'],
-      writerName: json['writerName'],
-      createdAt: json['createdAt'],
-      imageUrl: json['imageUrl'],
-      likeCount: json['likeCount'] ?? 0,
+      id: json['id'] as int? ?? 0,
+      content: json['content'] as String? ?? '',
+      writerName: json['writerName'] as String? ?? '',
+      createdAt: json['createdAt'] as String? ?? '',
+      imageUrl: json['imageUrl'] as String?,
+      likeCount: json['likeCount'] as int? ?? 0,
     );
   }
 }
