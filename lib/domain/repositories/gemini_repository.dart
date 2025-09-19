@@ -13,7 +13,6 @@ class GeminiRepository {
   static const _baseUrl = "$baseUrl/ai-agent/gemini";
   StreamSubscription? _streamSubscription;
 
-  // subscribe 메서드는 이제 서버가 보내주는 3가지 이벤트를 모두 처리해.
   Stream<Map<String, dynamic>> subscribe({required int userId}) {
     final controller = StreamController<Map<String, dynamic>>();
     _streamSubscription?.cancel();
@@ -29,24 +28,17 @@ class GeminiRepository {
         final eventName = event.event ?? '';
         final eventData = event.data ?? '';
 
-        // --- 여기가 핵심! 서버와 약속한 모든 이벤트를 처리 ---
         if (eventName == 'connect') {
-          // 연결 성공 이벤트
           controller.add({"eventName": eventName, "data": "SSE 연결 성공"});
         } else if (eventName == 'thinking') {
-          // 1. AI가 생각 중이라는 이벤트
           controller.add({"eventName": eventName, "data": eventData});
         } else if (eventName == 'AI Response') {
-          // 2. AI가 답변을 보내주는 이벤트
           controller.add({"eventName": eventName, "data": eventData});
         } else if (eventName == 'final') {
-          // 3. 모든 스트림이 끝났다는 이벤트
           controller.add({"eventName": eventName, "data": eventData});
-          // 'final' 신호를 받으면 스트림을 안전하게 종료한다.
           _streamSubscription?.cancel();
           controller.close();
         } else {
-          // 예상치 못한 이벤트 로그 남기기 (디버깅용)
           Logger().w("Unknown SSE Event: $eventName, Data: $eventData");
         }
       },
@@ -67,7 +59,6 @@ class GeminiRepository {
     return controller.stream;
   }
 
-  // sendImagesForGemini 메서드는 요청 데이터에 '사고 기능 켜기' 옵션을 추가해.
   Future<void> sendImagesForGemini(
       {required List<XFile> images, required int userId}) async {
     final List<Map<String, dynamic>> base64Images =
@@ -84,7 +75,6 @@ class GeminiRepository {
 
     final textPart = {"text": Message.prompt};
 
-    // --- 요청 데이터 구조 수정 ---
     final requestData = {
       "contents": [
         {
@@ -94,7 +84,6 @@ class GeminiRepository {
           ]
         }
       ],
-      // '사고 기능'을 켜달라고 서버에 요청하는 부분!
       "generation_config": {
         "thinking_config": {
           "thinking_budget": 8192,
@@ -107,7 +96,6 @@ class GeminiRepository {
     await dio.post("$_baseUrl/image/$userId/stream", data: requestJson);
   }
 
-  // _convertBase64Images 메서드는 변경 없음
   Future<List<Map<String, dynamic>>> _convertBase64Images(
       List<XFile> images) async {
     try {
