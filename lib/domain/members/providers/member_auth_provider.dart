@@ -104,38 +104,36 @@ class AuthNotifier extends Notifier<AuthState> {
     final token = await _secureStorage.read(key: _tokenKey);
 
     if (token != null && token.isNotEmpty) {
-      // 저장된 토큰이 있다면 사용자 정보도 불러옴
       final memberIdStr = await _secureStorage.read(key: _userMemberIdKey);
-      final loginId = await _secureStorage.read(key: _userLoginIdKey);
-      final name = await _secureStorage.read(key: _userNameKey);
-      final role = await _secureStorage.read(key: _userRoleKey);
+      // loginId는 null일 수 있으므로 String?으로 받음
+      final String? loginId = await _secureStorage.read(key: _userLoginIdKey);
+      final String? name = await _secureStorage.read(key: _userNameKey);
+      final String? role = await _secureStorage.read(key: _userRoleKey);
 
-      if (memberIdStr != null && loginId != null && role != null) {
+      // memberIdStr와 role은 자동 로그인에 필수라고 가정 (null이면 문제)
+      // loginId와 name은 null일 수 있음
+      if (memberIdStr != null && role != null) {
         try {
           final memberId = int.parse(memberIdStr);
           final sessionUser = SessionUser(
             memberId: memberId,
-            loginId: loginId,
-            name: name, // 이름은 nullable일 수 있음
+            loginId: loginId, // String? 타입이므로 null 그대로 전달
+            name: name, // String? 타입이므로 null 그대로 전달
             role: role,
           );
-          // 모든 정보가 유효하면 인증 상태로 변경 (자동 로그인 성공)
           state = state.copyWith(
               status: AuthStatus.authenticated,
               user: sessionUser,
               loginType: LoginType.auto);
         } catch (e) {
-          // 사용자 정보 파싱 오류 등 발생 시 로그아웃 처리
-          print("자동 로그인 중 사용자 정보 파싱 오류: $e");
+          print("자동 로그인 중 사용자 정보 파싱 오류 또는 필수 정보 누락: $e");
           await logout();
         }
       } else {
-        // 토큰은 있으나 사용자 정보 일부 누락 시 로그아웃 처리
-        print("자동 로그인 중 사용자 정보 누락, 로그아웃 처리");
+        print("자동 로그인 중 필수 사용자 정보(memberId 또는 role) 누락, 로그아웃 처리");
         await logout();
       }
     } else {
-      // 저장된 토큰이 없으면 미인증 상태로 설정
       state = state.copyWith(
           status: AuthStatus.unauthenticated, loginType: LoginType.none);
     }
@@ -177,21 +175,27 @@ class AuthNotifier extends Notifier<AuthState> {
       final String? token = loginResult['token'] as String?;
 
       if (sessionUser != null && token != null && token.isNotEmpty) {
-        // 토큰 및 사용자 정보 Secure Storage에 저장
         await _secureStorage.write(key: _tokenKey, value: token);
         await _secureStorage.write(
             key: _userMemberIdKey, value: sessionUser.memberId.toString());
-        await _secureStorage.write(
-            key: _userLoginIdKey, value: sessionUser.loginId);
+
+        // sessionUser.loginId가 null일 수 있으므로, null이면 해당 키를 삭제하거나 빈 문자열 저장
+        if (sessionUser.loginId != null) {
+          await _secureStorage.write(
+              key: _userLoginIdKey,
+              value: sessionUser.loginId!); // null이 아님을 확신하고 ! 사용
+        } else {
+          await _secureStorage.delete(key: _userLoginIdKey); // null이면 키 자체를 삭제
+        }
+
         if (sessionUser.name != null) {
           await _secureStorage.write(
               key: _userNameKey, value: sessionUser.name!);
         } else {
-          await _secureStorage.delete(key: _userNameKey); // 이름이 null이면 기존 값 삭제
+          await _secureStorage.delete(key: _userNameKey);
         }
         await _secureStorage.write(key: _userRoleKey, value: sessionUser.role);
 
-        // 인증 상태로 변경 (계정 로그인 성공)
         state = state.copyWith(
             status: AuthStatus.authenticated,
             user: sessionUser,
@@ -235,8 +239,14 @@ class AuthNotifier extends Notifier<AuthState> {
           await _secureStorage.write(key: _tokenKey, value: token);
           await _secureStorage.write(
               key: _userMemberIdKey, value: sessionUser.memberId.toString());
-          await _secureStorage.write(
-              key: _userLoginIdKey, value: sessionUser.loginId);
+
+          if (sessionUser.loginId != null) {
+            await _secureStorage.write(
+                key: _userLoginIdKey, value: sessionUser.loginId!);
+          } else {
+            await _secureStorage.delete(key: _userLoginIdKey);
+          }
+
           if (sessionUser.name != null) {
             await _secureStorage.write(
                 key: _userNameKey, value: sessionUser.name!);
@@ -290,8 +300,17 @@ class AuthNotifier extends Notifier<AuthState> {
           await _secureStorage.write(key: _tokenKey, value: token);
           await _secureStorage.write(
               key: _userMemberIdKey, value: sessionUser.memberId.toString());
-          await _secureStorage.write(
-              key: _userLoginIdKey, value: sessionUser.loginId);
+
+          // sessionUser.loginId가 null일 경우 Secure Storage에서 해당 키를 삭제
+          if (sessionUser.loginId != null) {
+            await _secureStorage.write(
+                key: _userLoginIdKey, value: sessionUser.loginId!);
+          } else {
+            // loginId가 null이면 해당 키를 Secure Storage에서 삭제하여
+            // _tryAutoLogin 시 null로 읽히도록 함
+            await _secureStorage.delete(key: _userLoginIdKey);
+          }
+
           if (sessionUser.name != null) {
             await _secureStorage.write(
                 key: _userNameKey, value: sessionUser.name!);
@@ -324,6 +343,33 @@ class AuthNotifier extends Notifier<AuthState> {
           errorMessage: "구글 로그인 실패: $errorMessage",
           loginType: LoginType.none);
       print("구글 소셜 로그인 실패 (AuthNotifier): $errorMessage");
+    }
+  }
+
+  /// 다른 Google 계정으로 로그인을 시도합니다.
+  /// 현재 Google 세션에서 로그아웃한 후 (해당되는 경우)
+  /// Google 로그인 과정을 다시 시작합니다.
+  Future<void> trySignInWithDifferentGoogleAccount() async {
+    state = state.copyWith(
+        status: AuthStatus.loading, // 로딩 상태 표시
+        clearError: true, // 이전 오류 지우기
+        loginType: LoginType.none);
+    try {
+      // 계정 선택기가 표시되도록 먼저 Google에서 로그아웃합니다.
+      await _socialLoginRepository.signOutFromGoogle();
+
+      // 이제 다시 Google로 로그인을 시도합니다.
+      // 이렇게 하면 계정 선택기를 보여주는 기존 signInWithGoogle 로직이 호출됩니다.
+      await signInWithGoogle();
+    } catch (e) {
+      // 서버와의 실제 소셜 로그인 시도 전에 signOutFromGoogle 또는
+      // signInWithGoogle 자체에서 예기치 않은 오류가 발생하는 경우.
+      final errorMessage = extractErrorMessage(e);
+      state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: "구글 계정 전환 중 오류: $errorMessage", // 더 구체적인 오류
+          loginType: LoginType.none);
+      print("구글 계정 전환 중 오류 (AuthNotifier): $errorMessage");
     }
   }
 
