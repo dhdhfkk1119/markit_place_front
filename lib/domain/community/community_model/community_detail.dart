@@ -31,21 +31,22 @@ class CommunityDetail {
 
   factory CommunityDetail.fromMap(Map<String, dynamic> json) {
     return CommunityDetail(
-        id: json['id'],
-        title: json['title'],
-        content: json['content'],
-        writerName: json['writerName'],
-        topic: json['topic'],
-        likeCount: json['likeCount'] ?? 0,
-        viewCount: json['viewCount'] ?? 0,
-        createdAt: json['createdAt'],
-        location: json['location'],
-        images: json['images'] != null ? List<String>.from(json['images']) : [],
-        comments: json['comments'] != null
-            ? (json['comments'] as List)
-                .map((e) => CommunityComment.fromMap(e))
-                .toList()
-            : [],
-        commentCount: json['commentCount'] ?? 0);
+      id: (json['id'] ?? 0) as int,
+      title: json['title'] as String,
+      content: json['content'] as String,
+      writerName: json['writerName'] as String,
+      topic: json['topic'] as String,
+      likeCount: (json['likeCount'] ?? 0) as int,
+      viewCount: (json['viewCount'] ?? 0) as int,
+      createdAt: json['createdAt'] as String,
+      location: json['location'] as String,
+      images: json['images'] != null ? List<String>.from(json['images']) : [],
+      comments: json['comments'] != null
+          ? (json['comments'] as List)
+              .map((e) => CommunityComment.fromMap(e as Map<String, dynamic>))
+              .toList()
+          : [],
+      commentCount: (json['commentCount'] ?? 0) as int,
+    );
   }
 }

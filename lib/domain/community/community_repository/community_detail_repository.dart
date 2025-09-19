@@ -24,7 +24,7 @@ class CommunityDetailRepository {
       print('커뮤니티 글 상세 데이터: ${response.data}');
 
       if (response.statusCode == 200) {
-        return response.data;
+        return response.data['response'];
       } else {
         throw Exception('커뮤니티 글 상세보기 실패 : ${response.statusCode}');
       }

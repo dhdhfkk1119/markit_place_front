@@ -12,9 +12,6 @@ class NearPage extends ConsumerStatefulWidget {
 
 class _NearPageState extends ConsumerState<NearPage> {
   @override
-  void initState() {}
-
-  @override
   Widget build(BuildContext context) {
     final currentTrackingMode = ref.watch(naverMapProvider);
 

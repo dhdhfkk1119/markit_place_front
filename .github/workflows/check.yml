@@ -1,0 +1,44 @@
+# 워크플로우의 이름
+name: Flutter CI
+
+# 언제 이 워크플로우를 실행할지 정하는 부분
+on:
+  push:
+    branches: [main, dev] # main 또는 dev 브랜치에 코드를 push할 때 실행
+  pull_request:
+    branches: [main, dev] # main 또는 dev 브랜치로 Pull Request를 보낼 때 실행
+
+# 실제 수행할 작업들
+jobs:
+  build:
+    # 어떤 환경에서 실행할지 (보통 ubuntu 최신 버전을 많이 써)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 내 코드를 가져오는 단계
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Flutter 환경을 설정하는 단계
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.27.4" # 여기서 네가 사용하는 Flutter 버전을 지정해줘
+          channel: "stable" # stable, beta, dev, master 채널 선택
+          cache: true # pub get 속도를 높이기 위해 캐시 사용
+
+      # 3. 프로젝트 의존성(패키지)을 다운로드하는 단계
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4. 코드 스타일 및 잠재적 오류를 분석하는 단계 (강력 추천!)
+      - name: Analyze project source
+        run: flutter analyze
+
+      # 5. 유닛 테스트, 위젯 테스트를 실행하는 단계
+      - name: Run tests
+        run: flutter test
+
+      # 6. 실제로 앱을 빌드해서 컴파일 오류가 없는지 확인하는 단계 (가장 확실한 방법!)
+      - name: Build APK for Android
+        run: flutter build apk
