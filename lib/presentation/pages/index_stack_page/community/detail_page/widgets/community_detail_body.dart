@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/_core/constants/custom_popup.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../_core/constants/custom_popup.dart';
 import 'community_detail_item.dart';
 import 'community_detail_item_image.dart';
 import 'community_detail_reply.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // Import Riverpod
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_item.dart';
-import 'package:markit_place_front/domain/product/providers/product_list_notifier.dart'; // Import your Notifier Provider
+import 'product_list_item.dart';
+import '../../../../../../domain/product/providers/product_list_notifier.dart'; // Import your Notifier Provider
 
 import '../../../../../../_core/constants/custom_widget.dart';
 

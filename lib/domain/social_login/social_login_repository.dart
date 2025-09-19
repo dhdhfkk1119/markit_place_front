@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
-import 'package:markit_place_front/_core/dtos/error_dto.dart';
-import 'package:markit_place_front/_core/utils/error_utils.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
-import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart'; // SessionUser 생성을 위해 유지
+import '../../_core/dtos/api_response_dto.dart';
+import '../../_core/dtos/error_dto.dart';
+import '../../_core/utils/error_utils.dart';
+import '../../_core/utils/my_http.dart';
+import '../members/dtos/login_response.dto.dart'; // SessionUser 생성을 위해 유지
 import 'social_login_request_dto.dart';
 
 /// 소셜 로그인 관련 API 요청을 처리하는 리포지토리입니다.

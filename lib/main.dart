@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
-import 'package:markit_place_front/presentation/pages/auth/find_account_page/find_account_page.dart';
-import 'package:markit_place_front/presentation/pages/auth/register_page/register_page.dart';
-import 'package:markit_place_front/presentation/pages/auth/social_login_page/social_login_page.dart';
-import 'package:markit_place_front/presentation/pages/auth/terms_page/terms_page.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/main_screen.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
-import 'package:markit_place_front/_core/utils/notification_util.dart';
+import '_core/utils/my_http.dart';
+import 'presentation/pages/auth/find_account_page/find_account_page.dart';
+import 'presentation/pages/auth/register_page/register_page.dart';
+import 'presentation/pages/auth/social_login_page/social_login_page.dart';
+import 'presentation/pages/auth/terms_page/terms_page.dart';
+import 'presentation/pages/index_stack_page/main_screen.dart';
+import 'presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
+import '_core/utils/notification_util.dart';
 
 // AuthNotifier import 추가
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
+import 'domain/members/providers/member_auth_provider.dart';
 import 'presentation/pages/auth/account_login_page/account_login_page.dart';
 
 GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

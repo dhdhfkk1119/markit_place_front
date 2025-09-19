@@ -1,6 +1,6 @@
-import 'package:markit_place_front/domain/community/community_model/community_comment.dart';
-import 'package:markit_place_front/domain/community/community_model/community_detail.dart';
-import 'package:markit_place_front/domain/community/community_model/community_list.dart';
+import '../community_model/community_comment.dart';
+import '../community_model/community_detail.dart';
+import '../community_model/community_list.dart';
 
 class CommunityDetailDto {
   final int id;

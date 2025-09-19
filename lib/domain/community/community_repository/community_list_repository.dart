@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
+import '../../../_core/utils/my_http.dart';
 
 // String baseUrl = "http://192.168.0.128:8080/api";
 

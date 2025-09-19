@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_medium.dart';
+import '../../../../../_core/constants/assets.dart';
+import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../_core/constants/size.dart';
+import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../widgets/custom_button_medium.dart';
 // AppTextFormField import 추가
-import 'package:markit_place_front/presentation/widgets/app_text_form_field.dart';
+import '../../../../widgets/app_text_form_field.dart';
 
 class EmailVerificationSection extends ConsumerStatefulWidget {
   final TextEditingController emailController;

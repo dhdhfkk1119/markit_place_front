@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/_core/constants/theme.dart';
+import '../../_core/constants/size.dart';
+import '../../_core/constants/theme.dart';
 
 import '../../_core/constants/assets.dart';
 

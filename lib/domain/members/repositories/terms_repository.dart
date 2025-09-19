@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
-import 'package:markit_place_front/_core/dtos/error_dto.dart'; // ErrorDto 임포트 추가
-import 'package:markit_place_front/_core/utils/error_utils.dart';
-import 'package:markit_place_front/domain/members/models/term.dart';
+import '../../../_core/dtos/api_response_dto.dart';
+import '../../../_core/dtos/error_dto.dart'; // ErrorDto 임포트 추가
+import '../../../_core/utils/error_utils.dart';
+import '../models/term.dart';
 
 class TermsRepository {
   final Dio _dio;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/product/providers/product_list_notifier.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_filter_list.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_item.dart';
-import 'package:markit_place_front/presentation/widgets/WriteButton.dart';
+import '../../../../../../domain/product/providers/product_list_notifier.dart';
+import 'product_filter_list.dart';
+import 'product_list_item.dart';
+import '../../../../../widgets/WriteButton.dart';
 
 class ProductListBody extends ConsumerStatefulWidget {
   final bool isFilterVisible;

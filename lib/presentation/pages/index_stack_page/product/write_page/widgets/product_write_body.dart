@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_item.dart';
+import 'product_write_item.dart';
 
 class ProductWriteBody extends StatefulWidget {
   const ProductWriteBody({super.key});

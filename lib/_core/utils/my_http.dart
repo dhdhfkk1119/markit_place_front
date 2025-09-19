@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // Import AuthNotifier
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
+import '../../domain/members/providers/member_auth_provider.dart';
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
 /// 팀장 서버 주소 - http://192.168.0.128:8080/api

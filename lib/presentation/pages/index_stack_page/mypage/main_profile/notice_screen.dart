@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart'; // CustomWidget import
+import '../../../../../_core/constants/custom_widget.dart'; // CustomWidget import
 
 class NoticeScreen extends StatelessWidget {
   const NoticeScreen({super.key});

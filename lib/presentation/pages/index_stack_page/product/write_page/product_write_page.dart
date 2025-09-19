@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-import 'package:markit_place_front/domain/product/providers/product_category_notifier.dart';
-import 'package:markit_place_front/domain/product/providers/product_item_notifier.dart';
-import 'package:markit_place_front/domain/product/providers/product_write_notifier.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_body.dart';
+import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/product/providers/product_category_notifier.dart';
+import '../../../../../domain/product/providers/product_item_notifier.dart';
+import '../../../../../domain/product/providers/product_write_notifier.dart';
+import 'widgets/product_write_body.dart';
 
 import '../../../../../_core/constants/custom_widget.dart';
 

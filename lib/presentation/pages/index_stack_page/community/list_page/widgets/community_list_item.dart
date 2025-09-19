@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_list_dto.dart';
-import 'package:markit_place_front/domain/community/community_model/community_list.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../domain/community/community_dto/community_list_dto.dart';
+import '../../../../../../domain/community/community_model/community_list.dart';
 
 import '../../detail_page/community_detail_page.dart';
 

@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:markit_place_front/_core/utils/error_utils.dart';
-import 'package:markit_place_front/domain/members/models/member.dart';
-import 'package:markit_place_front/domain/members/models/session_user.dart';
-import 'package:markit_place_front/domain/social_login/social_login_repository.dart';
-import 'package:markit_place_front/domain/members/repositories/member_auth_repository.dart';
-import 'package:markit_place_front/domain/members/repositories/email_verification_repository.dart';
+import '../../../_core/utils/error_utils.dart';
+import '../models/member.dart';
+import '../models/session_user.dart';
+import '../../social_login/social_login_repository.dart';
+import '../repositories/member_auth_repository.dart';
+import '../repositories/email_verification_repository.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 

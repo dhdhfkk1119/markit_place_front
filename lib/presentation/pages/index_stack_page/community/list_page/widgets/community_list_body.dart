@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/community/community_provider/community_list_notifier.dart';
+import '../../../../../../domain/community/community_provider/community_list_notifier.dart';
 import '../../../../../widgets/WriteButton.dart';
 import 'community_filter_list.dart';
 import 'community_list_item.dart';

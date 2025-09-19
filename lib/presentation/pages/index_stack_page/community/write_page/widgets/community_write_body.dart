@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/write_page/widgets/community_write_item.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/write_page/widgets/product_write_item.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
+import 'community_write_item.dart';
+import '../../../product/write_page/widgets/product_write_item.dart';
 
 class CommunityWriteBody extends StatefulWidget {
   // final Product? product; // 수정할 상품 정보 (nullable)

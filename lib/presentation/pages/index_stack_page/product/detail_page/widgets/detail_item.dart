@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/domain/product/dtos/product_detail_dto.dart';
-import 'package:markit_place_front/domain/product/providers/product_detail_notifier.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_item_image.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../domain/product/dtos/product_detail_dto.dart';
+import '../../../../../../domain/product/providers/product_detail_notifier.dart';
+import 'detail_item_image.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
 class DetailItem extends ConsumerStatefulWidget {

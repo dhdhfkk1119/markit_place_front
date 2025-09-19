@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
+import '../../../../../_core/constants/size.dart';
+import '../../../../widgets/custom_button_large.dart';
+import '../../../../../_core/constants/assets.dart';
 // Provider import
-import 'package:markit_place_front/domain/members/providers/password_reset_provider.dart';
+import '../../../../../domain/members/providers/password_reset_provider.dart';
 // Validator import
-import 'package:markit_place_front/_core/utils/validator_util.dart';
+import '../../../../../_core/utils/validator_util.dart';
 
 class ResetPasswordForm extends ConsumerStatefulWidget {
   const ResetPasswordForm({super.key});

@@ -1,4 +1,4 @@
-import 'package:markit_place_front/domain/community/community_model/community_comment.dart';
+import 'community_comment.dart';
 
 class CommunityDetail {
   final int id;

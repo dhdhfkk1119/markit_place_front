@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
-import 'package:markit_place_front/_core/dtos/error_dto.dart';
-import 'package:markit_place_front/_core/utils/error_utils.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
+import '../../../_core/dtos/api_response_dto.dart';
+import '../../../_core/dtos/error_dto.dart';
+import '../../../_core/utils/error_utils.dart';
+import '../../../_core/utils/my_http.dart';
 
 /// 이메일 인증 관련 API 요청을 처리하는 리포지토리입니다.
 ///

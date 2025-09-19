@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/product/providers/product_detail_notifier.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_body.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_app_bar.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/detail_page/widgets/detail_bottom_sheet.dart';
+import '../../../../../domain/product/providers/product_detail_notifier.dart';
+import 'widgets/detail_body.dart';
+import 'widgets/detail_app_bar.dart';
+import 'widgets/detail_bottom_sheet.dart';
 import '../../../../../_core/constants/custom_popup.dart';
 
 class DetailPage extends ConsumerStatefulWidget {

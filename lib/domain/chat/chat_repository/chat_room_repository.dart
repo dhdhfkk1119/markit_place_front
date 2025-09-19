@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
-import 'package:markit_place_front/domain/chat/chat_dto/chat_room_dto.dart';
-import 'package:markit_place_front/domain/chat/chat_model/chat_room.dart';
+import '../../../_core/utils/my_http.dart';
+import '../chat_dto/chat_room_dto.dart';
+import '../chat_model/chat_room.dart';
 
 final _storage = FlutterSecureStorage();
 

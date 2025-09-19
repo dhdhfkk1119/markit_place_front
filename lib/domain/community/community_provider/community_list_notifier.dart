@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_list_dto.dart';
-import 'package:markit_place_front/domain/community/community_model/community_list.dart';
-import 'package:markit_place_front/domain/community/community_repository/community_list_repository.dart';
+import '../community_dto/community_list_dto.dart';
+import '../community_model/community_list.dart';
+import '../community_repository/community_list_repository.dart';
 
 class CommunityListNotifier extends ChangeNotifier {
   final CommunityListRepository _communityListRepository =

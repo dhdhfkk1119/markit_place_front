@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/_core/dtos/api_service.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/my_profile_page/review_list_screen.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../_core/dtos/api_service.dart';
+import '../review_list_screen.dart';
 import 'package:dio/dio.dart';
 
 class MyProfileBody extends StatefulWidget {

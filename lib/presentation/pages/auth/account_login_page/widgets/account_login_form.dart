@@ -1,16 +1,16 @@
 // D:/workspace-flutter/markit_place_front/lib/presentation/pages/auth/account_login_page/widgets/account_login_form.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
+import '../../../../../_core/constants/size.dart';
 
 // --- 새로운 Provider import ---
-import 'package:markit_place_front/domain/members/providers/member_login_form_provider.dart'; // 수정됨
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/members/providers/member_login_form_provider.dart'; // 수정됨
+import '../../../../../domain/members/providers/member_auth_provider.dart';
 
-import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
-import 'package:markit_place_front/presentation/widgets/snackbar_util.dart';
+import '../../../../widgets/custom_text_form_field.dart';
+import '../../../../widgets/custom_button_large.dart';
+import '../../../../widgets/custom_link_grey.dart';
+import '../../../../widgets/snackbar_util.dart';
 import '../../../../../_core/constants/assets.dart';
 
 class AccountLoginForm extends ConsumerStatefulWidget {

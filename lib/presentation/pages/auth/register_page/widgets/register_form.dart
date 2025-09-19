@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/domain/members/models/member.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_medium.dart';
+import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../_core/constants/size.dart';
+import '../../../../../domain/members/models/member.dart';
+import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../widgets/custom_button_large.dart';
+import '../../../../widgets/custom_button_medium.dart';
 
 import '../../../../../_core/constants/assets.dart';
 import './email_verification_section.dart';
-import 'package:markit_place_front/presentation/widgets/app_text_form_field.dart';
+import '../../../../widgets/app_text_form_field.dart';
 
 class RegisterForm extends ConsumerStatefulWidget {
   final List<int> agreedTermIds;

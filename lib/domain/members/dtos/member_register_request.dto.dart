@@ -1,4 +1,4 @@
-import 'package:markit_place_front/domain/members/models/member.dart';
+import '../models/member.dart';
 
 class MemberRegisterRequestDto {
   final String loginId;

@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
-import 'package:markit_place_front/domain/chat/chat_provider/chat_detail_notifier.dart';
-import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-import 'package:markit_place_front/domain/product/providers/product_detail_notifier.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_detail/widgets/detail_bottom_sheet.dart';
+import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../domain/chat/chat_dto/chat_message_dto.dart';
+import '../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
+import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
+import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/product/providers/product_detail_notifier.dart';
+import 'widgets/detail_bottom_sheet.dart';
 
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
 import '../../../../widgets/snackbar_util.dart';

@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:markit_place_front/domain/product/dtos/product_write_dto.dart';
-import 'package:markit_place_front/domain/product/providers/product_list_notifier.dart';
-import 'package:markit_place_front/domain/product/repository/product_write_repository.dart';
-import 'package:markit_place_front/domain/product/providers/product_item_notifier.dart'; // AI Notifier
-import 'package:markit_place_front/domain/product/providers/product_category_notifier.dart'; // 카테고리 Notifier
+import '../dtos/product_write_dto.dart';
+import 'product_list_notifier.dart';
+import '../repository/product_write_repository.dart';
+import 'product_item_notifier.dart'; // AI Notifier
+import 'product_category_notifier.dart'; // 카테고리 Notifier
 
 // 상품 등록 상태를 관리하는 Notifier
 class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {

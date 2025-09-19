@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
-import 'package:markit_place_front/domain/members/providers/member_auth_provider.dart';
-import 'package:markit_place_front/presentation/widgets/snackbar_util.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/size.dart';
+import '../../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../widgets/custom_button_large.dart';
+import '../../../../widgets/custom_link_grey.dart';
+import '../../../../widgets/snackbar_util.dart';
 
 class SocialLoginForm extends ConsumerWidget {
   const SocialLoginForm({super.key});
