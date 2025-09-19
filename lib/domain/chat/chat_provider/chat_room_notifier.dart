@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/chat/chat_dto/chat_message_dto.dart';
-import 'package:markit_place_front/domain/chat/chat_dto/chat_room_dto.dart';
-import 'package:markit_place_front/domain/chat/chat_model/chat_message.dart';
-import 'package:markit_place_front/domain/chat/chat_repository/chat_repository.dart';
-import 'package:markit_place_front/domain/chat/chat_repository/chat_room_repository.dart';
+import '../chat_dto/chat_message_dto.dart';
+import '../chat_dto/chat_room_dto.dart';
+import '../chat_model/chat_message.dart';
+import '../chat_repository/chat_repository.dart';
+import '../chat_repository/chat_room_repository.dart';
 
 class ChatRoomNotifier extends ChangeNotifier {
   final ChatRoomRepository _chatRoomRepository = ChatRoomRepository();

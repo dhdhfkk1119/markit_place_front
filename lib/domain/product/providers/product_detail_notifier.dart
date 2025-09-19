@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/product/dtos/product_detail_dto.dart';
-import 'package:markit_place_front/domain/product/models/product_detail.dart';
-import 'package:markit_place_front/domain/product/repository/product_detail_repository.dart';
+import '../dtos/product_detail_dto.dart';
+import '../models/product_detail.dart';
+import '../repository/product_detail_repository.dart';
 
 class ProductDetailState {
   final ProductDetailDto? productDetail;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/widgets/community_list_app_bar.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/widgets/community_list_body.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/write_page/community_write_page.dart';
+import '../../../../../_core/constants/custom_widget.dart';
+import 'widgets/community_list_app_bar.dart';
+import 'widgets/community_list_body.dart';
+import '../write_page/community_write_page.dart';
 
 class CommunityListPage extends StatefulWidget {
   const CommunityListPage({super.key});

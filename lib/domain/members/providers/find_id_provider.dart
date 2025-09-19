@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/utils/error_utils.dart'; // For extractErrorMessage
-import 'package:markit_place_front/domain/members/repositories/find_account_repository.dart';
+import '../../../_core/utils/error_utils.dart'; // For extractErrorMessage
+import '../repositories/find_account_repository.dart';
 
 // State Definition
 class FindIdState {

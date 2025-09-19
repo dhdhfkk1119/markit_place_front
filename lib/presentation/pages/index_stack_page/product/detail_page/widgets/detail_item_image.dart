@@ -1,8 +1,8 @@
 // detail_item_image.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/_core/constants/assets.dart'; // 기본 이미지 에셋 경로를 위해 추가
+import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../_core/constants/assets.dart'; // 기본 이미지 에셋 경로를 위해 추가
 
 import 'fullscreen_gallery.dart';
 

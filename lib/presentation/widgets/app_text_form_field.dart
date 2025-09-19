@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/assets.dart'; // Assets.Fonts.cookieRun 사용 위함
-import 'package:markit_place_front/_core/constants/size.dart'; // 필요시 size 상수 사용
+import '../../_core/constants/assets.dart'; // Assets.Fonts.cookieRun 사용 위함
+import '../../_core/constants/size.dart'; // 필요시 size 상수 사용
 
 class AppTextFormField extends StatelessWidget {
   final TextEditingController controller;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/write_page/widgets/community_write_body.dart';
+import 'widgets/community_write_body.dart';
 
 class CommunityWritePage extends StatelessWidget {
   const CommunityWritePage({super.key});

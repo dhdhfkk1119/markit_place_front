@@ -1,16 +1,16 @@
 import 'package:dio/dio.dart';
 // import 'dart:convert'; // 삭제 (json.encode가 삭제된 메소드에서만 사용됨)
 // import 'package:flutter_naver_login/flutter_naver_login.dart'; // 삭제 (네이버 로그인 관련)
-import 'package:markit_place_front/_core/dtos/api_response_dto.dart';
-import 'package:markit_place_front/_core/dtos/error_dto.dart';
-import 'package:markit_place_front/_core/utils/error_utils.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart'; // Imports global dio
-import 'package:markit_place_front/domain/members/models/member.dart';
-import 'package:markit_place_front/domain/members/dtos/member_register_request.dto.dart';
-import 'package:markit_place_front/domain/members/dtos/member_register_response.dto.dart';
-import 'package:markit_place_front/domain/members/dtos/login_response.dto.dart';
-import 'package:markit_place_front/domain/members/dtos/id_check_response.dto.dart';
-import 'package:markit_place_front/domain/members/dtos/access_token_response.dto.dart';
+import '../../../_core/dtos/api_response_dto.dart';
+import '../../../_core/dtos/error_dto.dart';
+import '../../../_core/utils/error_utils.dart';
+import '../../../_core/utils/my_http.dart'; // Imports global dio
+import '../models/member.dart';
+import '../dtos/member_register_request.dto.dart';
+import '../dtos/member_register_response.dto.dart';
+import '../dtos/login_response.dto.dart';
+import '../dtos/id_check_response.dto.dart';
+import '../dtos/access_token_response.dto.dart';
 
 class MemberAuthRepository {
   final Dio _dio = dio; // Use global dio instance

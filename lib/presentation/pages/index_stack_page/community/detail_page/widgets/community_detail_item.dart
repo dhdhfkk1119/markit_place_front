@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/domain/community/community_dto/community_detail_dto.dart';
-import 'package:markit_place_front/domain/community/community_provider/community_detail_notifier.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../domain/community/community_dto/community_detail_dto.dart';
+import '../../../../../../domain/community/community_provider/community_detail_notifier.dart';
 
 class CommunityDetailItem extends ConsumerStatefulWidget {
   final int postId;

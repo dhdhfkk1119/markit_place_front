@@ -1,4 +1,4 @@
-import 'package:markit_place_front/domain/community/community_model/community_list.dart';
+import '../community_model/community_list.dart';
 
 class CommunityListDTO {
   final int id;

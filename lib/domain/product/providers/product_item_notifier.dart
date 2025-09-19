@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:markit_place_front/domain/repositories/gemini_repository.dart';
+import '../../repositories/gemini_repository.dart';
 
 class ProductItemModel {
   final List<XFile> images;

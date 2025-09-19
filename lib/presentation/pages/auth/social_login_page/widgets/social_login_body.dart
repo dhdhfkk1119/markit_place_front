@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart'; // 상수 파일 임포트
-import 'package:markit_place_front/presentation/widgets/custom_logo.dart';
+import '../../../../../_core/constants/size.dart'; // 상수 파일 임포트
+import '../../../../widgets/custom_logo.dart';
 import 'social_login_form.dart';
 
 // 소셜 로그인 페이지의 본문 레이아웃을 담당하는 위젯

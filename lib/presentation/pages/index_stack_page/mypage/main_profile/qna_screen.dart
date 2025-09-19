@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import '../../../../../_core/constants/custom_widget.dart';
 
 class QnaScreen extends StatefulWidget {
   const QnaScreen({super.key});

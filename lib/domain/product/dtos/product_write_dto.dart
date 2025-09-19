@@ -1,4 +1,4 @@
-import 'package:markit_place_front/domain/product/models/product_write.dart';
+import '../models/product_write.dart';
 
 class ProductWriteDto {
   final int itemCategoryId;

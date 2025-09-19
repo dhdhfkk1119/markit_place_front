@@ -1,5 +1,5 @@
-import 'package:markit_place_front/domain/chat/chat_dto/chat_room_dto.dart';
-import 'package:markit_place_front/domain/models/user.dart';
+import '../chat_dto/chat_room_dto.dart';
+import '../../models/user.dart';
 
 class ChatRoom {
   final int roomId;

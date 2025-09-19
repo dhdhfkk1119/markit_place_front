@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
+import 'size.dart';
 
 import 'assets.dart'; // size.dart 임포트
 

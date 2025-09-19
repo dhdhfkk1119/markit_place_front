@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/presentation/widgets/custom_button_large.dart';
-import 'package:markit_place_front/presentation/widgets/custom_link_grey.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
+import '../../../../../_core/constants/size.dart';
+import '../../../../widgets/custom_button_large.dart';
+import '../../../../widgets/custom_link_grey.dart';
+import '../../../../../_core/constants/assets.dart';
 // Provider import
-import 'package:markit_place_front/domain/members/providers/find_id_provider.dart';
+import '../../../../../domain/members/providers/find_id_provider.dart';
 
 class FindIdForm extends ConsumerStatefulWidget {
   const FindIdForm({super.key});

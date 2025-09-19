@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
-import 'package:markit_place_front/domain/models/user.dart';
-import 'package:markit_place_front/domain/repositories/user_repository.dart';
+import '../models/user.dart';
+import '../repositories/user_repository.dart';
 
 import '../dtos/user_dto.dart';
 

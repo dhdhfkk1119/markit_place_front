@@ -1,7 +1,7 @@
 // lib/domain/models/user.dart
 
 import 'package:logger/logger.dart';
-import 'package:markit_place_front/domain/dtos/user_dto.dart';
+import '../dtos/user_dto.dart';
 
 enum MemberStatus {
   ACTIVE,

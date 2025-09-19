@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
+import '../../../../../_core/constants/size.dart';
 import 'account_login_form.dart';
 
 // 일반 계정 로그인 페이지의 본문 레이아웃을 담당하는 위젯

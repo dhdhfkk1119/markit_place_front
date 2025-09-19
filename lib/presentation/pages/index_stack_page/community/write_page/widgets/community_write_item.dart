@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
 
 import '../../../../../../_core/constants/assets.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/utils/validator_util.dart';
+import '../../../_core/utils/validator_util.dart';
 
 class MemberLoginFormModel {
   final String loginInput;

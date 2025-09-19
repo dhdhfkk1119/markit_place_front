@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_app_bar.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/product/list_page/widgets/product_list_body.dart';
+import 'widgets/product_app_bar.dart';
+import 'widgets/product_list_body.dart';
 
 import '../write_page/product_write_page.dart';
 

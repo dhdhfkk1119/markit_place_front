@@ -1,4 +1,4 @@
-import 'package:markit_place_front/domain/product/models/product_list.dart';
+import '../models/product_list.dart';
 
 class ProductListDto {
   int id;

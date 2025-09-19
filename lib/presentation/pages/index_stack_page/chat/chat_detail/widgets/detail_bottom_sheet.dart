@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/chat/chat_provider/chat_message_notifier.dart';
-import 'package:markit_place_front/presentation/widgets/custom_text_form_field.dart';
+import '../../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
+import '../../../../../widgets/custom_text_form_field.dart';
 
 class DetailBottomSheet extends ConsumerStatefulWidget {
   final int receiverId; // 현재 대화할 상대방 ID

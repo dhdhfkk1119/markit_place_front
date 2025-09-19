@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/my_profile_page/review_list_screen.dart';
+import '../../../../../_core/constants/custom_widget.dart';
+import 'review_list_screen.dart';
 
 class reviewList extends StatelessWidget {
   const reviewList({super.key});

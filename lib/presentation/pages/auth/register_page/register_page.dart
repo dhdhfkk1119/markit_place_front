@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/auth/register_page/widgets/register_body.dart';
+import 'widgets/register_body.dart';
 
 import '../../../../_core/constants/assets.dart';
 

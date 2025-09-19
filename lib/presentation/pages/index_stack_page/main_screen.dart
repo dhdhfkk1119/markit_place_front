@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/chat/chat_list/chat_list.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/community/list_page/community_list_page.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/mypage/main_profile/my_page.dart';
-import 'package:markit_place_front/presentation/pages/index_stack_page/nearscreen/near_page.dart';
+import 'chat/chat_list/chat_list.dart';
+import 'community/list_page/community_list_page.dart';
+import 'mypage/main_profile/my_page.dart';
+import 'nearscreen/near_page.dart';
 
 import 'product/list_page/product_list_page.dart';
 

@@ -5,12 +5,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:markit_place_front/_core/constants/assets.dart';
-import 'package:markit_place_front/_core/constants/custom_widget.dart';
-import 'package:markit_place_front/_core/constants/size.dart';
-import 'package:markit_place_front/domain/product/providers/product_category_notifier.dart';
-import 'package:markit_place_front/domain/product/providers/product_item_notifier.dart';
-import 'package:markit_place_front/domain/product/providers/product_write_notifier.dart';
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../_core/constants/size.dart';
+import '../../../../../../domain/product/providers/product_category_notifier.dart';
+import '../../../../../../domain/product/providers/product_item_notifier.dart';
+import '../../../../../../domain/product/providers/product_write_notifier.dart';
 
 import '../../../../../../_core/utils/notification_util.dart';
 

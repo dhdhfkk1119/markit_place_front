@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/_core/utils/validator_util.dart'; // validator_util.dart import 추가
-import 'package:markit_place_front/domain/members/repositories/find_account_repository.dart';
+import '../../../_core/utils/validator_util.dart'; // validator_util.dart import 추가
+import '../repositories/find_account_repository.dart';
 import '../dtos/password_reset_dtos.dart';
 
 enum PasswordResetStep {

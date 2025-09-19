@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:markit_place_front/domain/product/models/product_category.dart';
-import 'package:markit_place_front/domain/product/repository/product_category_repository.dart';
+import '../models/product_category.dart';
+import '../repository/product_category_repository.dart';
 
 // Provider 인스턴스 생성
 final productCategoryRepositoryProvider =
