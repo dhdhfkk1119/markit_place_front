@@ -89,12 +89,10 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     final productItemModel = ref.watch(productItemProvider);
 
     ref.listen(productItemProvider, (prev, next) {
-      // 제목 업데이트
       if (prev?.name != next.name) {
         _titleController.text = next.name;
       }
 
-      // 실시간 스트리밍 텍스트 업데이트 (커서 위치 고정!)
       if (prev?.streamingText != next.streamingText &&
           next.streamingText.isNotEmpty) {
         _descriptionController.value = TextEditingValue(
@@ -105,7 +103,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
         );
       }
 
-      // 최종 설명 텍스트 업데이트 (커서 위치 고정!)
       if (prev?.description != next.description &&
           next.description.isNotEmpty) {
         _descriptionController.value = TextEditingValue(
@@ -141,7 +138,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
               ],
             ),
           ),
-          // --- 2. 호출할 때 productItemModel을 전달해준다 ---
           if (productItemModel.isOn && productItemModel.isLoading)
             _buildLoadingOverlay(context, productItemModel),
         ],
@@ -177,7 +173,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // --- 3. 하드코딩된 텍스트 대신 model의 thinkingMessage를 사용! ---
                       CustomWidget.buildTitle(productItemModel.thinkingMessage),
                     ],
                   ),
@@ -445,7 +440,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
               ],
             ),
           ),
-          // 비동기 상태에 따라 다른 UI를 보여줍니다.
           asyncCategories.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, stack) => Center(child: Text('카테고리 로딩 에러: $err')),
@@ -457,8 +451,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                     spacing: 8.0,
                     runSpacing: 8.0,
                     children: categories.map((category) {
-                      return _buildListItem(
-                          category.name, category.id); // ID도 함께 전달
+                      return _buildListItem(category.name, category.id);
                     }).toList(),
                   ),
                   const SizedBox(height: 16),
@@ -468,7 +461,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           ),
           InkWell(
             onTap: () {
-              Navigator.pop(context); // 바텀시트 닫기
+              Navigator.pop(context);
             },
             child: Padding(
               padding: EdgeInsets.zero,
