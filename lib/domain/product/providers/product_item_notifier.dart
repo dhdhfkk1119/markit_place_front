@@ -78,7 +78,6 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
   }
 
   void uploadImages({required List<XFile> images, required bool isOn}) {
-    // 새 이미지가 올라오면 기존 AI 분석 내용은 초기화
     state = state.copyWith(
         images: images, name: "", description: "", streamingText: "");
     if (isOn) {
@@ -93,7 +92,6 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
     state = state.copyWith(images: currentImages);
   }
 
-  // --- 여기가 최종 수정된 버전! ---
   void subscribe({required int userId}) {
     _geminiSubscription?.cancel();
     _accumulatedResponse = "";
@@ -112,11 +110,7 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
             break;
 
           case 'AI Response':
-            // 1단계: \\n을 \n으로 먼저 바꿔준다.
             String processedChunk = data.replaceAll('\\n', '\n');
-
-            // 2단계: 외톨이 줄바꿈(\n)만 찾아서 공백(' ')으로 바꿔준다.
-            //       이렇게 하면 단어가 서로 붙지 않고 예쁘게 떨어져.
             final lonelyNewlineRegex = RegExp(r'(?<!\n)\n(?!\n)');
             String cleanedChunk =
                 processedChunk.replaceAll(lonelyNewlineRegex, ' ');
@@ -128,14 +122,8 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
             break;
 
           case 'final':
-            // 1. 불필요한 앞뒤 공백과 여러 개의 줄바꿈을 정리한다.
-            //    \s*는 공백, \n은 줄바꿈을 의미해. 이걸 찾아서 깔끔하게 문단 나누기(\n\n)로 바꿔줘.
             String cleanedText = _accumulatedResponse.trim();
-
-            // 2. 정리된 최종 텍스트를 파싱한다.
             _splitGeminiResponseText(cleanedText);
-
-            // 3. 모든 로딩 상태를 최종적으로 해제한다.
             state = state.copyWith(isLoading: false, thinkingMessage: "");
             break;
         }
@@ -149,7 +137,6 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
       },
       onDone: () {
         if (state.isLoading) {
-          // 로딩 중에 끝났을 경우를 대비
           String cleanedText = _accumulatedResponse.trim();
           _splitGeminiResponseText(cleanedText);
           state = state.copyWith(isLoading: false, thinkingMessage: "");
@@ -182,7 +169,6 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
     if (match != null && match.groupCount >= 2) {
       final name = match.group(1)?.trim() ?? state.name;
       final description = match.group(2)?.trim() ?? state.description;
-      // 파싱된 최종 결과를 name과 description에 업데이트
       state = state.copyWith(name: name, description: description);
     }
   }
