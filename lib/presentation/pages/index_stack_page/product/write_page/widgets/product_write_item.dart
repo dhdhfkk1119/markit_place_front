@@ -31,7 +31,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
   late final TextEditingController _priceController;
 
   String? _selectedCategoryName;
-  int? _selectedCategoryId;
 
   @override
   void initState() {
@@ -343,6 +342,10 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
         ),
         TextField(
           controller: _titleController,
+          onChanged: (text) {
+            ref.read(productItemProvider.notifier).updateName(text);
+            print('로그: 제목 입력됨 -> ${text}');
+          },
           decoration: InputDecoration(
               hintText: productItemModel.isOn
                   ? 'AI가 추천한 제목이 여기에 표시됩니다.'
@@ -358,6 +361,10 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           maxLines: null,
           minLines: 5,
           controller: _descriptionController,
+          onChanged: (text) {
+            ref.read(productItemProvider.notifier).updateDescription(text);
+            print('로그: 설명 입력됨 -> ${text}');
+          },
           decoration: InputDecoration(
               hintText: productItemModel.isOn
                   ? 'AI가 추천한 상품 설명이 여기에 표시됩니다.'
@@ -371,6 +378,12 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
         ),
         TextField(
           controller: _priceController,
+          keyboardType: TextInputType.number,
+          onChanged: (text) {
+            final price = int.tryParse(text) ?? 0;
+            ref.read(productItemProvider.notifier).updatePrice(price);
+            print('로그: 가격 입력됨 -> ${price}');
+          },
           decoration: InputDecoration(
               hintText: '상품의 가격을 입력해주세요',
               border: OutlineInputBorder(
@@ -478,20 +491,18 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
   }
 
   Widget _buildListItem(String text, int id) {
-    // 선택된 카테고리 이름과 현재 텍스트를 비교하여 선택 상태를 결정합니다.
     final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
     bool isSelected = selectedCategoryId == id;
 
     return TextButton(
       onPressed: () {
+        ref.read(selectedCategoryIdProvider.notifier).state = id;
+
         setState(() {
-          ref.read(selectedCategoryIdProvider.notifier).state = id;
-          setState(() {
-            _selectedCategoryName = text;
-          });
-          print("해당 상품의 번호 , 이름 ${id} , ${text}");
+          _selectedCategoryName = text;
         });
-        Navigator.pop(context); // 바텀시트 닫기
+        print("해당 상품의 번호 , 이름 ${id} , ${text}");
+        Navigator.pop(context);
       },
       child: CustomWidget.buildTitle(text,
           color: isSelected ? Colors.white : Colors.black,

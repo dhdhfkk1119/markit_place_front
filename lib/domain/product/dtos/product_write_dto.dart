@@ -5,14 +5,15 @@ class ProductWriteDto {
   final String title;
   final String content;
   final int price;
-  String? tadeLocation;
+  String? tradeLocation; // ← 오타 수정
 
-  ProductWriteDto(
-      {required this.itemCategoryId,
-      required this.title,
-      required this.content,
-      required this.price,
-      this.tadeLocation});
+  ProductWriteDto({
+    required this.itemCategoryId,
+    required this.title,
+    required this.content,
+    required this.price,
+    this.tradeLocation,
+  });
 
   factory ProductWriteDto.fromJson(ProductWrite model) {
     return ProductWriteDto(
@@ -20,7 +21,7 @@ class ProductWriteDto {
       title: model.title,
       content: model.content,
       price: model.price,
-      tadeLocation: model.tadeLocation ?? '',
+      tradeLocation: model.tradeLocation ?? '',
     );
   }
 }

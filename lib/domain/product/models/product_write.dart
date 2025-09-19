@@ -3,14 +3,14 @@ class ProductWrite {
   final String title;
   final String content;
   final int price;
-  String? tadeLocation;
+  String? tradeLocation;
 
   ProductWrite(
       {required this.itemCategoryId,
       required this.title,
       required this.content,
       required this.price,
-      this.tadeLocation});
+      this.tradeLocation});
 
   factory ProductWrite.fromJson(Map<String, dynamic> json) {
     return ProductWrite(
@@ -18,7 +18,7 @@ class ProductWrite {
       title: json['title'],
       content: json['content'],
       price: json['price'],
-      tadeLocation: json['tadeLocation'] ?? '',
+      tradeLocation: json['tradeLocation'] ?? '',
     );
   }
 }

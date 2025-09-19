@@ -65,6 +65,18 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
         images: [], name: "", description: "", price: 0, errorMessage: "");
   }
 
+  void updateDescription(String? newDescription) {
+    state = state.copyWith(description: newDescription);
+  }
+
+  void updateName(String? newtitle) {
+    state = state.copyWith(name: newtitle);
+  }
+
+  void updatePrice(int? newPrice) {
+    state = state.copyWith(price: newPrice);
+  }
+
   void uploadImages({required List<XFile> images, required bool isOn}) {
     // 새 이미지가 올라오면 기존 AI 분석 내용은 초기화
     state = state.copyWith(

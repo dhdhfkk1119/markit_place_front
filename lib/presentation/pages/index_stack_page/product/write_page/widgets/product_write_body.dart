@@ -9,10 +9,6 @@ class ProductWriteBody extends StatefulWidget {
 }
 
 class _ProductWriteBodyState extends State<ProductWriteBody> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _priceController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return ProductWriteItem();
