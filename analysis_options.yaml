@@ -13,6 +13,8 @@ analyzer:
     prefer_const_literals_to_create_immutables: info
     always_specify_types: ignore
     prefer_relative_imports: error
+    undefined_lint: ignore
+    duplicate_import: error
 
 linter:
   # 여기서 검사할 규칙 목록을 직접 관리
