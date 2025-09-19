@@ -1,66 +1,35 @@
 // D:/workspace-flutter/markit_place_front/lib/domain/members/providers/profile_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // SessionService를 사용하므로 직접 참조 제거
 import '../../../_core/utils/error_utils.dart';
 import '../dtos/profile_update_request_dto.dart';
 import '../models/session_user.dart';
-import '../repositories/profile_repository.dart'; // ProfileRepository import
+import '../repositories/profile_repository.dart';
 import 'member_auth_provider.dart';
+import '../services/session_service.dart'; // SessionService import 추가
 
-// ProfileRepository Provider 정의 추가
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepository();
 });
 
 class ProfileNotifier extends Notifier<void> {
   late ProfileRepository _profileRepository;
-  late FlutterSecureStorage _secureStorage;
   late AuthNotifier _authNotifier;
+  late SessionService _sessionService; // SessionService 필드 추가
 
   @override
   void build() {
-    _profileRepository = ref.watch(profileRepositoryProvider); // 여기서 주입
-    _secureStorage = const FlutterSecureStorage();
+    _profileRepository = ref.watch(profileRepositoryProvider);
     _authNotifier = ref.watch(authNotifierProvider.notifier);
+    _sessionService = ref.watch(sessionServiceProvider); // SessionService 초기화
   }
 
-  static const _tokenKey = AuthNotifier.tokenKey;
-  static const _userMemberIdKey = AuthNotifier.userMemberIdKey;
-  static const _userLoginIdKey = AuthNotifier.userLoginIdKey;
-  static const _userEmailKey = AuthNotifier.userEmailKey;
-  static const _userNameKey = AuthNotifier.userNameKey;
-  static const _userRoleKey = AuthNotifier.userRoleKey;
-  static const _userProfileImageUrlKey = AuthNotifier.userProfileImageUrlKey;
+  // AuthNotifier의 static 키 직접 참조 제거
+  // static const _tokenKey = AuthNotifier.tokenKey;
+  // ... (다른 키들도 제거)
 
-  Future<void> _storeSessionUserInProfile(
-      SessionUser sessionUser, String token) async {
-    await _secureStorage.write(key: _tokenKey, value: token);
-    await _secureStorage.write(
-        key: _userMemberIdKey, value: sessionUser.memberId.toString());
-    await _secureStorage.write(key: _userRoleKey, value: sessionUser.role);
-    if (sessionUser.loginId != null) {
-      await _secureStorage.write(
-          key: _userLoginIdKey, value: sessionUser.loginId!);
-    } else {
-      await _secureStorage.delete(key: _userLoginIdKey);
-    }
-    if (sessionUser.email != null) {
-      await _secureStorage.write(key: _userEmailKey, value: sessionUser.email!);
-    } else {
-      await _secureStorage.delete(key: _userEmailKey);
-    }
-    if (sessionUser.name != null) {
-      await _secureStorage.write(key: _userNameKey, value: sessionUser.name!);
-    } else {
-      await _secureStorage.delete(key: _userNameKey);
-    }
-    if (sessionUser.profileImageUrl != null) {
-      await _secureStorage.write(
-          key: _userProfileImageUrlKey, value: sessionUser.profileImageUrl!);
-    } else {
-      await _secureStorage.delete(key: _userProfileImageUrlKey);
-    }
-  }
+  // _storeSessionUserInProfile 메소드 삭제
+  // Future<void> _storeSessionUserInProfile(SessionUser sessionUser, String token) async { ... }
 
   Future<void> fetchMyProfileAndUpdateAuthNotifier(
       {bool showLoading = true}) async {
@@ -78,16 +47,30 @@ class ProfileNotifier extends Notifier<void> {
     try {
       final SessionUser? fullUserProfile =
           await _profileRepository.getMyProfile();
-      final token = await _secureStorage.read(key: _tokenKey);
+      final String? token =
+          await _sessionService.getAccessToken(); // SessionService 사용
 
       if (fullUserProfile != null && token != null) {
-        await _storeSessionUserInProfile(fullUserProfile, token);
+        // _storeSessionUserInProfile 호출 제거 - AuthNotifier가 SessionUser 상태 변경 시 SessionService를 통해 처리
         _authNotifier.updateUserAndAuthStatus(fullUserProfile,
             AuthStatus.authenticated, currentAuthState.loginType);
+        // AuthNotifier는 내부적으로 updateUserAndAuthStatus가 호출될 때,
+        // 필요하다면 SessionService를 통해 변경된 SessionUser 정보를 SecureStorage에 업데이트해야 합니다.
+        // (현재 AuthNotifier는 login시에만 SessionService.storeSession을 명시적으로 호출하고,
+        // updateUserAndAuthStatus 자체는 직접 SecureStorage를 업데이트 하지 않습니다.
+        // 이는 ProfileNotifier의 책임이 아니라 AuthNotifier의 책임입니다.)
+        // 중요한 점: `AuthNotifier`의 `updateUserAndAuthStatus`가 호출된 후,
+        // `AuthNotifier`의 `state.user`가 `fullUserProfile`로 업데이트됩니다.
+        // 이 변경된 `state.user` 정보는 다음에 `SessionService.storeSession`이 호출될 때 (예: 다음번 자동로그인 설정 시 또는 명시적 저장 호출 시) 반영됩니다.
+        // 만약 프로필 업데이트 즉시 SecureStorage에도 반영되어야 한다면,
+        // AuthNotifier의 updateUserAndAuthStatus 내부에서 SessionService.storeSession을 호출하도록 수정해야 합니다.
+        // 하지만 지금은 ProfileNotifier의 수정에 집중합니다.
         print(
             "[ProfileNotifier] 내 프로필 정보 조회 및 AuthNotifier 상태 업데이트 성공: ${fullUserProfile.name}");
       } else if (token == null) {
         throw Exception("프로필 조회 후 토큰 정보를 찾을 수 없어 상태를 업데이트할 수 없습니다.");
+      } else if (fullUserProfile == null) {
+        throw Exception("서버로부터 프로필 정보를 가져오지 못했습니다.");
       }
     } catch (e) {
       final errorMessage = extractErrorMessage(e);
@@ -120,12 +103,14 @@ class ProfileNotifier extends Notifier<void> {
 
       final SessionUser? userFromServerAfterUpdate =
           await _profileRepository.updateMyProfile(requestDto);
-      final token = await _secureStorage.read(key: _tokenKey);
+      final String? token =
+          await _sessionService.getAccessToken(); // SessionService 사용
 
       if (userFromServerAfterUpdate != null && token != null) {
-        await _storeSessionUserInProfile(userFromServerAfterUpdate, token);
+        // _storeSessionUserInProfile 호출 제거
         _authNotifier.updateUserAndAuthStatus(userFromServerAfterUpdate,
             AuthStatus.authenticated, currentAuthState.loginType);
+        // 위와 동일하게 AuthNotifier가 SessionUser 업데이트를 담당.
         print(
             "[ProfileNotifier] 서버 프로필 업데이트 및 AuthNotifier 상태 반영 성공: ${userFromServerAfterUpdate.name}");
       } else if (token == null) {
