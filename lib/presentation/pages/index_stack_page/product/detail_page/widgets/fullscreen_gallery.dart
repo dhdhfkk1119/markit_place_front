@@ -1,13 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+
+import '../../../../../../_core/constants/assets.dart';
 
 // 이미지 확대 및 슬라이드 기능
 class FullScreenGallery extends StatefulWidget {
   final List<String> imagePaths;
   final int initialIndex;
 
-  const FullScreenGallery({super.key, 
+  const FullScreenGallery({
+    super.key,
     required this.imagePaths,
     this.initialIndex = 0,
   });
@@ -42,11 +47,22 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
               });
             },
             builder: (context, index) {
-              return PhotoViewGalleryPageOptions(
-                imageProvider: AssetImage(widget.imagePaths[index]),
-                minScale: PhotoViewComputedScale.contained,
-                maxScale: PhotoViewComputedScale.covered * 3,
-              );
+              final imagePath = widget.imagePaths[index];
+              try {
+                final imageBytes = base64Decode(imagePath);
+                return PhotoViewGalleryPageOptions(
+                  imageProvider: MemoryImage(imageBytes),
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 3,
+                );
+              } catch (e) {
+                return PhotoViewGalleryPageOptions(
+                  imageProvider:
+                      AssetImage(Assets.Images.product), // 실패 시 기본 이미지
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 3,
+                );
+              }
             },
             scrollPhysics: const BouncingScrollPhysics(),
           ),

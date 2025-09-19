@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,16 +41,23 @@ class ProductListItem extends ConsumerWidget {
     );
   }
 
-  // 상품에대한 대표 이미지를 만드는 함수
   Widget _buildProductImage(String? thumbnailUrl) {
-    // product.id를 기준으로 1~10까지 순환
-    final imageIndex = (product.id % 10) + 1;
-    final imagePath = 'assets/product$imageIndex.jpg';
+    if (thumbnailUrl == null) {
+      return Container(
+        width: 100,
+        height: 100,
+        color: Colors.grey[200],
+        child: const Icon(Icons.image_not_supported, size: 50),
+      );
+    }
 
+    final bytes = base64.decode(thumbnailUrl);
+
+    // 4. Image.memory 위젯으로 이미지 표시
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: Image.asset(
-        imagePath,
+      child: Image.memory(
+        bytes,
         width: 100,
         height: 100,
         fit: BoxFit.cover,

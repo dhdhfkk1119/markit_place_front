@@ -1,46 +1,32 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../dtos/product_list_dtos.dart';
 import '../models/product_list.dart';
 import '../repository/product_list_repository.dart';
 
-class ProductListNotifier extends ChangeNotifier {
+// 로딩 상태와 에러 상태도 자동으로 관리됩니다.
+class ProductListNotifier extends AsyncNotifier<List<ProductListDto>> {
   final ProductListRepository _repository = ProductListRepository();
 
-  List<ProductListDto> _productList = [];
-  bool _isLoading = false;
-  String? _errorMessage;
+  @override
+  Future<List<ProductListDto>> build() async {
+    final response = await _repository.productList();
+    final List<dynamic> content = response['content'];
 
-  List<ProductListDto> get productList => _productList;
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
+    return content
+        .map((json) => ProductList.fromJson(json))
+        .map((model) => ProductListDto.fromModel(model))
+        .toList();
+  }
 
-  Future<void> getProductList() async {
-    // 1. 로딩 상태 시작
-    _isLoading = true;
-    _errorMessage = null; // 이전 에러 메시지 초기화
-    notifyListeners(); // 로딩 상태 변화를 구독자에게 알림
-
-    try {
-      final response = await _repository.productList();
-
-      final List<dynamic> content = response['content'];
-
-      _productList = content
-          .map((json) => ProductList.fromJson(json))
-          .map((model) => ProductListDto.fromModel(model))
-          .toList();
-
-      // 4. 호출 성공 시 로딩 상태 종료
-      _isLoading = false;
-    } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
-    } finally {
-      notifyListeners();
-    }
+  // 데이터 새로고침 기능을 위한 메서드
+  Future<void> refreshProductList() async {
+    state = const AsyncLoading(); // 수동으로 로딩 상태로 변경
+    // state = AsyncValue.loading();
+    state = await AsyncValue.guard(() => build()); // build()를 다시 호출하여 상태 업데이트
   }
 }
 
+// provider를 AsyncNotifierProvider로 변경
 final productListProvider =
-    ChangeNotifierProvider<ProductListNotifier>((ref) => ProductListNotifier());
+    AsyncNotifierProvider<ProductListNotifier, List<ProductListDto>>(
+        () => ProductListNotifier());
