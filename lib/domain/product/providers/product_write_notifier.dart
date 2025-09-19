@@ -5,8 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import '../dtos/product_write_dto.dart';
 import 'product_list_notifier.dart';
 import '../repository/product_write_repository.dart';
-import 'product_item_notifier.dart'; // AI Notifier
-import 'product_category_notifier.dart'; // 카테고리 Notifier
 
 // 상품 등록 상태를 관리하는 Notifier
 class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {

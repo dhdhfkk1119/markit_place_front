@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:markit_place_front/_core/utils/my_http.dart';
-import 'package:markit_place_front/domain/product/dtos/product_write_dto.dart';
+import '../../../_core/utils/my_http.dart';
+import '../dtos/product_write_dto.dart';
 
 String Url = baseUrl;
 const FlutterSecureStorage _storage = FlutterSecureStorage();
