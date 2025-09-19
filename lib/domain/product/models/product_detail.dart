@@ -39,8 +39,8 @@ class ProductDetail {
         content: json['content'] as String,
         price: json['price'] as int,
         tradeLocation: json['tradeLocation'] as String,
-        imageUrls: json['imageUrls'] != null
-            ? List<String>.from(json['imageUrls'])
+        imageUrls: json['base64Images'] != null
+            ? List<String>.from(json['base64Images'])
             : [],
         favoriteCount: json['favoriteCount'] ?? 0,
         sellerId: json['sellerId'] as int,

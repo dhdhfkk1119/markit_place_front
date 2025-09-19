@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../../domain/product/providers/product_detail_notifier.dart';
 import 'detail_item.dart';
 import 'detail_item_image.dart';
 
-class DetailBody extends StatelessWidget {
+class DetailBody extends ConsumerWidget {
   final int productId;
   final ScrollController scrollController;
 
@@ -13,17 +15,16 @@ class DetailBody extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // productId 기준으로 1~10까지 순환
-    final imageIndex = (productId % 10) + 1;
-    final imagePath = 'assets/product$imageIndex.png';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productDetailState = ref.watch(productDetailProvider(productId));
+    final imagePath = productDetailState.productDetail?.imageUrls ?? [];
 
     return SingleChildScrollView(
       controller: scrollController,
       child: Column(
         children: [
           DetailItemImage(
-            imagePaths: [imagePath],
+            imagePaths: imagePath,
           ),
           DetailItem(productId: productId),
         ],

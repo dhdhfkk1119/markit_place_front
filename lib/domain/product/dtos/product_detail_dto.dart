@@ -29,7 +29,7 @@ class ProductDetailDto {
         title: model.title,
         content: model.content,
         price: model.price,
-        itemCategoryName: "", // 서버에서 내려주거나 변환 로직 필요
+        itemCategoryName: "",
         tradeLocation: model.tradeLocation,
         thumbnail: (model.imageUrls != null && model.imageUrls!.isNotEmpty)
             ? model.imageUrls!.first

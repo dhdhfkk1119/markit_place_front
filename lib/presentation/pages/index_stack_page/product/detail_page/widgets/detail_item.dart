@@ -30,15 +30,19 @@ class _DetailItemState extends ConsumerState<DetailItem> {
   Widget build(BuildContext context) {
     final notifier = ref.watch(productDetailProvider(widget.productId));
 
-    if (notifier.isLoading) {
+    if (notifier.isLoading || notifier.productDetail == null) {
       return const Center(child: CircularProgressIndicator());
     }
 
     if (notifier.errorMessage != null) {
-      return Center(child: Text('오류 발생: ${notifier.errorMessage}'));
+      return Center(child: Text("에러 발생: ${notifier.errorMessage}"));
     }
 
+    if (notifier.productDetail == null) {
+      return const Center(child: Text("상품 정보를 불러올 수 없습니다."));
+    }
     final product = notifier.productDetail!;
+    print("상품 상세 페이지 유저의 이미지 : ${product.sellerProfileUrl}");
 
     return SingleChildScrollView(
       child: Column(
@@ -79,6 +83,9 @@ class _DetailItemState extends ConsumerState<DetailItem> {
   }
 
   Widget _buildProfile(ProductDetailDto dto) {
+    if (dto.sellerProfileUrl == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return InkWell(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -188,28 +195,36 @@ class _DetailItemState extends ConsumerState<DetailItem> {
     );
   }
 
-  // 판매자 프로필 이미지를 처리하는 함수 (ClipRRect를 둥글게)
   Widget _buildProfileImage(String? imageUrl) {
-    if (imageUrl != null && imageUrl.startsWith('url(data:image/png;base64,')) {
-      try {
-        final base64String =
-            imageUrl.substring('url(data:image/png;base64,'.length);
-        final imageBytes = base64Decode(base64String);
+    if (imageUrl == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(50), // 프로필 이미지는 둥글게
-          child: Image.memory(
-            imageBytes,
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
-          ),
-        );
-      } catch (e) {
-        print('Base64 프로필 이미지 디코딩 실패: $e');
+    String? base64String = imageUrl;
+
+    if (imageUrl.startsWith('data:image/')) {
+      final commaIndex = imageUrl.indexOf(',');
+      if (commaIndex != -1) {
+        base64String = imageUrl.substring(commaIndex + 1);
+      } else {
         return _buildDefaultProfileImage();
       }
-    } else {
+    }
+
+    try {
+      final imageBytes = base64Decode(base64String);
+
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(50), // 프로필 이미지는 둥글게
+        child: Image.memory(
+          imageBytes,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+        ),
+      );
+    } catch (e) {
+      print('Base64 프로필 이미지 디코딩 실패: $e');
       return _buildDefaultProfileImage();
     }
   }

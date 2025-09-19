@@ -21,7 +21,7 @@ class ProductDetailRepository {
         ),
       );
       print('[상세]아이템 상품 상세 정보 : ${response.statusCode}');
-      print('[상세]아이템 상품 상세 데이터: ${response.data}'); // Log the raw response data
+      print('[상세]아이템 상품 유저의 이미지 정보: ${response.data['sellerProfileUrl']}');
 
       if (response.statusCode == 200) {
         return response.data;

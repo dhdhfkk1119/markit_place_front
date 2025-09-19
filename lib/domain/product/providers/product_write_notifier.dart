@@ -37,7 +37,7 @@ class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {
 
       await _repository.productWrite(writeDto, memberAddressId, base64Images);
 
-      ref.read(productListProvider.notifier).getProductList();
+      ref.read(productListProvider.notifier).refreshProductList();
       state = const AsyncData(null);
     } catch (e, stackTrace) {
       state = AsyncError(e, stackTrace);

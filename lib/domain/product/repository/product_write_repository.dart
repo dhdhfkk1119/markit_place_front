@@ -13,19 +13,8 @@ class ProductWriteRepository {
     List<String> base64Images,
   ) async {
     final token = await _storage.read(key: "accessToken");
-    print(">>> ProductWrite 요청 시작"); // 이거 안 찍히면 호출 자체 문제
 
     try {
-      // 요청 데이터 로그
-      print("=== ProductWrite Request ===");
-      print("memberId: $memberId");
-      print("title: ${dto.title}");
-      print("content: ${dto.content}");
-      print("price: ${dto.price}");
-      print("categoryId: ${dto.itemCategoryId}");
-      print("images count: ${base64Images.length}");
-      print("===========================");
-
       final response = await dio.post(
         '$Url/items',
         options: Options(
@@ -40,16 +29,8 @@ class ProductWriteRepository {
           "base64Images": base64Images,
         },
       );
-
-      // 서버 응답 로그
-      print("=== ProductWrite Response ===");
-      print(response.statusCode);
-      print(response.data);
-      print("=============================");
+      print("상품 등록 리스트 : ${response}");
     } catch (e) {
-      print("=== ProductWrite ERROR ===");
-      print(e);
-      print("==========================");
       throw Exception('Failed to connect to the server: $e');
     }
   }
