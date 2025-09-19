@@ -14,22 +14,53 @@ class CommunityDetailRepository {
     }
     try {
       final response = await _dio.get(
-        '/community/posts/${postId}',
+        '/community/posts/$postId',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
       );
 
-      print('커뮤니티 글 상세 정보 : ${response.statusCode}');
-      print('커뮤니티 글 상세 데이터: ${response.data}');
+      print('커뮤니티 글 상세 정보 응답 코드: ${response.statusCode}');
 
       if (response.statusCode == 200) {
-        return response.data['response'];
+        if (response.data != null && response.data['response'] != null) {
+          return response.data['response'];
+        } else {
+          throw Exception('응답 데이터 형식이 올바르지 않습니다.');
+        }
       } else {
         throw Exception('커뮤니티 글 상세보기 실패 : ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('서버와 연결 실패: $e');
+      print('커뮤니티 글 상세 정보 요청 실패: $e');
+      throw Exception('서버와 연결 실패 또는 요청 처리 중 오류: $e');
+    }
+  }
+
+  // 좋아요 토글 메소드 추가
+  Future<void> toggleLike({required int postId}) async {
+    final token = await _storage.read(key: "accessToken");
+    if (token == null) {
+      throw Exception('토큰 정보가 존재하지 않습니다.');
+    }
+    try {
+      final response = await _dio.post(
+        '/community/posts/$postId/like',
+        options: Options(
+          headers: {"Authorization": "Bearer $token"},
+        ),
+      );
+
+      print('좋아요 토글 응답 코드: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        print('좋아요 상태가 성공적으로 변경되었습니다.');
+      } else {
+        throw Exception('좋아요 처리 실패 : ${response.statusCode}');
+      }
+    } catch (e) {
+      print('좋아요 토글 요청 실패: $e');
+      throw Exception('서버와 연결 실패 또는 좋아요 처리 중 오류: $e');
     }
   }
 }

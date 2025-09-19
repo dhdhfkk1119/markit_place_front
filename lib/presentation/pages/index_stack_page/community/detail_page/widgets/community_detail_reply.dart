@@ -1,107 +1,79 @@
 import 'package:flutter/material.dart';
 import '../../../../../../_core/constants/custom_popup.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../domain/community/community_model/community_comment.dart';
 
 class CommunityDetailReply extends StatelessWidget {
-  int replyCount;
-  CommunityDetailReply(this.replyCount, {super.key});
+  final CommunityComment comment;
+  const CommunityDetailReply({required this.comment, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // 댓글 달기 전에 위에 정보 (전체 댓글 수 및 정렬)
-            CustomWidget.buildTitle("댓글 $replyCount", size: 13),
-            _buildReplyInfo(),
-          ],
-        ),
-        // 댓글 단 사람의 프로필 정보
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildReplyProfile(),
-            InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  builder: (context) =>
-                      CustomPopUp.buildAppUpdatePop(context, "수정하기"),
-                );
-              },
-              child: const Icon(Icons.more_vert),
-            ),
-          ],
-        )
-      ],
-    );
-  }
-
-  Widget _buildReplyInfo() {
-    return Row(
-      children: [
-        Row(
-          children: [
-            TextButton(
-              onPressed: () {},
-              child: const Text("등록순"),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: const Text("조회순"),
-            )
-          ],
-        )
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildReplyProfile(),
+          InkWell(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                builder: (context) =>
+                    CustomPopUp.buildAppUpdatePop(context, "수정하기"),
+              );
+            },
+            child: const Icon(Icons.more_vert),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildReplyProfile() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Image.asset(
-                'assets/default_profile.png',
-                width: 40,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(
-          width: 12,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Column(
+    return Expanded(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(50),
+            // comment.imageUrl을 사용하여 프로필 이미지 표시, 없으면 기본 이미지
+            child: (comment.imageUrl != null && comment.imageUrl!.isNotEmpty)
+                ? Image.network(
+                    comment.imageUrl!,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/default_profile.png',
+                        width: 40), // 에러 이미지
+                  )
+                : Image.asset('assets/default_profile.png', width: 40),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomWidget.buildTitle("조정우", size: 13),
+                CustomWidget.buildTitle(comment.writerName, size: 13),
                 Padding(
                   padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
-                  child: CustomWidget.buildTitle("사하구",
+                  child: CustomWidget.buildTitle(comment.createdAt,
                       size: 13, color: Colors.grey, weight: FontWeight.w200),
                 ),
-                CustomWidget.buildTitle("댓글에 대한 내용이 담기는 곳입니다",
+                CustomWidget.buildTitle(comment.content,
                     size: 13, weight: FontWeight.w200),
                 _buildReplyIcon(),
               ],
-            )
-          ],
-        )
-      ],
+            ),
+          )
+        ],
+      ),
     );
   }
 
@@ -111,7 +83,9 @@ class CommunityDetailReply extends StatelessWidget {
       child: Row(
         children: [
           InkWell(
-            onTap: () {},
+            onTap: () {
+              // 댓글 좋아요 기능
+            },
             child: Row(
               children: [
                 const Icon(
@@ -119,10 +93,8 @@ class CommunityDetailReply extends StatelessWidget {
                   color: Colors.grey,
                   size: 16,
                 ),
-                const SizedBox(
-                  width: 4,
-                ),
-                CustomWidget.buildTitle('좋아요',
+                const SizedBox(width: 4),
+                CustomWidget.buildTitle('좋아요 ${comment.likeCount ?? 0}',
                     color: Colors.grey, size: 13, weight: FontWeight.w200),
               ],
             ),
@@ -131,7 +103,9 @@ class CommunityDetailReply extends StatelessWidget {
             width: 24,
           ),
           InkWell(
-            onTap: () {},
+            onTap: () {
+              // 대댓글 작성 기능
+            },
             child: Row(
               children: [
                 const Icon(
@@ -139,9 +113,7 @@ class CommunityDetailReply extends StatelessWidget {
                   color: Colors.grey,
                   size: 16,
                 ),
-                const SizedBox(
-                  width: 4,
-                ),
+                const SizedBox(width: 4),
                 CustomWidget.buildTitle('댓글',
                     color: Colors.grey, size: 13, weight: FontWeight.w200),
               ],
