@@ -36,8 +36,9 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
       final notifier = ref.read(productListProvider.notifier);
 
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent - 50 &&
-          notifier.hasNext) {
+                  _scrollController.position.maxScrollExtent - 50 &&
+              notifier.hasNext ??
+          false) {
         notifier.fetchNextPage();
       }
     });

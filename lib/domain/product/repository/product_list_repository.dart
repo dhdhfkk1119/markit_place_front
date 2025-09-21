@@ -2,23 +2,24 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../_core/utils/my_http.dart';
+import '../dtos/product_search_dto.dart';
 
 const String Url = baseUrl;
 const FlutterSecureStorage _storage = FlutterSecureStorage();
 
 class ProductListRepository {
-  Future<Map<String, dynamic>> productList(
-      {required int page, required int size}) async {
-    final token = await _storage.read(key: "accessToken");
+  // 게시물 검색
+  Future<Map<String, dynamic>> getProducts(ProductSearchDTO searchDto) async {
+    final token = await FlutterSecureStorage().read(key: "accessToken");
     if (token == null) {
       throw Exception('토큰 정보가 존재하지 않습니다');
     }
 
     try {
-      final response = await dio.get('/items', queryParameters: {
-        'page': page,
-        'size': size,
-      });
+      final queryParameters = searchDto.toMap(); // toMap() 메서드 호출
+
+      final response =
+          await dio.get('/items', queryParameters: queryParameters);
 
       if (response.statusCode == 200) {
         return response.data;
