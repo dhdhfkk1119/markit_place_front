@@ -48,7 +48,7 @@ class _ProductListPageState extends State<ProductListPage> {
         onWritePressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const ProductWritePage()),
+            MaterialPageRoute(builder: (_) => ProductWritePage()),
           );
         },
       ),

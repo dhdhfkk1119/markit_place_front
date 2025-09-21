@@ -7,16 +7,19 @@ class ProductList {
   String tradeLocation;
   String? thumbnail;
   int? favoriteCount;
+  int viewCount;
 
-  ProductList(
-      {required this.id,
-      required this.title,
-      required this.content,
-      required this.price,
-      required this.itemCategoryName,
-      required this.tradeLocation,
-      this.thumbnail,
-      this.favoriteCount});
+  ProductList({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.price,
+    required this.itemCategoryName,
+    required this.tradeLocation,
+    this.thumbnail,
+    this.favoriteCount,
+    required this.viewCount,
+  });
 
   factory ProductList.fromJson(Map<String, dynamic> json) {
     return ProductList(
@@ -28,6 +31,7 @@ class ProductList {
       tradeLocation: json['tradeLocation'] ?? '',
       thumbnail: json['thumbnail'],
       favoriteCount: json['favoriteCount'] ?? 0,
+      viewCount: json['viewCount'],
     );
   }
 }

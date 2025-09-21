@@ -10,7 +10,7 @@ import '../../domain/members/services/session_service.dart';
 /// 팀장 서버 주소 - http://192.168.0.128:8080/api
 /// 자기 서버 주소 - http://10.0.2.2:8080/api
 /// 모바일 테스트용 서버 - https://port-0-market-place-server-m9sgwbay02179a7c.sel4.cloudtype.app/api
-const baseUrl = "http://192.168.0.128:8080/api";
+const baseUrl = "http://10.0.2.2:8080/api";
 
 final dio = Dio(
   BaseOptions(

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../../../domain/providers/SessionNotifier.dart';
+import '../../../../auth/social_login_page/social_login_page.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
 import '../qna_screen.dart';
 import '../notice_screen.dart';
@@ -21,6 +24,22 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
 
   @override
   Widget build(BuildContext context) {
+    final authUser = ref.watch(authNotifierProvider);
+    final user = authUser.user;
+    if (user == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => SocialLoginPage()),
+        );
+      });
+
+      // push 직전에는 빈 위젯을 리턴
+      return SizedBox.shrink();
+    }
+
+    final userBase64 = base64ToBytes(user.profileImageUrl);
+
     const Color primaryColor = Color(0xFFF96666);
     const Color profileAvatarColor = Color(0xFFF5E6E6);
     const Color accentColor = Color(0xFFFFF7F7);
@@ -44,12 +63,26 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                     children: [
                       Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: profileAvatarColor,
-                            child: const Icon(Icons.person,
-                                size: 60, color: Colors.white),
-                          ),
+                          if (userBase64 != null)
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: profileAvatarColor,
+                              child: ClipOval(
+                                child: Image.memory(
+                                  userBase64,
+                                  fit: BoxFit.cover,
+                                  width: 100,
+                                  height: 100,
+                                ),
+                              ),
+                            )
+                          else
+                            CircleAvatar(
+                              radius: 50,
+                              backgroundColor: profileAvatarColor,
+                              child: const Icon(Icons.person,
+                                  size: 60, color: Colors.white),
+                            ),
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -69,7 +102,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                       ),
                       const SizedBox(height: 20),
                       CustomWidget.buildTitle(
-                        "아자몽다",
+                        "${user.name}",
                         size: 18,
                         weight: FontWeight.w200,
                       ),
@@ -86,7 +119,9 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MyProfileBody(),
+                              builder: (context) => MyProfileBody(
+                                user: user,
+                              ),
                             ),
                           );
                         },
@@ -161,7 +196,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
               const Divider(height: 30),
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../domain/product/providers/product_category_notifier.dart';
 import '../../../../../domain/product/providers/product_item_notifier.dart';
 import '../../../../../domain/product/providers/product_write_notifier.dart';
@@ -10,7 +11,8 @@ import 'widgets/product_write_body.dart';
 import '../../../../../_core/constants/custom_widget.dart';
 
 class ProductWritePage extends ConsumerStatefulWidget {
-  const ProductWritePage({super.key});
+  ProductDetailDto? model;
+  ProductWritePage({this.model, super.key});
 
   @override
   ConsumerState<ProductWritePage> createState() => _ProductWritePageState();
@@ -33,7 +35,7 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
         body: SafeArea(
           child: Padding(
             padding: EdgeInsets.all(16.0),
-            child: ProductWriteBody(),
+            child: ProductWriteBody(model: widget.model),
           ),
         ),
         bottomNavigationBar: _buildSubmitButton(),
@@ -45,10 +47,20 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
     final authState = ref.read(authNotifierProvider);
     final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
 
-    if (productItem.name.isEmpty ||
-        productItem.description.isEmpty ||
-        productItem.price == null ||
-        productItem.images.isEmpty) {
+    // 기존 값 보정
+    final title = productItem.name.isEmpty
+        ? widget.model?.productList.title ?? ""
+        : productItem.name;
+
+    final description = productItem.description.isEmpty
+        ? widget.model?.productList.content ?? ""
+        : productItem.description;
+
+    final price = productItem.price ?? widget.model?.productList.price;
+
+    // 신규 작성일 때만 "빈값 검사" 강제
+    if (widget.model == null &&
+        (title.isEmpty || description.isEmpty || price == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('모든 필수 항목을 입력해주세요.')),
       );
@@ -56,22 +68,36 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
     }
 
     try {
-      await ref.read(productWriteProvider.notifier).writeProduct(
-            selectedCategoryId: selectedCategoryId!,
-            title: productItem.name,
-            content: productItem.description,
-            price: productItem.price!,
-            images: productItem.images,
-            memberAddressId: authState.user!.memberId,
-          );
+      if (widget.model == null) {
+        // 신규 작성
+        await ref.read(productWriteProvider.notifier).writeProduct(
+              selectedCategoryId: selectedCategoryId!,
+              title: title,
+              content: description,
+              price: price!,
+              images: productItem.images,
+              memberAddressId: authState.user!.memberId,
+              tradeLocation: authState.user!.name,
+            );
+      } else {
+        // 수정하기
+        await ref.read(productWriteProvider.notifier).updateProduct(
+              productId: widget.model!.productList.id,
+              selectedCategoryId:
+                  selectedCategoryId ?? widget.model!.itemCategoryId,
+              title: title,
+              content: description,
+              price: price!,
+              images: productItem.images,
+              memberAddressId: authState.user!.memberId,
+              tradeLocation: authState.user!.name,
+            );
+      }
 
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('상품이 성공적으로 등록되었습니다!')),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('상품 등록 실패: $e')),
+        SnackBar(content: Text('상품 처리 실패: $e')),
       );
     }
   }
@@ -94,9 +120,12 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
             padding: const EdgeInsets.symmetric(vertical: 12.0),
           ),
           child: CustomWidget.buildTitle(
-              productItem.isLoading ? "작성 중..." : "작성완료",
-              color: Colors.white,
-              size: 20),
+            productItem.isLoading
+                ? (widget.model == null ? "작성 중..." : "수정 중...")
+                : (widget.model == null ? "작성완료" : "수정완료"),
+            color: Colors.white,
+            size: 20,
+          ),
         ),
       ),
     );

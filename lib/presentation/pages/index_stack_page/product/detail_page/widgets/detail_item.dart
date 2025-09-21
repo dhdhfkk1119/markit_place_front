@@ -2,90 +2,66 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../../domain/product/providers/product_detail_notifier.dart';
 import 'detail_item_image.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
-class DetailItem extends ConsumerStatefulWidget {
+class DetailItem extends ConsumerWidget {
   final int productId;
   const DetailItem({required this.productId, super.key});
 
   @override
-  ConsumerState<DetailItem> createState() => _DetailItemState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productState = ref.watch(productDetailProvider(productId));
 
-class _DetailItemState extends ConsumerState<DetailItem> {
-  @override
-  void initState() {
-    super.initState();
-    Future.microtask(() {
-      ref
-          .read(productDetailProvider(widget.productId).notifier)
-          .getProductDetailInfo();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final notifier = ref.watch(productDetailProvider(widget.productId));
-
-    if (notifier.isLoading || notifier.productDetail == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (notifier.errorMessage != null) {
-      return Center(child: Text("에러 발생: ${notifier.errorMessage}"));
-    }
-
-    if (notifier.productDetail == null) {
-      return const Center(child: Text("상품 정보를 불러올 수 없습니다."));
-    }
-    final product = notifier.productDetail!;
-    print("상품 상세 페이지 유저의 이미지 : ${product.sellerProfileUrl}");
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildProfile(product),
-                _buildDivider(),
-                CustomWidget.buildTitle(
-                  "${product.productList.title}",
-                  size: 20,
+    return productState.when(
+      data: (product) {
+        print("상품 상세 페이지 유저의 정보들 : ${product.retransactionRate}");
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildProfile(product, context),
+                    _buildDivider(),
+                    CustomWidget.buildTitle(
+                      "${product.productList.title}",
+                      size: 20,
+                    ),
+                    CustomWidget.buildTitle(
+                      "${product.productList.price}",
+                      size: 20,
+                    ),
+                    CustomWidget.buildTitle(
+                      "${product.productList.itemCategoryName}",
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "${product.productList.content}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 200),
+                  ],
                 ),
-                CustomWidget.buildTitle(
-                  "${product.productList.price}",
-                  size: 20,
-                ),
-                CustomWidget.buildTitle(
-                  "${product.productList.itemCategoryName}",
-                  size: 16,
-                  color: Colors.grey,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "${product.productList.content}",
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 200),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("상품 정보를 불러오는 중 오류 발생: $err")),
     );
   }
 
-  Widget _buildProfile(ProductDetailDto dto) {
-    if (dto.sellerProfileUrl == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildProfile(ProductDetailDto dto, BuildContext context) {
     return InkWell(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -195,37 +171,21 @@ class _DetailItemState extends ConsumerState<DetailItem> {
     );
   }
 
-  Widget _buildProfileImage(String? imageUrl) {
-    if (imageUrl == null) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildProfileImage(String? thumbnailUrl) {
+    final imageBytes = base64ToBytes(thumbnailUrl);
 
-    String? base64String = imageUrl;
-
-    if (imageUrl.startsWith('data:image/')) {
-      final commaIndex = imageUrl.indexOf(',');
-      if (commaIndex != -1) {
-        base64String = imageUrl.substring(commaIndex + 1);
-      } else {
-        return _buildDefaultProfileImage();
-      }
-    }
-
-    try {
-      final imageBytes = base64Decode(base64String);
-
+    if (imageBytes == null) {
+      return _buildDefaultProfileImage();
+    } else {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(50), // 프로필 이미지는 둥글게
+        borderRadius: BorderRadius.circular(8),
         child: Image.memory(
           imageBytes,
-          width: 40,
-          height: 40,
+          width: 100,
+          height: 100,
           fit: BoxFit.cover,
         ),
       );
-    } catch (e) {
-      print('Base64 프로필 이미지 디코딩 실패: $e');
-      return _buildDefaultProfileImage();
     }
   }
 

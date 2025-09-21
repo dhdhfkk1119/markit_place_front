@@ -17,18 +17,22 @@ class DetailBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productDetailState = ref.watch(productDetailProvider(productId));
-    final imagePath = productDetailState.productDetail?.imageUrls ?? [];
 
-    return SingleChildScrollView(
-      controller: scrollController,
-      child: Column(
-        children: [
-          DetailItemImage(
-            imagePaths: imagePath,
+    return productDetailState.when(
+      data: (productDetail) {
+        final imagePaths = productDetail.imageUrls ?? [];
+        return SingleChildScrollView(
+          controller: scrollController,
+          child: Column(
+            children: [
+              DetailItemImage(imagePaths: imagePaths),
+              DetailItem(productId: productId),
+            ],
           ),
-          DetailItem(productId: productId),
-        ],
-      ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("상품 정보를 불러오지 못했습니다: $err")),
     );
   }
 }

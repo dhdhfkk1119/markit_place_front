@@ -6,7 +6,7 @@ import 'product_filter_list.dart';
 import 'product_list_item.dart';
 import '../../../../../widgets/WriteButton.dart';
 
-class ProductListBody extends ConsumerWidget {
+class ProductListBody extends ConsumerStatefulWidget {
   final bool isFilterVisible;
   final VoidCallback onWritePressed;
   final TextEditingController searchController;
@@ -21,20 +21,53 @@ class ProductListBody extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductListBody> createState() => _ProductListBodyState();
+}
+
+class _ProductListBodyState extends ConsumerState<ProductListBody> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+
+    _scrollController.addListener(() {
+      final notifier = ref.read(productListProvider.notifier);
+
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 50 &&
+          notifier.hasNext) {
+        notifier.fetchNextPage();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    await ref.read(productListProvider.notifier).refreshProductList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final AsyncValue<List<ProductListDto>> productListState =
         ref.watch(productListProvider);
 
-    return productListState.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(child: Text('에러 발생: $error')),
-      data: (productList) {
-        return SafeArea(
-          child: Stack(
-            children: [
-              Row(
+    return SafeArea(
+      child: Stack(
+        children: [
+          productListState.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stackTrace) => Center(child: Text('에러 발생: $error')),
+            data: (productList) {
+              return Row(
                 children: [
-                  if (isFilterVisible)
+                  if (widget.isFilterVisible)
                     const SizedBox(
                       width: 170,
                       child: Padding(
@@ -43,64 +76,82 @@ class ProductListBody extends ConsumerWidget {
                       ),
                     ),
                   Expanded(
-                    child: productList.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "리스트가 없습니다.",
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.grey),
+                    child: RefreshIndicator(
+                      onRefresh: _onRefresh,
+                      child: productList.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "리스트가 없습니다.",
+                                style:
+                                    TextStyle(fontSize: 16, color: Colors.grey),
+                              ),
+                            )
+                          : ListView.separated(
+                              controller: _scrollController,
+                              itemCount: productList.length +
+                                  (ref
+                                          .read(productListProvider.notifier)
+                                          .hasNext
+                                      ? 1
+                                      : 0),
+                              itemBuilder: (context, index) {
+                                if (index < productList.length) {
+                                  final product = productList[index];
+                                  return Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: ProductListItem(
+                                        product, widget.isFilterVisible),
+                                  );
+                                } else {
+                                  // 마지막에 로딩 인디케이터 표시 (hasNext가 true일 때만)
+                                  return const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 16),
+                                    child: Center(
+                                        child: CircularProgressIndicator()),
+                                  );
+                                }
+                              },
+                              separatorBuilder: (_, __) => const Divider(
+                                height: 32,
+                                thickness: 1,
+                                color: Colors.grey,
+                              ),
                             ),
-                          )
-                        : ListView.separated(
-                            itemCount: productList.length,
-                            itemBuilder: (context, index) {
-                              final product = productList[index];
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child:
-                                    ProductListItem(product, isFilterVisible),
-                              );
-                            },
-                            separatorBuilder: (_, __) => const Divider(
-                              height: 32,
-                              thickness: 1,
-                              color: Colors.grey,
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-              if (isSearchVisible)
-                Positioned(
-                  top: 0,
-                  left: isFilterVisible ? 170 : 0,
-                  right: 0,
-                  child: Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(8.0),
-                    child: TextField(
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        hintText: "검색어를 입력하세요",
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      onSubmitted: (value) {
-                        print("검색: $value");
-                      },
                     ),
                   ),
-                ),
-              WriteButton(
-                onTap: onWritePressed,
-                title: "상품등록",
-              ),
-            ],
+                ],
+              );
+            },
           ),
-        );
-      },
+          if (widget.isSearchVisible)
+            Positioned(
+              top: 0,
+              left: widget.isFilterVisible ? 170 : 0,
+              right: 0,
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: widget.searchController,
+                  decoration: InputDecoration(
+                    hintText: "검색어를 입력하세요",
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onSubmitted: (value) {
+                    print("검색: $value");
+                  },
+                ),
+              ),
+            ),
+          WriteButton(
+            onTap: widget.onWritePressed,
+            title: "상품등록",
+          ),
+        ],
+      ),
     );
   }
 }

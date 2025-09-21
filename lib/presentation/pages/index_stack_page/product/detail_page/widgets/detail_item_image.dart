@@ -1,6 +1,7 @@
 // detail_item_image.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../_core/constants/assets.dart'; // 기본 이미지 에셋 경로를 위해 추가
 
@@ -82,19 +83,14 @@ class _DetailItemImageState extends State<DetailItemImage> {
   // Base64 또는 네트워크 이미지를 처리하는 함수
   Widget _buildImage(String imageUrl) {
     // Base64 문자열을 저장할 변수
-    String base64String = imageUrl;
 
-    if (imageUrl.startsWith('data:image/')) {
-      final commaIndex = imageUrl.indexOf(',');
-      if (commaIndex != -1) {
-        base64String = imageUrl.substring(commaIndex + 1);
-      } else {
-        return _buildDefaultImage();
-      }
+    final imageBytes = base64ToBytes(imageUrl);
+
+    if (imageBytes == null) {
+      return _buildDefaultImage();
     }
 
     try {
-      final imageBytes = base64Decode(base64String);
       return Image.memory(
         imageBytes,
         fit: BoxFit.cover,

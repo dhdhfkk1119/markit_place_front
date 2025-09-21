@@ -6,6 +6,7 @@ import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_popup.dart';
 
 import '../../../../../../domain/product/dtos/product_list_dtos.dart';
+import '../../../../../../domain/product/providers/product_detail_notifier.dart';
 import '../../detail_page/detail_page.dart';
 
 class ProductListItem extends ConsumerWidget {
@@ -34,7 +35,7 @@ class ProductListItem extends ConsumerWidget {
             const SizedBox(width: 16),
             Expanded(child: _buildProductInfo(product)),
             const SizedBox(width: 8),
-            _buildConditionalActions(context),
+            _buildConditionalActions(context, ref),
           ],
         ),
       ),
@@ -42,7 +43,8 @@ class ProductListItem extends ConsumerWidget {
   }
 
   Widget _buildProductImage(String? thumbnailUrl) {
-    if (thumbnailUrl == null) {
+    if (thumbnailUrl == null || thumbnailUrl.isEmpty) {
+      // Added isEmpty check
       return Container(
         width: 100,
         height: 100,
@@ -51,22 +53,59 @@ class ProductListItem extends ConsumerWidget {
       );
     }
 
-    final bytes = base64.decode(thumbnailUrl);
+    // --- MODIFICATION START ---
+    String actualBase64String = thumbnailUrl;
+    // Check if the string contains the prefix and remove it
+    if (thumbnailUrl.startsWith('data:image') && thumbnailUrl.contains(',')) {
+      actualBase64String = thumbnailUrl.split(',').last;
+    }
+    // --- MODIFICATION END ---
+    try {
+      // Added try-catch for robust decoding
+      final bytes = base64.decode(actualBase64String);
 
-    // 4. Image.memory 위젯으로 이미지 표시
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Image.memory(
-        bytes,
+      // 4. Image.memory 위젯으로 이미지 표시
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.memory(
+          bytes,
+          width: 100,
+          height: 100,
+          fit: BoxFit.cover,
+          // Add errorBuilder for better error handling during Image.memory rendering
+          errorBuilder: (context, error, stackTrace) {
+            print("Error rendering image: $error");
+            return Container(
+              width: 100,
+              height: 100,
+              color: Colors.grey[300],
+              child: const Icon(
+                Icons.broken_image,
+                size: 50,
+                color: Colors.black54,
+              ),
+            );
+          },
+        ),
+      );
+    } catch (e) {
+      print("Error decoding base64 string: $e");
+      return Container(
+        // Return an error placeholder if decoding fails
         width: 100,
         height: 100,
-        fit: BoxFit.cover,
-      ),
-    );
+        color: Colors.grey[200],
+        child: const Icon(
+          Icons.error_outline,
+          size: 50,
+          color: Colors.red,
+        ),
+      );
+    }
   }
 
   // 조건부에 따라 오른쪽 (list-button,bottom Icon) 위치 조정
-  Widget _buildConditionalActions(BuildContext context) {
+  Widget _buildConditionalActions(BuildContext context, WidgetRef ref) {
     if (_isFilterVisible) {
       return const SizedBox.shrink();
     } else {
@@ -77,18 +116,26 @@ class ProductListItem extends ConsumerWidget {
           Align(
             alignment: Alignment.topRight,
             child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
+              onTap: () async {
+                showDialog(
                   context: context,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                  builder: (context) {
-                    return CustomPopUp.buildAppBarPopUp(
-                        context, "조정우", "상품제목을입력", 1);
-                  },
+                  barrierDismissible: false, // 사용자가 닫을 수 없게 합니다.
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
+                try {
+                  await ref.read(productDetailProvider(product.id).future);
+
+                  Navigator.pop(context);
+
+                  _showProductPopup(context, ref, product);
+                } catch (e) {
+                  // 로딩 실패 시 에러 처리 (예: 스낵바 표시)
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("상품 정보를 불러오지 못했습니다.")),
+                  );
+                }
               },
               child: const Icon(
                 Icons.more_vert,
@@ -97,7 +144,7 @@ class ProductListItem extends ConsumerWidget {
               ),
             ),
           ),
-          _buildBottomIcon(),
+          _buildBottomIcon(product),
         ],
       );
     }
@@ -136,16 +183,18 @@ class ProductListItem extends ConsumerWidget {
     );
   }
 
-  Widget _buildBottomIcon() {
+  Widget _buildBottomIcon(ProductListDto dto) {
     return Row(
       children: [
         _buildIcon(CupertinoIcons.profile_circled),
-        _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
+        _buildTitle("${dto.viewCount}", 12,
+            font: FontWeight.w200, color: Colors.grey),
         const SizedBox(
           width: 5,
         ),
         _buildIcon(CupertinoIcons.heart_fill),
-        _buildTitle("14", 12, font: FontWeight.w200, color: Colors.grey),
+        _buildTitle("${dto.favoriteCount}", 12,
+            font: FontWeight.w200, color: Colors.grey),
       ],
     );
   }
@@ -155,6 +204,22 @@ class ProductListItem extends ConsumerWidget {
       icon,
       size: 14,
       color: Colors.grey,
+    );
+  }
+
+  void _showProductPopup(
+      BuildContext context, WidgetRef ref, ProductListDto product) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        // 이 시점에는 이미 데이터가 로딩되어 있으므로, 팝업이 바로 내용을 표시합니다.
+        return CustomPopUp.buildAppBarPopUp(
+            context, "${product.title}", "${product.content}", product.id,
+            ref: ref);
+      },
     );
   }
 }

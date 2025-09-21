@@ -1,4 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/members/models/session_user.dart';
+import '../../domain/members/providers/member_auth_provider.dart';
+import '../../domain/product/providers/product_detail_notifier.dart';
+import '../../domain/product/providers/product_list_notifier.dart';
+import '../../presentation/pages/index_stack_page/main_screen.dart';
+import '../../presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
+import '../../presentation/pages/index_stack_page/product/write_page/product_write_page.dart';
 import 'custom_widget.dart';
 
 class CustomPopUp {
@@ -25,27 +33,96 @@ class CustomPopUp {
   }
 
   static buildAppBarPopUp(
-      BuildContext context, String userName, String productName, int productId,
-      {String? title}) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListTile(
-          leading: const Icon(Icons.report, color: Colors.red),
-          title: CustomWidget.buildTitle("신고하기", weight: FontWeight.w200),
-          onTap: () {
-            Navigator.pop(context); // 바텀시트 닫기
-            showReportPopUp(context, userName, productName, productId);
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.close, color: Colors.grey),
-          title: const Text("닫기"),
-          onTap: () {
-            Navigator.pop(context); // 바텀시트 닫기
-          },
-        ),
-      ],
+    BuildContext context,
+    String userName,
+    String productName,
+    int productId, {
+    String? title,
+    WidgetRef? ref,
+  }) {
+    if (ref == null) return const SizedBox.shrink();
+
+    final notifier = ref.read(productListProvider.notifier);
+
+    // AsyncNotifier로 바뀐 경우
+    final productAsyncValue = ref.watch(productDetailProvider(productId));
+
+    return productAsyncValue.when(
+      data: (model) {
+        // 로그인한 유저 정보
+        final authState = ref.watch(authNotifierProvider);
+        final currentUser = authState.user;
+        final isOwner = model?.sellerId == currentUser?.memberId;
+
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.report, color: Colors.red),
+              title: CustomWidget.buildTitle("신고하기", weight: FontWeight.w200),
+              onTap: () {
+                Navigator.pop(context);
+                showReportPopUp(context, userName, productName, productId);
+              },
+            ),
+            if (isOwner) ...[
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: CustomWidget.buildTitle("삭제하기", weight: FontWeight.w200),
+                onTap: () async {
+                  Navigator.pop(context);
+
+                  await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("삭제 확인"),
+                      content: const Text("정말로 이 상품을 삭제하시겠습니까?"),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text("취소"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await notifier.deleteProduct(productId);
+                            Navigator.of(context, rootNavigator: true).pop();
+                            Navigator.pushReplacementNamed(
+                                context, "/product/list");
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                          child: const Text("삭제"),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading:
+                    const Icon(Icons.update, color: Colors.deepPurpleAccent),
+                title: CustomWidget.buildTitle("수정하기", weight: FontWeight.w200),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProductWritePage(model: model),
+                    ),
+                  );
+                },
+              ),
+            ],
+            ListTile(
+              leading: const Icon(Icons.close, color: Colors.grey),
+              title: const Text("닫기"),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("상품 정보를 불러올 수 없습니다.")),
     );
   }
 
@@ -68,7 +145,7 @@ class CustomPopUp {
               Row(
                 children: [
                   CustomWidget.buildTitle(
-                    "사용자 이름 : ",
+                    "상품 이름 : ",
                   ),
                   CustomWidget.buildTitle(
                     userName,
@@ -79,7 +156,7 @@ class CustomPopUp {
               Row(
                 children: [
                   CustomWidget.buildTitle(
-                    "상품 이름 : ",
+                    "상품 내용 : ",
                   ),
                   CustomWidget.buildTitle(
                     productName,
