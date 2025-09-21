@@ -121,6 +121,14 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
                 streamingText: _accumulatedResponse, isLoading: true);
             break;
 
+          case 'error':
+            state = state.copyWith(
+              isLoading: false,
+              errorMessage: data,
+              thinkingMessage: "",
+            );
+            break;
+
           case 'final':
             String cleanedText = _accumulatedResponse.trim();
             _splitGeminiResponseText(cleanedText);
