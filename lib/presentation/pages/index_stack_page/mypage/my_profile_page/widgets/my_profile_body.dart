@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../_core/dtos/api_service.dart';
+import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../review_list_screen.dart';
+import '../../../../../../_core/utils/my_http.dart';
 import 'package:dio/dio.dart';
 
-class MyProfileBody extends StatefulWidget {
+final praiseButtonStateProvider = StateProvider<bool>((ref) => true);
+
+class MyProfileBody extends ConsumerStatefulWidget {
   final user;
-  const MyProfileBody({required this.user, super.key});
+  final int userRating;
+
+  const MyProfileBody(
+      {required this.user, required this.userRating, super.key});
 
   @override
-  State<MyProfileBody> createState() => _MyProfileBodyState();
+  ConsumerState<MyProfileBody> createState() => _MyProfileBodyState();
 }
 
-class _MyProfileBodyState extends State<MyProfileBody> {
+class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   int _currentMannerScore = 50;
   int _retransactionRate = 0;
-  bool _isPraiseButtonEnabled = true;
 
-  final Dio _dio = Dio();
   final ApiService _apiService = ApiService();
 
   @override
@@ -26,13 +32,24 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     _fetchInitialData();
   }
 
-  // 매너 칭찬하기
   Future<void> _addPraise() async {
-    if (!_isPraiseButtonEnabled) return;
+    print('매너 칭찬하기 함수 호출됨');
 
-    final url = 'http://localhost:8080/api/v1/praise';
+    final bool isEnabled = ref.read(praiseButtonStateProvider);
+    if (!isEnabled) {
+      print('버튼이 비활성화 상태입니다. 함수를 종료합니다');
+      return;
+    }
 
-    // 사용자 ID와 거래 ID로 대체
+    ref
+        .read(praiseButtonStateProvider.notifier)
+        .state = false;
+    print('버튼 상태를 비활성화로 변경함');
+
+    final dio = ref.read(dioProvider);
+
+    const url = 'http://10.0.2.2:8080/api/praise';
+
     final requestBody = {
       "praisedMemberId": 1,
       "praiserId": 2,
@@ -43,7 +60,7 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     };
 
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         url,
         data: requestBody,
         options: Options(headers: {'Content-Type': 'application/json'}),
@@ -55,10 +72,9 @@ class _MyProfileBodyState extends State<MyProfileBody> {
           setState(() {
             _currentMannerScore = responseData['updatedMannerScore'];
             _retransactionRate = responseData['updatedRetransactionRate'];
-            _isPraiseButtonEnabled = false; // 성공 시 버튼 비활성화
           });
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(responseData['message']),
+            content: Text("매너 칭찬이 완료되었습니다. 감사합니다!"),
           ));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -71,19 +87,23 @@ class _MyProfileBodyState extends State<MyProfileBody> {
         );
       }
     } catch (e) {
+      print('네트워크 오류 발생 : $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("네트워크 오류가 발생했습니다.")),
       );
+    } finally {
+      ref
+          .read(praiseButtonStateProvider.notifier)
+          .state = true;
+      print('버튼 상태를 다시 활성화로 변경함');
     }
   }
 
-  // 초기 데이터를 가져오는 함수 (앱 시작 시 호출)
   Future<void> _fetchInitialData() async {
     try {
-      final int memberId = 1; //실제 로그인 사용자의 ID를 넣어줘야함
+      final int memberId = 1;
       final latestProfile = await _apiService.fetchUserProfile(memberId);
 
-      // 상태 업데이트
       setState(() {
         _currentMannerScore = latestProfile.mannerScore;
         _retransactionRate = latestProfile.retransactionRate;
@@ -95,7 +115,6 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     }
   }
 
-  // 새로고침 함수
   Future<void> _onRefresh() async {
     try {
       final int memberId = 1;
@@ -131,6 +150,9 @@ class _MyProfileBodyState extends State<MyProfileBody> {
 
   @override
   Widget build(BuildContext context) {
+    final isPraiseButtonEnabledByProvider =
+    ref.watch(praiseButtonStateProvider);
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -156,33 +178,23 @@ class _MyProfileBodyState extends State<MyProfileBody> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                // 프로필 섹션
-                _buildProfileSection(),
+                _buildProfileSection(isPraiseButtonEnabledByProvider),
                 const SizedBox(height: verticalSpacing),
-
-                // 재거래 및 응답률 섹션
                 _buildRateSection(),
                 const SizedBox(height: verticalSpacing),
-
-                // 판매 물품 섹션
                 _buildListTile(
                   title: "판매 물품",
                   subTitle: "판매 중인 물품이 없습니다",
                   onTap: () {},
                 ),
                 const SizedBox(height: verticalSpacing),
-
-                // 받은 매너 평가 섹션
                 _buildListTile(
                   title: "받은 매너 평가",
                   onTap: () {},
                 ),
                 const SizedBox(height: 10),
-
                 _buildMannerSection(),
                 const SizedBox(height: verticalSpacing),
-
-                // 받은 거래 후기 섹션
                 _buildListTile(
                   title: "받은 거래 후기",
                   subTitle: "32",
@@ -195,8 +207,6 @@ class _MyProfileBodyState extends State<MyProfileBody> {
                   },
                 ),
                 const SizedBox(height: 10),
-
-                // 거래 후기 댓글
                 _buildReviewSection(),
                 const SizedBox(height: verticalSpacing),
               ],
@@ -260,7 +270,10 @@ class _MyProfileBodyState extends State<MyProfileBody> {
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildProfileSection(bool isPraiseButtonEnabledByProvider) {
+    final bool isPraiseButtonEnabled =
+    (widget.userRating >= 1 && isPraiseButtonEnabledByProvider);
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -268,82 +281,69 @@ class _MyProfileBodyState extends State<MyProfileBody> {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundColor: profileAvatarColor,
-                child: Icon(Icons.person, size: 50, color: Colors.white),
-              ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: backgroundColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: secondaryTextColor),
-                ),
-                child:
-                    Icon(Icons.camera_alt, color: secondaryTextColor, size: 16),
-              ),
-            ],
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              alignment: Alignment.bottomRight,
               children: [
-                CustomWidget.buildTitle("바보임당",
-                    size: 20, weight: FontWeight.w700),
-                CustomWidget.buildTitle("#zsswie5",
-                    size: 14, color: secondaryTextColor),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _isPraiseButtonEnabled ? _addPraise : null,
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                              color: _isPraiseButtonEnabled
-                                  ? primaryColor
-                                  : Colors.grey),
-                          backgroundColor: _isPraiseButtonEnabled
-                              ? primaryColor
-                              : Colors.grey,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: CustomWidget.buildTitle("매너 칭찬하기",
-                            size: 12,
-                            color: backgroundColor,
-                            weight: FontWeight.normal),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: primaryColor),
-                          backgroundColor: primaryColor,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: CustomWidget.buildTitle("모아보기",
-                            size: 12,
-                            color: backgroundColor,
-                            weight: FontWeight.normal),
-                      ),
-                    ),
-                  ],
+                const CircleAvatar(
+                  radius: 40,
+                  backgroundColor: profileAvatarColor,
+                  child: Icon(Icons.person, size: 50, color: Colors.white),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: backgroundColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: secondaryTextColor),
+                  ),
+                  child:
+                  Icon(Icons.camera_alt, color: secondaryTextColor, size: 16),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      CustomWidget.buildTitle("바보임당",
+                          size: 20, weight: FontWeight.w700),
+                      const SizedBox(width: 8),
+                      CustomWidget.buildTitle("#zsswie5",
+                          size: 14, color: secondaryTextColor),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton(
+                    onPressed: isPraiseButtonEnabled ? _addPraise : null,
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                          color: isPraiseButtonEnabled
+                              ? primaryColor
+                              : Colors.grey),
+                      backgroundColor:
+                      isPraiseButtonEnabled ? primaryColor : Colors.grey,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 10),
+                      minimumSize: Size.zero,
+                    ),
+                    child: CustomWidget.buildTitle("매너 칭찬하기",
+                        size: 18,
+                        color: backgroundColor,
+                        weight: FontWeight.normal),
+                  ),
+                ],
+              ),
+            )
+          ]
       ),
     );
   }
