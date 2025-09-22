@@ -1,16 +1,16 @@
 import 'dart:convert'; // jsonEncode를 사용하기 위해 추가
 import 'package:flutter/material.dart'; // AlertDialog를 위해 추가
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // SessionService가 관리하므로 제거
+import '../../../_core/sessions/session_provider.dart';
+import '../../../_core/sessions/session_repository.dart';
 import '../../../_core/utils/error_utils.dart';
 import '../../../_core/utils/validator_util.dart';
-import '../models/session_user.dart';
+import '../../../_core/sessions/session_user.dart';
 import '../repositories/member_auth_repository.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'profile_provider.dart';
 import '../../social_login/social_login_provider.dart';
-import '../../../main.dart'; // navigatorKey를 사용하기 위해 추가
-import '../services/session_service.dart'; // SessionService import 추가
+import '../../../main.dart';
 
 // MemberLoginFormModel 클래스 (변경 없음)
 class MemberLoginFormModel {
@@ -95,12 +95,14 @@ class AuthState {
 
 class AuthNotifier extends Notifier<AuthState> {
   late MemberAuthRepository _memberAuthRepository;
-  late SessionService _sessionService;
+  // late SessionService _sessionService; // 변경
+  late SessionRepository _sessionRepository; // 변경
 
   @override
   AuthState build() {
     _memberAuthRepository = ref.watch(memberAuthRepositoryProvider);
-    _sessionService = ref.watch(sessionServiceProvider);
+    // _sessionService = ref.watch(sessionServiceProvider); // 변경
+    _sessionRepository = ref.watch(sessionRepositoryProvider); // 변경
     Future.microtask(() => _tryAutoLogin());
     return AuthState(loginFormModel: const MemberLoginFormModel());
   }
@@ -163,15 +165,7 @@ class AuthNotifier extends Notifier<AuthState> {
     String? errorMessage,
   }) async {
     print("[AuthNotifier updateUserAndAuthStatus] Method called.");
-    print(
-        "[AuthNotifier updateUserAndAuthStatus] Received user: ${user != null ? jsonEncode(user.toJson()) : 'null'}");
-    print("[AuthNotifier updateUserAndAuthStatus] Received status: $status");
-    print(
-        "[AuthNotifier updateUserAndAuthStatus] Received loginType: $loginType");
-    print(
-        "[AuthNotifier updateUserAndAuthStatus] Received newToken: $newToken");
-    print(
-        "[AuthNotifier updateUserAndAuthStatus] Received errorMessage: $errorMessage");
+    // ... (기존 로그 메시지 생략)
 
     if (user == null && status == AuthStatus.authenticated) {
       state = state.copyWith(
@@ -179,7 +173,8 @@ class AuthNotifier extends Notifier<AuthState> {
           loginType: LoginType.none,
           clearUser: true,
           errorMessage: errorMessage ?? "세션 또는 사용자 정보가 유효하지 않습니다.");
-      await _sessionService.clearSession();
+      // await _sessionService.clearSession(); // 변경
+      await _sessionRepository.clearSessionData(); // 변경
       return;
     }
 
@@ -194,27 +189,22 @@ class AuthNotifier extends Notifier<AuthState> {
             ? const MemberLoginFormModel()
             : state.loginFormModel);
 
-    print(
-        "[AuthNotifier updateUserAndAuthStatus] State updated. Current state.user: ${state.user != null ? jsonEncode(state.user!.toJson()) : 'null'}");
+    // ... (기존 로그 메시지 생략)
 
     if (state.status == AuthStatus.authenticated && state.user != null) {
       try {
         String? tokenToStore;
         if (newToken != null && newToken.isNotEmpty) {
           tokenToStore = newToken;
-          print(
-              "[AuthNotifier updateUserAndAuthStatus] Using newToken for storage: $tokenToStore");
         } else {
-          tokenToStore = await _sessionService.getAccessToken();
-          print(
-              "[AuthNotifier updateUserAndAuthStatus] Using existing token from session service for storage: $tokenToStore");
+          // tokenToStore = await _sessionService.getAccessToken(); // 변경
+          tokenToStore = await _sessionRepository.getAccessToken(); // 변경
         }
 
-        print(
-            "[AuthNotifier updateUserAndAuthStatus] Attempting to store session. User to store: ${jsonEncode(state.user!.toJson())}, Token to store: $tokenToStore");
-
         if (tokenToStore != null && tokenToStore.isNotEmpty) {
-          await _sessionService.storeSession(state.user!, tokenToStore);
+          // await _sessionService.storeSession(state.user!, tokenToStore); // 변경
+          await _sessionRepository.storeSessionData(
+              state.user!, tokenToStore); // 변경
           print(
               "[AuthNotifier] Session updated and stored for user ID: ${state.user!.memberId} with ${newToken != null && newToken.isNotEmpty ? "new" : "existing"} token.");
         } else {
@@ -251,17 +241,19 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> _tryAutoLogin() async {
     setLoading();
     print("[AuthNotifier _tryAutoLogin] Attempting auto login...");
-    final String? token = await _sessionService.getAccessToken();
-    print(
-        "[AuthNotifier _tryAutoLogin] Retrieved token from session service: $token");
+    // final String? token = await _sessionService.getAccessToken(); // 변경
+    final String? token = await _sessionRepository.getAccessToken(); // 변경
+    print("[AuthNotifier _tryAutoLogin] Retrieved token: $token");
     if (token != null && token.isNotEmpty) {
-      final SessionUser? storedUser = await _sessionService.getStoredUser();
+      // final SessionUser? storedUser = await _sessionService.getStoredUser(); // 변경
+      final SessionUser? storedUser =
+          await _sessionRepository.getStoredUser(); // 변경
       print(
           "[AuthNotifier _tryAutoLogin] Retrieved storedUser: ${storedUser != null ? jsonEncode(storedUser.toJson()) : 'null'}");
       if (storedUser != null) {
         try {
-          await updateUserAndAuthStatus(storedUser, AuthStatus.authenticated,
-              LoginType.auto); // newToken is not passed here deliberately
+          await updateUserAndAuthStatus(
+              storedUser, AuthStatus.authenticated, LoginType.auto);
           if (state.status == AuthStatus.authenticated) {
             await _profileNotifierReader.fetchMyProfileAndUpdateAuthNotifier(
                 showLoading: false);
@@ -289,8 +281,7 @@ class AuthNotifier extends Notifier<AuthState> {
       return;
     }
     setLoading();
-    print(
-        "[AuthNotifier login] Attempting login with input: ${state.loginFormModel.loginInput}");
+    // ... (기존 로그 메시지 생략)
     try {
       final loginResult = await _memberAuthRepository.login(
           state.loginFormModel.loginInput, state.loginFormModel.password);
@@ -298,13 +289,12 @@ class AuthNotifier extends Notifier<AuthState> {
           loginResult['sessionUser'] as SessionUser?;
       final String? token = loginResult['token'] as String?;
 
-      print(
-          "[AuthNotifier login] Login API result. serverUser: ${serverUser != null ? jsonEncode(serverUser.toJson()) : 'null'}, token: $token");
+      // ... (기존 로그 메시지 생략)
 
       if (serverUser != null && token != null && token.isNotEmpty) {
         await updateUserAndAuthStatus(
             serverUser, AuthStatus.authenticated, LoginType.account,
-            newToken: token); // Pass newToken here
+            newToken: token);
         if (state.status == AuthStatus.authenticated) {
           await _profileNotifierReader.fetchMyProfileAndUpdateAuthNotifier(
               showLoading: false);
@@ -339,9 +329,10 @@ class AuthNotifier extends Notifier<AuthState> {
     print(
         "[AuthNotifier _performFullLogoutTasks] Google SDK sign out attempt via SocialLoginNotifier.");
 
-    await _sessionService.clearSession();
+    // await _sessionService.clearSession(); // 변경
+    await _sessionRepository.clearSessionData(); // 변경
     print(
-        "[AuthNotifier _performFullLogoutTasks] Session cleared from session service.");
+        "[AuthNotifier _performFullLogoutTasks] Session cleared from repository.");
 
     await updateUserAndAuthStatus(
         null, AuthStatus.unauthenticated, LoginType.none);
@@ -356,28 +347,26 @@ class AuthNotifier extends Notifier<AuthState> {
     await _performFullLogoutTasks();
   }
 
-  // Modified handleSessionInvalidation
   Future<void> handleSessionInvalidation(String serverMessage) async {
+    // ... (기존 코드와 동일하게 유지)
+    // 이 메소드 내부에서는 _performFullLogoutTasks를 호출하므로,
+    // _performFullLogoutTasks 내부의 세션 클리어 로직이 SessionRepository를 사용하도록 이미 변경됨.
     print(
         "[AuthNotifier handleSessionInvalidation] Handling session invalidation with message: $serverMessage");
 
-    // 로그인 화면으로 이동하는 공통 로직
     Future<void> navigateToLoginScreen() async {
-      // '/social-login'을 기본 로그인 페이지로 사용
       navigatorKey.currentState
           ?.pushNamedAndRemoveUntil('/social-login', (route) => false);
       print(
           "[AuthNotifier handleSessionInvalidation] Navigated to /social-login screen.");
     }
 
-    // 현재 context를 가져오려고 시도 (AlertDialog 표시에 사용)
     final currentContext = navigatorKey.currentContext;
 
     if (currentContext != null && currentContext.mounted) {
-      // context가 유효하면 AlertDialog를 먼저 보여줌
       await showDialog(
         context: currentContext,
-        barrierDismissible: false, // 사용자가 임의로 닫을 수 없도록 설정
+        barrierDismissible: false,
         builder: (BuildContext dialogContext) {
           return AlertDialog(
             title: Text("알림", style: TextStyle(fontFamily: "CookieRun")),
@@ -387,19 +376,17 @@ class AuthNotifier extends Notifier<AuthState> {
               TextButton(
                 child: Text("확인", style: TextStyle(fontFamily: "CookieRun")),
                 onPressed: () async {
-                  Navigator.of(dialogContext).pop(); // AlertDialog 닫기
+                  Navigator.of(dialogContext).pop();
                 },
               ),
             ],
           );
         },
       ).then((_) async {
-        // AlertDialog가 닫힌 후 (사용자가 "확인"을 누른 후) 로그아웃 및 화면 이동 실행
         await _performFullLogoutTasks();
         await navigateToLoginScreen();
       });
     } else {
-      // context가 유효하지 않으면 (예: 백그라운드 상태 등) AlertDialog 없이 바로 로그아웃 및 화면 이동 실행
       print(
           "[AuthNotifier handleSessionInvalidation] No valid context for dialog, performing direct logout and navigation.");
       await _performFullLogoutTasks();

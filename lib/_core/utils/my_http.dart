@@ -1,9 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-// Import AuthNotifier - setupInterceptors 파라미터 때문에 유지
 import '../../domain/members/providers/member_auth_provider.dart';
-// SessionService에서 tokenKey를 가져오기 위해 import 추가
-import '../../domain/members/services/session_service.dart';
+import '../sessions/session_repository.dart';
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
 /// 기본 서버 주소 - http://125.134.0.135:8080/api
@@ -17,6 +15,8 @@ final dio = Dio(
     baseUrl: baseUrl,
     contentType: "application/json; charset=utf-8",
     validateStatus: (status) => true, // 모든 상태 코드를 성공으로 간주하고 인터셉터에서 처리
+    connectTimeout: const Duration(seconds: 30), // 연결 타임아웃 30초로 설정
+    receiveTimeout: const Duration(seconds: 30), // 응답 수신 타임아웃 30초로 설정
   ),
 );
 
@@ -48,7 +48,7 @@ void setupInterceptors(AuthNotifier authNotifier) {
             publicPaths.any((publicPath) => path.endsWith(publicPath));
 
         if (!isPublicPath) {
-          // AuthNotifier.tokenKey 대신 session_service.dart의 tokenKey 사용
+          // session_repository.dart의 tokenKey 사용
           final accessToken = await secureStorage.read(key: tokenKey);
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers["Authorization"] = "Bearer $accessToken";
@@ -106,6 +106,9 @@ void setupInterceptors(AuthNotifier authNotifier) {
 
           print(
               "AuthInterceptor: Extracted server message for 401: \"$serverMessage\"");
+          // authNotifier.handleSessionInvalidation() 호출 부분은 AuthNotifier가 SessionNotifier로 대체되면서 함께 변경되어야 합니다.
+          // 우선은 기존 AuthNotifier를 그대로 사용한다고 가정합니다.
+          // 만약 SessionNotifier를 사용한다면, 해당 Notifier의 유사한 메소드를 호출해야 합니다.
           await authNotifier.handleSessionInvalidation(serverMessage);
 
           return handler.reject(

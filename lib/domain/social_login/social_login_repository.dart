@@ -8,7 +8,7 @@ import '../../_core/dtos/error_dto.dart';
 import '../../_core/utils/error_utils.dart';
 import '../../_core/utils/my_http.dart';
 import '../members/dtos/login_response.dto.dart';
-import '../members/models/session_user.dart';
+import '../../_core/sessions/session_user.dart';
 import 'social_login_request_dto.dart';
 
 /// 소셜 로그인 관련 API 요청을 처리하는 리포지토리입니다.

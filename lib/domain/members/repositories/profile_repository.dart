@@ -4,7 +4,7 @@ import '../../../_core/dtos/api_response_dto.dart';
 import '../../../_core/dtos/error_dto.dart';
 import '../../../_core/utils/error_utils.dart';
 import '../../../_core/utils/my_http.dart';
-import '../models/session_user.dart';
+import '../../../_core/sessions/session_user.dart';
 import '../dtos/profile_update_request_dto.dart';
 import '../dtos/my_profile_response_data_dto.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart'; // 삭제

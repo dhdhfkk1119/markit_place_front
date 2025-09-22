@@ -4,7 +4,7 @@ import '../../../_core/dtos/api_response_dto.dart';
 import '../../../_core/dtos/error_dto.dart';
 import '../../../_core/utils/error_utils.dart';
 import '../../../_core/utils/my_http.dart';
-import '../models/session_user.dart';
+import '../../../_core/sessions/session_user.dart';
 import '../dtos/login_response.dto.dart';
 // import '../dtos/access_token_response.dto.dart'; // 제거됨
 
