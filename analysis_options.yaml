@@ -1,4 +1,4 @@
-git puanalyzer:
+analyzer:
   # 여기서 특정 linter 규칙을 '경고(warning)'나 '에러(error)'로 강제로 지정
   errors:
     # 특정 규칙을 CI에서 실패를 유발하는 'error' 등급으로 격상
