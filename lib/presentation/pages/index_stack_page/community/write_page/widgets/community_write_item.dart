@@ -1,60 +1,39 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
-import '../../../../../../_core/constants/assets.dart';
+class CommunityWriteItem extends StatelessWidget {
+  final TextEditingController titleController;
+  final TextEditingController descriptionController;
+  final List<String> imageList;
+  final String selectedCategoryName;
+  final ValueChanged<List<String?>> onUpdateImages;
+  final void Function(String, int) onUpdateCategory;
 
-class CommunityWriteItem extends StatefulWidget {
-  const CommunityWriteItem({super.key});
+  const CommunityWriteItem({
+    super.key,
+    required this.titleController,
+    required this.descriptionController,
+    required this.imageList,
+    required this.selectedCategoryName,
+    required this.onUpdateImages,
+    required this.onUpdateCategory,
+  });
 
-  @override
-  State<CommunityWriteItem> createState() => _CommunityWriteItemState();
-}
-
-class _CommunityWriteItemState extends State<CommunityWriteItem> {
-  Color Backcolors = Colors.white;
-  Color Fontcolors = Colors.black;
-
-  String _categoryTitle = "게시글 주제를 선택해주세여";
-  int _imageIndex = 0;
-  int _maxImageUpload = 10;
-  List<String?> imageList = [];
-
-  final Map<String, bool> _placeFilters = {
-    '맛집': false,
-    '생활/편의': false,
-    '병원/약국': false,
-    '미용': false,
-  };
-  final Map<String, bool> _neighborFilters = {
-    '반려동물': false,
-    '운동': false,
-    '동네친구': false,
-    '고민사연': false,
-    '취미': false,
-    '동네풍경': false,
-  };
-  final Map<String, bool> _noticeFilters = {
-    '동네행상': false,
-    '분실/실종': false,
-    '동네사건사고': false,
-  };
+  final int _maxImageUpload = 10;
 
   Future<void> _uploadImage() async {
-    if (_imageIndex >= _maxImageUpload) return; // 최대 이미지 수 초과 시 종료
+    if (imageList.length >= _maxImageUpload) return;
 
     final picker = ImagePicker();
-    final pickedFile =
-        await picker.pickImage(source: ImageSource.gallery); // 갤러리에서 이미지 선택
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      setState(() {
-        imageList.add(pickedFile.path);
-        _imageIndex = imageList.length;
-      });
+      final updatedList = List<String?>.from(imageList)..add(pickedFile.path);
+      onUpdateImages(updatedList);
     }
   }
 
@@ -64,7 +43,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
       children: [
         _buildAiController(),
         _buildImageUpload(),
-        _buildProductInfo(),
+        _buildProductInfo(context),
       ],
     );
   }
@@ -79,42 +58,43 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: SizedBox(
-            width: double.infinity,
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  WidgetSpan(
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 4.0),
-                      child: Icon(
-                        CupertinoIcons.staroflife_fill,
-                        size: 14,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                  ),
-                  TextSpan(
-                    text: "안내 ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: Assets.Fonts.cookieRun,
-                      fontWeight: FontWeight.w700,
+          width: double.infinity,
+          child: RichText(
+            text: TextSpan(
+              children: [
+                WidgetSpan(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 4.0),
+                    child: Icon(
+                      CupertinoIcons.staroflife_fill,
+                      size: 14,
                       color: Colors.redAccent,
                     ),
                   ),
-                  TextSpan(
-                    text:
-                        "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: Assets.Fonts.cookieRun,
-                      fontWeight: FontWeight.w200,
-                      color: Colors.black,
-                    ),
+                ),
+                TextSpan(
+                  text: "안내 ",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: Assets.Fonts.cookieRun,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.redAccent,
                   ),
-                ],
-              ),
-            )),
+                ),
+                TextSpan(
+                  text:
+                      "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: Assets.Fonts.cookieRun,
+                    fontWeight: FontWeight.w200,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -124,8 +104,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          // Add image button (only shown if not at max)
-          if (_imageIndex < _maxImageUpload)
+          if (imageList.length < _maxImageUpload)
             InkWell(
               onTap: _uploadImage,
               child: Container(
@@ -144,7 +123,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "$_imageIndex/$_maxImageUpload",
+                      "${imageList.length}/$_maxImageUpload",
                       style: TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
@@ -167,7 +146,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   image: DecorationImage(
-                    image: FileImage(File(imagePath!)),
+                    image: FileImage(File(imagePath)),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -179,7 +158,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
     );
   }
 
-  Widget _buildProductInfo() {
+  Widget _buildProductInfo(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -188,6 +167,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
           child: CustomWidget.buildTitle("제목", size: 14),
         ),
         TextField(
+          controller: titleController,
           decoration: InputDecoration(
               hintText: '제목',
               border: OutlineInputBorder(
@@ -200,9 +180,9 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
         TextField(
           maxLines: null,
           minLines: 5,
+          controller: descriptionController,
           decoration: InputDecoration(
-              hintText:
-                  '여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다,여기는 게시물에 대한 정보가 담기는 필드입니다',
+              hintText: '여기는 게시물에 대한 정보가 담기는 필드입니다',
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0))),
         ),
@@ -224,7 +204,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
               },
               child: Row(
                 children: [
-                  CustomWidget.buildTitle("$_categoryTitle",
+                  CustomWidget.buildTitle("$selectedCategoryName",
                       size: 16, weight: FontWeight.w500),
                   SizedBox(
                     width: 8,
@@ -243,13 +223,32 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
   }
 
   Widget _buildAppUpdatePop(BuildContext context, String? title) {
+    final Map<String, int> _placeFilters = {
+      '맛집': 1,
+      '생활/편의': 2,
+      '병원/약국': 3,
+      '미용': 4
+    };
+    final Map<String, int> _neighborFilters = {
+      '반려동물': 5,
+      '운동': 6,
+      '동네친구': 7,
+      '고민사연': 8,
+      '취미': 9,
+      '동네풍경': 10
+    };
+    final Map<String, int> _noticeFilters = {
+      '동네행상': 11,
+      '분실/실종': 12,
+      '동네사건사고': 13
+    };
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 카테고리 정보
           Padding(
             padding: const EdgeInsets.only(bottom: 32.0),
             child: Row(
@@ -259,29 +258,26 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
               ],
             ),
           ),
-          // 카테고리를 나타내는 영역 위에서 부터 1, 2, 3
           _buildFilterCategory(
-              CupertinoIcons.house_alt_fill, "동네정보", _placeFilters),
-          _buildFilterCategory(Icons.people, "이웃과 함께", _neighborFilters),
+              context, CupertinoIcons.house_alt_fill, "동네정보", _placeFilters),
           _buildFilterCategory(
-              CupertinoIcons.speaker_zzz_fill, "공지사항", _noticeFilters),
-          // 직접 만든 닫기 버튼
+              context, Icons.people, "이웃과 함께", _neighborFilters),
+          _buildFilterCategory(
+              context, CupertinoIcons.speaker_zzz_fill, "공지사항", _noticeFilters),
           InkWell(
             onTap: () {
-              Navigator.pop(context); // 바텀시트 닫기
+              Navigator.pop(context);
             },
             child: Padding(
-              // 이 부분을 원하는 패딩 값으로 조절하세요.
               padding: EdgeInsets.zero,
               child: Row(
                 children: [
-                  // 아이콘과 텍스트의 간격을 조절
                   Icon(
                     Icons.close,
                     color: Colors.grey,
                     weight: 20,
                   ),
-                  const SizedBox(width: 32), // leading 위젯과의 기본 간격과 유사
+                  const SizedBox(width: 32),
                   CustomWidget.buildTitle("닫기"),
                 ],
               ),
@@ -292,9 +288,8 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
     );
   }
 
-  // 필터 그룹을 재사용할 수 있는 메서드
-  Widget _buildFilterCategory(
-      IconData iconData, String title, Map<String, bool> filters) {
+  Widget _buildFilterCategory(BuildContext context, IconData iconData,
+      String title, Map<String, int> filters) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -305,12 +300,11 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
           ],
         ),
         const SizedBox(height: 8),
-        // Row 대신 Wrap을 사용하여 자동으로 줄바꿈 처리
         Wrap(
-          spacing: 8.0, // 버튼 사이의 가로 간격
-          runSpacing: 8.0, // 줄 사이의 세로 간격
+          spacing: 8.0,
+          runSpacing: 8.0,
           children: filters.entries.map((entry) {
-            return _buildListItem(entry.key);
+            return _buildListItem(context, entry.key, entry.value);
           }).toList(),
         ),
         const SizedBox(height: 16),
@@ -318,16 +312,13 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
     );
   }
 
-  // 각 필터 항목(버튼)
-  Widget _buildListItem(String text) {
-    bool isSelected = _categoryTitle == text;
+  Widget _buildListItem(BuildContext context, String text, int topicId) {
+    bool isSelected = selectedCategoryName == text;
 
     return TextButton(
       onPressed: () {
-        setState(() {
-          _categoryTitle = text;
-          Navigator.pop(context);
-        });
+        onUpdateCategory(text, topicId);
+        Navigator.pop(context);
       },
       child: CustomWidget.buildTitle(text,
           color: isSelected ? Colors.white : Colors.black,
@@ -336,9 +327,7 @@ class _CommunityWriteItemState extends State<CommunityWriteItem> {
       style: TextButton.styleFrom(
         backgroundColor: isSelected ? Colors.black : Colors.white,
         padding: EdgeInsets.only(top: 8, bottom: 8, left: 12, right: 12),
-        // 버튼의 최소 크기를 자식 위젯에 맞게 줄입니다.
         minimumSize: Size.zero,
-        // 터치 영역을 위젯 크기에 맞춰 줄입니다.
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );

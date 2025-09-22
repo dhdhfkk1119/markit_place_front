@@ -356,37 +356,54 @@ class AuthNotifier extends Notifier<AuthState> {
     await _performFullLogoutTasks();
   }
 
+  // Modified handleSessionInvalidation
   Future<void> handleSessionInvalidation(String serverMessage) async {
     print(
         "[AuthNotifier handleSessionInvalidation] Handling session invalidation with message: $serverMessage");
-    final context = navigatorKey.currentContext;
-    if (context != null && context.mounted) {
+
+    // 로그인 화면으로 이동하는 공통 로직
+    Future<void> navigateToLoginScreen() async {
+      // '/social-login'을 기본 로그인 페이지로 사용
+      navigatorKey.currentState
+          ?.pushNamedAndRemoveUntil('/social-login', (route) => false);
+      print(
+          "[AuthNotifier handleSessionInvalidation] Navigated to /social-login screen.");
+    }
+
+    // 현재 context를 가져오려고 시도 (AlertDialog 표시에 사용)
+    final currentContext = navigatorKey.currentContext;
+
+    if (currentContext != null && currentContext.mounted) {
+      // context가 유효하면 AlertDialog를 먼저 보여줌
       await showDialog(
-        context: context,
-        barrierDismissible: false,
+        context: currentContext,
+        barrierDismissible: false, // 사용자가 임의로 닫을 수 없도록 설정
         builder: (BuildContext dialogContext) {
           return AlertDialog(
-            title: Text("세션 만료 알림", style: TextStyle(fontFamily: "CookieRun")),
+            title: Text("알림", style: TextStyle(fontFamily: "CookieRun")),
             content:
                 Text(serverMessage, style: TextStyle(fontFamily: "CookieRun")),
             actions: <Widget>[
               TextButton(
                 child: Text("확인", style: TextStyle(fontFamily: "CookieRun")),
                 onPressed: () async {
-                  Navigator.of(dialogContext).pop();
-                  setLoading();
-                  await _performFullLogoutTasks();
+                  Navigator.of(dialogContext).pop(); // AlertDialog 닫기
                 },
               ),
             ],
           );
         },
-      );
+      ).then((_) async {
+        // AlertDialog가 닫힌 후 (사용자가 "확인"을 누른 후) 로그아웃 및 화면 이동 실행
+        await _performFullLogoutTasks();
+        await navigateToLoginScreen();
+      });
     } else {
+      // context가 유효하지 않으면 (예: 백그라운드 상태 등) AlertDialog 없이 바로 로그아웃 및 화면 이동 실행
       print(
-          "[AuthNotifier handleSessionInvalidation] No valid context for dialog, performing direct logout.");
-      setLoading();
+          "[AuthNotifier handleSessionInvalidation] No valid context for dialog, performing direct logout and navigation.");
       await _performFullLogoutTasks();
+      await navigateToLoginScreen();
     }
   }
 }

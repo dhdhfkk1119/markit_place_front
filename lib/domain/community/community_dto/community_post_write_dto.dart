@@ -13,6 +13,16 @@ class CommunityPostWriteDTO {
     required this.images,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'title' : title,
+      'content' : content,
+      'location' : location,
+      'topicId' : topicId,
+      'images' : images,
+    };
+  }
+
   Map<String, dynamic> fromJson() {
     return {
       'title': title,
