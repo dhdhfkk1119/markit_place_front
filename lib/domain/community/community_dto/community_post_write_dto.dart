@@ -13,6 +13,24 @@ class CommunityPostWriteDTO {
     required this.images,
   });
 
+
+  CommunityPostWriteDTO copyWith({
+    String? title,
+    String? content,
+    String? location,
+    int? topicId,
+    List<String>? images,
+  }) {
+    return CommunityPostWriteDTO(
+      title: title ?? this.title,
+      content: content ?? this.content,
+      location: location ?? this.location,
+      topicId: topicId ?? this.topicId,
+      images: images ?? this.images,
+    );
+  }
+
+
   Map<String, dynamic> toJson() {
     return {
       'title' : title,

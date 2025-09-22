@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-// Import AuthNotifier - setupInterceptors 파라미터 때문에 유지
 import '../../domain/members/providers/member_auth_provider.dart';
-// SessionService에서 tokenKey를 가져오기 위해 import 추가
-import '../../domain/members/services/session_service.dart';
+// import '../sessions/session_repository.dart'; // 삭제
+import '../../domain/members/repositories/member_auth_repository.dart'; // tokenKey를 사용하기 위해 추가
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
 /// 기본 서버 주소 - http://125.134.0.135:8080/api
@@ -17,10 +17,13 @@ final dio = Dio(
     baseUrl: baseUrl,
     contentType: "application/json; charset=utf-8",
     validateStatus: (status) => true, // 모든 상태 코드를 성공으로 간주하고 인터셉터에서 처리
+    connectTimeout: const Duration(seconds: 30), // 연결 타임아웃 30초로 설정
+    receiveTimeout: const Duration(seconds: 30), // 응답 수신 타임아웃 30초로 설정
   ),
 );
 
-const secureStorage = FlutterSecureStorage();
+const secureStorage =
+    FlutterSecureStorage(); // 이 파일에서 직접 사용되는 secureStorage 인스턴스 유지
 
 // setupInterceptors는 AuthNotifier 인스턴스를 받아 인터셉터를 설정합니다.
 void setupInterceptors(AuthNotifier authNotifier) {
@@ -48,7 +51,7 @@ void setupInterceptors(AuthNotifier authNotifier) {
             publicPaths.any((publicPath) => path.endsWith(publicPath));
 
         if (!isPublicPath) {
-          // AuthNotifier.tokenKey 대신 session_service.dart의 tokenKey 사용
+          // MemberAuthRepository에 정의된 tokenKey를 사용 (임포트 추가됨)
           final accessToken = await secureStorage.read(key: tokenKey);
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers["Authorization"] = "Bearer $accessToken";
@@ -106,6 +109,7 @@ void setupInterceptors(AuthNotifier authNotifier) {
 
           print(
               "AuthInterceptor: Extracted server message for 401: \"$serverMessage\"");
+
           await authNotifier.handleSessionInvalidation(serverMessage);
 
           return handler.reject(
@@ -121,3 +125,9 @@ void setupInterceptors(AuthNotifier authNotifier) {
     ),
   );
 }
+
+final dioProvider = Provider<Dio>((ref) {
+  final authNotifier = ref.watch(authNotifierProvider.notifier);
+  setupInterceptors(authNotifier);
+  return dio;
+});

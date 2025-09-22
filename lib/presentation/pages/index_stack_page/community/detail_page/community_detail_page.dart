@@ -1,22 +1,37 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../_core/constants/assets.dart';
 import '../../../../../_core/constants/custom_popup.dart';
+import '../../../../../domain/community/community_dto/community_detail_dto.dart';
+import '../../../../../domain/community/community_provider/community_detail_notifier.dart';
 import 'widgets/community_detail_body.dart';
 
-class CommunityDetailPageDetailPage extends StatelessWidget {
+class CommunityDetailPageDetailPage extends ConsumerWidget {
   final int postId;
   const CommunityDetailPageDetailPage({required this.postId, super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,WidgetRef ref) {
+    final notifier = ref.read(communityDetailProvider(postId).notifier);
+    final dto = notifier.communityDetail;
+
+
+    if(dto == null || notifier.isLoading){
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         actions: [
           _buildLeftAppBarIcon(context),
           const Spacer(),
-          _buildRightAppBarIcon(context),
+          _buildRightAppBarIcon(context,ref,dto),
         ],
       ),
       body: CommunityDetailBody(postId: postId),
@@ -81,7 +96,7 @@ class CommunityDetailPageDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRightAppBarIcon(BuildContext context) {
+  Widget _buildRightAppBarIcon(BuildContext context, WidgetRef ref, CommunityDetailDto dto) {
     return SafeArea(
       child: Row(
         children: [
@@ -94,8 +109,10 @@ class CommunityDetailPageDetailPage extends StatelessWidget {
               shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
               ),
-              builder: (context) =>
-                  CustomPopUp.buildAppBarPopUp(context, "조정우", "상품 이름적기", 1),
+              builder: (context) {
+                // 커뮤니티 게시글용 팝업을 별도로 만들어 사용
+                return CustomPopUp.buildCommunityAppBarPopUp(context, dto, ref);
+              },
             );
           }),
         ],

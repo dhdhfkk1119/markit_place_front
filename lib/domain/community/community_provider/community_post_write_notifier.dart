@@ -41,13 +41,8 @@ class CommunityPostWriteNotifier
   Future<void> createPost(CommunityPostWriteDTO postData) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
     try {
-      List<String> base64Images = [];
-      for (String imagePath in postData.images) {
-        final File imageFile = File(imagePath);
-        final bytes = imageFile.readAsBytes();
-        String base64String = base64Encode(bytes as List<int>);
-        base64Images.add(base64String);
-      }
+      List<String> base64Images = await _convertImageToBase64(postData.images);
+
 
       final newPostData = CommunityPostWriteDTO(
         title: postData.title,
@@ -65,6 +60,48 @@ class CommunityPostWriteNotifier
       state = state.copyWith(isSuccess: false, errorMessage: e.toString());
       CustomWidget.showToast("게시글 작성 실패 : $e");
     }
+  }
+
+  Future<void> updatePost(int postId, CommunityPostWriteDTO postData) async {
+    state = state.copyWith(isLoading: true, errorMessage: null, isSuccess: false);
+    try {
+      List<String> base64Images = await _convertImageToBase64(postData.images);
+      final updatedPostData = postData.copyWith(images: base64Images);
+
+      await _repository.updatePost(postId, updatedPostData);
+      state = state.copyWith(isLoading: false, isSuccess: true);
+      CustomWidget.showToast("게시글이 성공적으로 수정되었습니다");
+    } catch (e) {
+      state = state.copyWith(isSuccess: false, errorMessage: e.toString());
+      CustomWidget.showToast("게시글 수정 실패 : $e");
+    }
+  }
+
+  Future<void> deletePost(int postId) async {
+    state = state.copyWith(isLoading: true, errorMessage: null, isSuccess: false);
+    try {
+      await _repository.deletePost(postId);
+
+      state = state.copyWith(isLoading: false, isSuccess: true);
+      CustomWidget.showToast("게시글이 성공적으로 삭제되었습니다.");
+    } catch (e) {
+      state = state.copyWith(isSuccess: false, errorMessage: e.toString());
+      CustomWidget.showToast("게시글 삭제 실패 : $e");
+    }
+  }
+
+
+
+
+  Future<List<String>> _convertImageToBase64(List<String> imagePaths) async {
+    List<String> base64Images = [];
+    for (String imagePath in imagePaths) {
+      final File imageFile = File(imagePath);
+      final bytes = await imageFile.readAsBytes();
+      String base64String = base64Encode(bytes);
+      base64Images.add(base64String);
+    }
+    return base64Images;
   }
 }
 

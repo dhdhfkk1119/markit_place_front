@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
-// import '../../../../../../domain/providers/SessionNotifier.dart'; // 수정: SessionNotifier import 제거
 import '../../../../auth/social_login_page/social_login_page.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
 import '../qna_screen.dart';
@@ -28,19 +27,14 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
     final user = authUser.user;
     if (user == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // 현재 빌드 사이클 이후에 네비게이션을 수행하도록 예약
         if (mounted) {
-          // 위젯이 여전히 트리에 있는지 확인
           Navigator.pushAndRemoveUntil(
-            // 수정: pushReplacement에서 변경하여 모든 이전 라우트 제거
             context,
             MaterialPageRoute(builder: (context) => const SocialLoginPage()),
-            (Route<dynamic> route) => false, // 모든 이전 라우트를 제거
+                (Route<dynamic> route) => false,
           );
         }
       });
-
-      // push 직전에는 빈 위젯을 리턴
       return const SizedBox.shrink();
     }
 
@@ -108,13 +102,13 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                       ),
                       const SizedBox(height: 20),
                       CustomWidget.buildTitle(
-                        user.name ?? "사용자 이름", // 수정: user.name이 null일 경우 대비
+                        user.name ?? "사용자 이름",
                         size: 18,
                         weight: FontWeight.w200,
                       ),
                       const SizedBox(height: 5),
                       CustomWidget.buildTitle(
-                        "전포동 #22", // TODO: 실제 사용자 동네 정보로 변경 필요
+                        "전포동 #22",
                         size: 14,
                         color: secondaryTextColor,
                         weight: FontWeight.w200,
@@ -122,11 +116,13 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                       const SizedBox(height: 16),
                       InkWell(
                         onTap: () {
+                          int tempUserRating = 3;
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => MyProfileBody(
                                 user: user,
+                                userRating: tempUserRating,
                               ),
                             ),
                           );
@@ -202,7 +198,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
               const Divider(height: 30),
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -264,7 +260,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
               ),
               _buildMenuTile(
                 icon: Icons.check_circle_outline,
-                text: "동네 인증",
+                text: "신고 내역",
               ),
               _buildMenuTile(
                 icon: Icons.search_outlined,
@@ -303,15 +299,13 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
               ),
               InkWell(
                 onTap: () async {
-                  // 수정: AuthNotifier의 logout 메소드 호출
                   await ref.read(authNotifierProvider.notifier).logout();
                   if (mounted) {
-                    // 수정: pushAndRemoveUntil 사용하여 모든 이전 라우트 제거
                     Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
                           builder: (context) => const SocialLoginPage()),
-                      (Route<dynamic> route) => false,
+                          (Route<dynamic> route) => false,
                     );
                   }
                 },
