@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/community/community_dto/community_detail_dto.dart';
+import '../../domain/community/community_provider/community_post_write_notifier.dart';
 import '../../domain/members/providers/member_auth_provider.dart';
 import '../../domain/product/providers/product_detail_notifier.dart';
 import '../../domain/product/providers/product_list_notifier.dart';
@@ -42,8 +44,6 @@ class CustomPopUp {
     if (ref == null) return const SizedBox.shrink();
 
     final notifier = ref.read(productListProvider.notifier);
-
-    // AsyncNotifier로 바뀐 경우
     final productAsyncValue = ref.watch(productDetailProvider(productId));
 
     return productAsyncValue.when(
@@ -209,6 +209,83 @@ class CustomPopUp {
           ],
         );
       },
+    );
+  }
+
+  static Widget buildCommunityAppBarPopUp(
+      BuildContext context,
+      CommunityDetailDto dto,
+      WidgetRef ref,
+      ) {
+    // 현재 로그인된 유저 ID 가져오기 (예시)
+    final authState = ref.watch(authNotifierProvider);
+    final currentUserId = authState.user?.loginId;
+
+    // 게시글 작성자 ID와 현재 유저 ID가 같은지 확인
+    final isOwner = currentUserId != null && currentUserId == dto.writerName;
+
+    // 게시글 삭제 Notifier
+    final communityNotifier = ref.read(communityPostWriteProvider.notifier);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isOwner) ...[
+          ListTile(
+            leading: const Icon(Icons.edit, color: Colors.deepPurpleAccent),
+            title: CustomWidget.buildTitle("수정하기", weight: FontWeight.w200),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: 수정 페이지로 이동하는 로직 추가
+              // Navigator.push(context, MaterialPageRoute(builder: (context) => CommunityEditPage(dto: dto)));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete, color: Colors.red),
+            title: CustomWidget.buildTitle("삭제하기", weight: FontWeight.w200),
+            onTap: () async {
+              Navigator.pop(context);
+              await showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("삭제 확인"),
+                  content: const Text("정말로 이 게시물을 삭제하시겠습니까?"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text("취소"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await communityNotifier.deletePost(dto.id);
+                        Navigator.of(context, rootNavigator: true).pop(); // 다이얼로그 닫기
+                        Navigator.pop(context); // 상세 페이지 닫고 목록으로 돌아가기
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text("삭제"),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+        ListTile(
+          leading: const Icon(Icons.report, color: Colors.red),
+          title: CustomWidget.buildTitle("신고하기", weight: FontWeight.w200),
+          onTap: () {
+            Navigator.pop(context);
+            // TODO: 신고 팝업 띄우는 로직 추가
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.close, color: Colors.grey),
+          title: const Text("닫기"),
+          onTap: () => Navigator.pop(context),
+        ),
+      ],
     );
   }
 }
