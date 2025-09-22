@@ -144,7 +144,8 @@ class DetailItem extends ConsumerWidget {
               child: CustomWidget.buildTitle(
                   "당신이 사용자로부터 상품을 판매하고 받은 리뷰 점수를 바탕으로 통계를 내린 매너 지표입니다",
                   weight: FontWeight.w100,
-                  color: Colors.black54),
+                  color: Colors.black54,
+                  overflow: TextOverflow.clip),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 16.0, bottom: 16.0),

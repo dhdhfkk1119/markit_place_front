@@ -57,13 +57,8 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
     required int itemId,
   }) async {
     if (myId == 0) {
-      // 혹은 다른 유효하지 않은 ID 값으로 체크
       print(
           "[ChatNotifier] sendMessage skipped: Invalid user ID (myId is $myId).");
-      // 적절한 에러를 반환하거나 예외를 발생시킬 수 있습니다.
-      // 예를 들어, return -1; 또는 throw Exception("Cannot send message: User not properly authenticated.");
-      // 현재는 기존처럼 roomId를 반환해야 하므로, 이 부분을 어떻게 처리할지 결정 필요.
-      // 임시로, roomId가 null일 경우 문제가 될 수 있으므로, -1을 반환하도록 처리 (API 계약에 따라 변경 필요)
       if (_roomId == null) return -1; // 임시 처리
       return _roomId!; // 혹은 현재 roomId 반환
     }

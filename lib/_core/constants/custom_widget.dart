@@ -22,7 +22,8 @@ class CustomWidget {
       {double? size,
       Color? color,
       FontWeight? weight,
-      TextDecoration? decoration}) {
+      TextDecoration? decoration,
+      TextOverflow? overflow}) {
     return Text(
       title,
       style: TextStyle(
@@ -31,6 +32,7 @@ class CustomWidget {
         fontWeight: weight ?? FontWeight.w700,
         color: color ?? Colors.black,
         decoration: decoration ?? TextDecoration.none,
+        overflow: overflow ?? TextOverflow.ellipsis,
       ),
     );
   }

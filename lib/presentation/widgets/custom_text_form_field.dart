@@ -10,6 +10,7 @@ class CustomTextFormField extends StatelessWidget {
   final String? Function(String?)? validator; // 유효성 검사
   final InputDecoration? decoration;
   final ValueChanged<String>? onChanged; // <<<--- 이 줄 추가
+  final bool enabled;
 
   const CustomTextFormField({
     Key? key,
@@ -20,6 +21,7 @@ class CustomTextFormField extends StatelessWidget {
     this.validator, // 선택적 매개 변수 (옵션값) - 유효성 검사
     this.decoration,
     this.onChanged, // <<<--- 이 줄 추가
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -60,6 +62,7 @@ class CustomTextFormField extends StatelessWidget {
       obscureText: obscureText,
       decoration: mergedDecoration,
       onChanged: onChanged, // <<<--- 이 줄 추가 (TextFormField의 onChanged에 연결)
+      enabled: enabled,
     );
   }
 }

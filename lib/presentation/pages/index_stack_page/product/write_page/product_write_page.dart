@@ -56,7 +56,9 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
         ? widget.model?.productList.content ?? ""
         : productItem.description;
 
-    final price = productItem.price ?? widget.model?.productList.price;
+    final price = (productItem.price == 0)
+        ? widget.model?.productList.price ?? 0
+        : productItem.price;
 
     // 신규 작성일 때만 "빈값 검사" 강제
     if (widget.model == null &&
@@ -74,7 +76,7 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
               selectedCategoryId: selectedCategoryId!,
               title: title,
               content: description,
-              price: price!,
+              price: price,
               images: productItem.images,
               memberAddressId: authState.user!.memberId,
               tradeLocation: authState.user!.name,
@@ -87,7 +89,7 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
                   selectedCategoryId ?? widget.model!.itemCategoryId,
               title: title,
               content: description,
-              price: price!,
+              price: price,
               images: productItem.images,
               memberAddressId: authState.user!.memberId,
               tradeLocation: authState.user!.name,
