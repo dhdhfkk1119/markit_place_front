@@ -12,16 +12,32 @@ class CommunityDetailPageDetailPage extends ConsumerWidget {
   const CommunityDetailPageDetailPage({required this.postId, super.key});
 
   @override
-  Widget build(BuildContext context,WidgetRef ref) {
-    final notifier = ref.read(communityDetailProvider(postId).notifier);
-    final dto = notifier.communityDetail;
+  Widget build(BuildContext context, WidgetRef ref) {
 
+    final notifier = ref.watch(communityDetailProvider(postId));
 
-    if(dto == null || notifier.isLoading){
+    if (notifier.isLoading) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
+      );
+    }
+
+
+    if (notifier.errorMessage != null) {
+      return Scaffold(
+        body: Center(
+          child: Text("오류가 발생했습니다: ${notifier.errorMessage}"),
+        ),
+      );
+    }
+
+
+    final dto = notifier.communityDetail;
+    if (dto == null) {
+      return const Scaffold(
+        body: Center(child: Text("게시물을 찾을 수 없습니다.")),
       );
     }
 
@@ -31,7 +47,7 @@ class CommunityDetailPageDetailPage extends ConsumerWidget {
         actions: [
           _buildLeftAppBarIcon(context),
           const Spacer(),
-          _buildRightAppBarIcon(context,ref,dto),
+          _buildRightAppBarIcon(context, ref, dto),
         ],
       ),
       body: CommunityDetailBody(postId: postId),
