@@ -27,6 +27,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   @override
   void initState() {
     super.initState();
+    _fetchInitialData();
   }
 
   Future<void> _addPraise() async {
@@ -96,7 +97,43 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
     }
   }
 
+  Future<void> _fetchInitialData() async {
+    try {
+      final int memberId = 1;
+      final latestProfile = await _apiService.fetchUserProfile(memberId);
 
+      setState(() {
+        _currentMannerScore = latestProfile.mannerScore;
+        _retransactionRate = latestProfile.retransactionRate;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("초기 프로필 데이터를 불러오는데 실패했습니다")),
+      );
+    }
+  }
+
+  // Future<void> _onRefresh() async {
+  //   try {
+  //     final int memberId = 1;
+  //     final latestProfile = await _apiService.fetchUserProfile(memberId);
+  //
+  //     setState(() {
+  //       _currentMannerScore = latestProfile.mannerScore;
+  //       _retransactionRate = latestProfile.retransactionRate;
+  //     });
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("프로필이 새로고침 되었습니다")),
+  //     );
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("프로필 새로고침에 실패했습니다: $e")),
+  //     );
+  //   }
+  //
+  //   await Future.delayed(const Duration(seconds: 1));
+  // }
 
   static const Color primaryColor = Color(0xFFF96666);
   static const Color backgroundColor = Color(0xFFFFFFFF);
@@ -130,6 +167,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         actions: [],
       ),
       body: RefreshIndicator(
+        onRefresh: _onRefresh,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(

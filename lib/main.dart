@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '_core/utils/my_http.dart';
+import 'domain/repositories/naver_map_repository.dart';
 import 'presentation/pages/auth/find_account_page/find_account_page.dart';
 import 'presentation/pages/auth/register_page/register_page.dart';
 import 'presentation/pages/auth/social_login_page/social_login_page.dart';
@@ -19,7 +19,6 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
   _init();
   setupInterceptors(AuthNotifier());
   runApp(const ProviderScope(child: MyApp()));
@@ -27,7 +26,7 @@ void main() async {
 
 void _init() async {
   await FlutterNaverMap().init(
-      clientId: dotenv.env['NAVER_CLIENT_ID']!,
+      clientId: await NaverMapRepository().fetchClientId(),
       onAuthFailed: (ex) {
         print("인증 실패: $ex");
       });

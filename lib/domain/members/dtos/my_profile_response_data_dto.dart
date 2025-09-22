@@ -6,10 +6,16 @@ class MyProfileResponseDataDto {
   final int id;
   final String? loginId;
   final String? email;
-  final String? name;
+  final String?
+      name; // 서버에서 'nickname'으로 올 경우, 이 필드에 매핑하거나 SessionUser에 nickname 필드 추가 고려
   final String role;
   final String? status;
-  final String? profileImageBase64; // 프로필 사진의 Base64 인코딩된 문자열
+  final String? profileImageBase64;
+
+  // 추가된 필드 (백엔드 /api/members/me 응답에 이 필드들이 포함되어야 함)
+  final int? mannerScore;
+  final int? retransactionRate; // API 응답 필드명 확인 필요 (예: reTransactionRate)
+  final String? userCode;
 
   MyProfileResponseDataDto({
     required this.id,
@@ -19,6 +25,9 @@ class MyProfileResponseDataDto {
     required this.role,
     this.status,
     this.profileImageBase64,
+    this.mannerScore,
+    this.retransactionRate,
+    this.userCode,
   });
 
   factory MyProfileResponseDataDto.fromJson(Map<String, dynamic> json) {
@@ -26,10 +35,16 @@ class MyProfileResponseDataDto {
       id: json['id'] as int,
       loginId: json['loginId'] as String?,
       email: json['email'] as String?,
-      name: json['name'] as String?,
+      name: json['name'] as String? ??
+          json['nickname'] as String?, // 'nickname'도 고려
       role: json['role'] as String,
       status: json['status'] as String?,
       profileImageBase64: json['profileImageBase64'] as String?,
+      // 추가된 필드 파싱 (백엔드 응답 키와 일치해야 함)
+      mannerScore: json['mannerScore'] as int?,
+      retransactionRate: json['retransactionRate'] as int? ??
+          json['reTransactionRate'] as int?, // 실제 API 응답 키 확인
+      userCode: json['userCode'] as String?,
     );
   }
 
@@ -37,10 +52,6 @@ class MyProfileResponseDataDto {
   SessionUser toSessionUser() {
     String? finalProfileImageUrl;
     if (profileImageBase64 != null && profileImageBase64!.isNotEmpty) {
-      // Base64 문자열로 데이터 URI 생성 (이미지 타입은 PNG로 가정, 필요시 수정)
-      // 실제 이미지 타입에 따라 'image/jpeg', 'image/gif' 등으로 변경 가능
-      // 서버에서 이미지 타입을 명시적으로 알려주지 않으면, 일반적인 타입을 사용하거나,
-      // Base64 문자열 자체에서 타입을 추론하는 로직이 필요할 수 있음 (더 복잡)
       finalProfileImageUrl = 'data:image/png;base64,$profileImageBase64';
     }
 
@@ -50,7 +61,11 @@ class MyProfileResponseDataDto {
       email: email,
       name: name,
       role: role,
-      profileImageUrl: finalProfileImageUrl, // 변환된 데이터 URI 또는 null
+      profileImageUrl: finalProfileImageUrl,
+      // 추가된 필드 매핑
+      mannerScore: mannerScore,
+      retransactionRate: retransactionRate,
+      userCode: userCode,
     );
   }
 }
