@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../_core/utils/error_utils.dart';
-import '../../_core/sessions/session_user.dart';
+import '../members/models/session_user.dart';
 import '../members/providers/member_auth_provider.dart';
 import '../members/providers/profile_provider.dart';
 import './social_login_repository.dart'; // Repository import
