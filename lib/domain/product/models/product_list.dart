@@ -38,6 +38,7 @@ class ProductList {
       title: json['title'] ?? '제목 없음',
       content: json['content'] ?? '내용 없음',
       price: json['price'] ?? 0,
+      thumbnail: json["thumbnail"],
       itemCategoryName: category,
       tradeLocation: "locationString",
       favoriteCount: json['favoriteCount'] ?? 0,
