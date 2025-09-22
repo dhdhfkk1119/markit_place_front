@@ -1,5 +1,5 @@
 // lib/domain/members/dtos/my_profile_response_data_dto.dart
-import '../../../_core/sessions/session_user.dart';
+import '../models/session_user.dart';
 
 // GET /api/members/me API의 'response' 필드 내부 상세 데이터를 위한 DTO
 class MyProfileResponseDataDto {

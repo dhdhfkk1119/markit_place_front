@@ -1,4 +1,4 @@
-import '../../../_core/sessions/session_user.dart';
+import '../models/session_user.dart';
 
 // 로그인 API 성공 시 'response' 필드 내부의 실제 상세 데이터를 위한 DTO
 // 이 클래스는 ApiResponseDto<T>의 T로 사용됩니다.

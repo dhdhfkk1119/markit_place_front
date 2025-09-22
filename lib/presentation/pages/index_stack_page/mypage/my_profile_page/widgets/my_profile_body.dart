@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Added for ConsumerSt
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../../../domain/members/providers/profile_provider.dart'; // For ProfileNotifier
-import '../../../../../../_core/sessions/session_user.dart'; // For SessionUser type
+import '../../../../../../domain/members/models/session_user.dart'; // For SessionUser type
 import '../review_list_screen.dart';
 // import 'package:dio/dio.dart'; // Removed local Dio
 
