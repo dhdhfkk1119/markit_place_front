@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../domain/community/community_dto/community_list_dto.dart';
 import '../../../../../../domain/community/community_model/community_list.dart';
 
+import '../../../../../../domain/product/dtos/product_list_dtos.dart';
 import '../../detail_page/community_detail_page.dart';
 
 class CommunityListItem extends StatefulWidget {
@@ -43,7 +45,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
               children: [
                 Column(
                   children: [
-                    _buildCommunityImage(),
+                    _buildCommunityImage(widget.list),
                   ],
                 ),
                 Column(
@@ -60,11 +62,25 @@ class _CommunityListItemState extends State<CommunityListItem> {
   }
 
   // 게시글에 대한 대표 이미지를 만드는 함수
-  Widget _buildCommunityImage() {
+  Widget _buildCommunityImage(CommunityListDTO list) {
+    final imageBytes = base64ToBytes(list.thumbnail);
+
+    if (imageBytes == null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.asset(
+          Assets.Images.community2,
+          width: 75,
+          height: 75,
+          scale: 1,
+        ),
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: Image.asset(
-        Assets.Images.lun,
+      child: Image.memory(
+        imageBytes,
         width: 75,
         height: 75,
         scale: 1,

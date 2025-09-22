@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 
 import 'community_fullscreen_gallery.dart';
 
 class CommunityDetailItemImage extends StatefulWidget {
   final List<String> imagePaths;
-
   const CommunityDetailItemImage({
     super.key,
     required this.imagePaths,
@@ -22,12 +22,15 @@ class _CommunityDetailItemImageState extends State<CommunityDetailItemImage> {
 
   @override
   Widget build(BuildContext context) {
+    print("게시물 이미지 리스트 : ${widget.imagePaths}");
+    if (widget.imagePaths.isEmpty) {
+      return _buildDefaultImage();
+    }
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.5,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          // 화면 내 썸네일 슬라이드
           PageView.builder(
             controller: _pageController,
             itemCount: widget.imagePaths.length,
@@ -37,9 +40,9 @@ class _CommunityDetailItemImageState extends State<CommunityDetailItemImage> {
               });
             },
             itemBuilder: (context, index) {
+              final imageUrl = widget.imagePaths[index];
               return InkWell(
                 onTap: () {
-                  // 클릭 시 전체 화면 확대+슬라이드
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -50,12 +53,7 @@ class _CommunityDetailItemImageState extends State<CommunityDetailItemImage> {
                     ),
                   );
                 },
-                // 경로에 있는 이미지 보여주기(index 리스트 형식으로)
-                child: Image.asset(
-                  widget.imagePaths[index],
-                  // 이 부분을 BoxFit.cover에서 BoxFit.contain으로 변경했습니다.
-                  fit: BoxFit.contain,
-                ),
+                child: _buildImage(imageUrl),
               );
             },
           ),
@@ -78,5 +76,30 @@ class _CommunityDetailItemImageState extends State<CommunityDetailItemImage> {
         ],
       ),
     );
+  }
+
+  // Base64 또는 네트워크 이미지를 처리하는 함수
+  Widget _buildImage(String imageUrl) {
+    final imageBytes = base64ToBytes(imageUrl);
+
+    if (imageBytes == null) {
+      return _buildDefaultImage();
+    }
+
+    try {
+      return Image.memory(
+        imageBytes,
+        fit: BoxFit.cover,
+        width: double.infinity,
+      );
+    } catch (e) {
+      print('Base64 이미지 디코딩 실패: $e');
+      return _buildDefaultImage();
+    }
+  }
+
+  // 기본 이미지를 만드는 헬퍼 함수
+  Widget _buildDefaultImage() {
+    return const Center(child: CircularProgressIndicator());
   }
 }

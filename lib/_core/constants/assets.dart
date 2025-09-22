@@ -23,6 +23,8 @@ class _Images {
   final String menu = "$_baseImagePath/menu.png";
   final String product = "$_baseImagePath/product.jpg";
   final String product2 = "$_baseImagePath/product2.png";
+  final String community = "$_baseImagePath/community1.png";
+  final String community2 = "$_baseImagePath/community2.jpg";
 }
 
 class _Svgs {
