@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
-import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../review_list_screen.dart';
 import '../../../../../../_core/utils/my_http.dart';
 import 'package:dio/dio.dart';
@@ -23,10 +22,29 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   int _currentMannerScore = 50;
   int _retransactionRate = 0;
 
-
   @override
   void initState() {
     super.initState();
+    _fetchProfileData();
+  }
+
+  Future<void> _fetchProfileData() async {
+    final dio = ref.read(dioProvider);
+    try {
+      final response = await dio.get('/members/1/profile');
+      if (response.statusCode == 200 && response.data['isSuccess']) {
+        setState(() {
+          _currentMannerScore = response.data['result']['mannerScore'];
+          _retransactionRate = response.data['result']['retransactionRate'];
+        });
+      }
+    } catch (e) {
+      print("프로필 데이터 로딩 실패 : $e");
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    await _fetchProfileData();
   }
 
   Future<void> _addPraise() async {
@@ -38,9 +56,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
       return;
     }
 
-    ref
-        .read(praiseButtonStateProvider.notifier)
-        .state = false;
+    ref.read(praiseButtonStateProvider.notifier).state = false;
     print('버튼 상태를 비활성화로 변경함');
 
     final dio = ref.read(dioProvider);
@@ -56,6 +72,8 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
       "customContent": "정말 좋은 거래였습니다!"
     };
 
+    bool shouldReactivateButton = true;
+
     try {
       final response = await dio.post(
         url,
@@ -63,20 +81,27 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
 
+      print("서버 응답 상태 코드 : ${response.statusCode}");
+      print("서버 응답 본문 : ${response.data}");
+
       if (response.statusCode == 200) {
         final responseData = response.data;
-        if (responseData['isSuccess']) {
+        if (responseData['success']) {
           setState(() {
             _currentMannerScore = responseData['updatedMannerScore'];
             _retransactionRate = responseData['updatedRetransactionRate'];
           });
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("매너 칭찬이 완료되었습니다. 감사합니다!"),
-          ));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("매너 칭찬이 완료되었습니다. 감사합니다!")),
+          );
+          shouldReactivateButton = false;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(responseData['message'])),
           );
+          if (responseData['message'] == "이미 해당 거래를 칭찬하셨습니다.") {
+            shouldReactivateButton = false;
+          }
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -89,14 +114,14 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         const SnackBar(content: Text("네트워크 오류가 발생했습니다.")),
       );
     } finally {
-      ref
-          .read(praiseButtonStateProvider.notifier)
-          .state = true;
-      print('버튼 상태를 다시 활성화로 변경함');
+      if (shouldReactivateButton) {
+        ref.read(praiseButtonStateProvider.notifier).state = true;
+        print('버튼 상태를 다시 활성화로 변경함');
+      } else {
+        print('버튼 상태를 비활성화로 유지');
+      }
     }
   }
-
-
 
   static const Color primaryColor = Color(0xFFF96666);
   static const Color backgroundColor = Color(0xFFFFFFFF);
@@ -129,7 +154,9 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         centerTitle: true,
         actions: [],
       ),
-      body: SingleChildScrollView(
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -172,8 +199,8 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
             ),
           ),
         ),
-      );
-
+      ),
+    );
   }
 
   Widget _buildReviewSection() {
@@ -239,71 +266,67 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Stack(
+          alignment: Alignment.bottomRight,
           children: [
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                const CircleAvatar(
-                  radius: 40,
-                  backgroundColor: profileAvatarColor,
-                  child: Icon(Icons.person, size: 50, color: Colors.white),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: backgroundColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: secondaryTextColor),
-                  ),
-                  child:
-                  Icon(Icons.camera_alt, color: secondaryTextColor, size: 16),
-                ),
-              ],
+            const CircleAvatar(
+              radius: 40,
+              backgroundColor: profileAvatarColor,
+              child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: secondaryTextColor),
+              ),
+              child:
+              Icon(Icons.camera_alt, color: secondaryTextColor, size: 16),
+            ),
+          ],
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      CustomWidget.buildTitle("바보임당",
-                          size: 20, weight: FontWeight.w700),
-                      const SizedBox(width: 8),
-                      CustomWidget.buildTitle("#zsswie5",
-                          size: 14, color: secondaryTextColor),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: isPraiseButtonEnabled ? _addPraise : null,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(
-                          color: isPraiseButtonEnabled
-                              ? primaryColor
-                              : Colors.grey),
-                      backgroundColor:
-                      isPraiseButtonEnabled ? primaryColor : Colors.grey,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 18, vertical: 10),
-                      minimumSize: Size.zero,
-                    ),
-                    child: CustomWidget.buildTitle("매너 칭찬하기",
-                        size: 18,
-                        color: backgroundColor,
-                        weight: FontWeight.normal),
-                  ),
+                  CustomWidget.buildTitle("바보임당",
+                      size: 20, weight: FontWeight.w700),
+                  const SizedBox(width: 8),
+                  CustomWidget.buildTitle("#zsswie5",
+                      size: 14, color: secondaryTextColor),
                 ],
               ),
-            )
-          ]
-      ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: isPraiseButtonEnabled ? _addPraise : null,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                      color:
+                      isPraiseButtonEnabled ? primaryColor : Colors.grey),
+                  backgroundColor:
+                  isPraiseButtonEnabled ? primaryColor : Colors.grey,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  minimumSize: Size.zero,
+                ),
+                child: CustomWidget.buildTitle("매너 칭찬하기",
+                    size: 18,
+                    color: backgroundColor,
+                    weight: FontWeight.normal),
+              ),
+            ],
+          ),
+        )
+      ]),
     );
   }
 
