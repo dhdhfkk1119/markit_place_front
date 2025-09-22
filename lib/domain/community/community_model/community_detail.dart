@@ -13,6 +13,7 @@ class CommunityDetail {
   final List<String>? images; // 이미지 전체 리스트
   final List<CommunityComment>? comments; // 댓글 전체 리스트
   final int? commentCount;
+  final bool isLiked;
 
   CommunityDetail({
     required this.id,
@@ -27,6 +28,7 @@ class CommunityDetail {
     this.images,
     this.comments,
     this.commentCount,
+    required this.isLiked,
   });
 
   factory CommunityDetail.fromMap(Map<String, dynamic> json) {
@@ -47,6 +49,7 @@ class CommunityDetail {
               .toList()
           : [],
       commentCount: (json['commentCount'] ?? 0) as int,
+      isLiked: json['liked'] ?? false,
     );
   }
 }

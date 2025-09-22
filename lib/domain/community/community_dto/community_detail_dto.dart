@@ -46,7 +46,7 @@ class CommunityDetailDto {
       images: model.images ?? [],
       comments: model.comments ?? [],
       commentCount: model.commentCount ?? 0,
-      isLiked: false, // fromModel 호출 시 기본값 false로 설정 (또는 model에서 가져와야 함)
+      isLiked: model.isLiked,
     );
   }
 
