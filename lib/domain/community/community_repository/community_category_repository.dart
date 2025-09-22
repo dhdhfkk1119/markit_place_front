@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../_core/utils/my_http.dart';
 import '../community_dto/community_category_dto.dart';
-import 'package:dio/dio.dart';
-
 
 class CommunityCategoryRepository {
   final Dio dio = Dio();
@@ -17,7 +15,8 @@ class CommunityCategoryRepository {
             .map((json) => CommunityCategoryDTO.fromJson(json))
             .toList();
       } else {
-        throw Exception("Failed to load categories. Status code: ${response.statusCode}");
+        throw Exception(
+            "Failed to load categories. Status code: ${response.statusCode}");
       }
     } catch (e) {
       throw Exception("Failed to load categories: $e");

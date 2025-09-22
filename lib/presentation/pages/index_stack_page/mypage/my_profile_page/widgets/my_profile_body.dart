@@ -5,7 +5,8 @@ import '../review_list_screen.dart';
 import 'package:dio/dio.dart';
 
 class MyProfileBody extends StatefulWidget {
-  const MyProfileBody({super.key});
+  final user;
+  const MyProfileBody({required this.user, super.key});
 
   @override
   State<MyProfileBody> createState() => _MyProfileBodyState();

@@ -10,22 +10,12 @@ class ProductWriteRepository {
   Future<void> productWrite(
     ProductWriteDto dto,
     int memberId,
+    String tradeLocation,
     List<String> base64Images,
   ) async {
     final token = await _storage.read(key: "accessToken");
-    print(">>> ProductWrite 요청 시작"); // 이거 안 찍히면 호출 자체 문제
 
     try {
-      // 요청 데이터 로그
-      print("=== ProductWrite Request ===");
-      print("memberId: $memberId");
-      print("title: ${dto.title}");
-      print("content: ${dto.content}");
-      print("price: ${dto.price}");
-      print("categoryId: ${dto.itemCategoryId}");
-      print("images count: ${base64Images.length}");
-      print("===========================");
-
       final response = await dio.post(
         '$Url/items',
         options: Options(
@@ -38,18 +28,49 @@ class ProductWriteRepository {
           "content": dto.content,
           "price": dto.price,
           "base64Images": base64Images,
+          "tradeLocation": tradeLocation,
         },
       );
-
-      // 서버 응답 로그
-      print("=== ProductWrite Response ===");
-      print(response.statusCode);
-      print(response.data);
-      print("=============================");
+      print("상품 등록 리스트 : ${response}");
     } catch (e) {
-      print("=== ProductWrite ERROR ===");
-      print(e);
-      print("==========================");
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+
+  Future<void> productUpdate(
+    int productId,
+    ProductWriteDto dto,
+    int memberId,
+    String tradeLocation,
+    List<String> base64Images,
+  ) async {
+    final token = await _storage.read(key: "accessToken");
+
+    try {
+      final data = {
+        "itemCategoryId": dto.itemCategoryId,
+        "memberAddressId": memberId,
+        "title": dto.title,
+        "content": dto.content,
+        "price": dto.price,
+        "tradeLocation": tradeLocation,
+      };
+
+      // 이미지를 선택한 경우에만 base64Images 추가
+      if (base64Images.isNotEmpty) {
+        data["base64Images"] = base64Images;
+      }
+
+      final response = await dio.patch(
+        '$Url/items/$productId',
+        options: Options(
+          headers: {"Authorization": "Bearer $token"},
+        ),
+        data: data,
+      );
+
+      print("상품 수정 결과 : $response");
+    } catch (e) {
       throw Exception('Failed to connect to the server: $e');
     }
   }

@@ -1,4 +1,4 @@
-analyzer:
+git puanalyzer:
   # 여기서 특정 linter 규칙을 '경고(warning)'나 '에러(error)'로 강제로 지정
   errors:
     # 특정 규칙을 CI에서 실패를 유발하는 'error' 등급으로 격상
@@ -11,8 +11,10 @@ analyzer:
     prefer_const_declarations: info
     prefer_const_constructors_in_immutables: info
     prefer_const_literals_to_create_immutables: info
-    always_specify_types: warning
+    always_specify_types: ignore
     prefer_relative_imports: error
+    undefined_lint: ignore
+    duplicate_import: error
 
 linter:
   # 여기서 검사할 규칙 목록을 직접 관리

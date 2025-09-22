@@ -24,4 +24,5 @@ class ProductCategoryNotifier extends AsyncNotifier<List<ProductCategory>> {
   }
 }
 
+// 카테고리의 상태 번호를 가져옴
 final selectedCategoryIdProvider = StateProvider<int?>((ref) => null);

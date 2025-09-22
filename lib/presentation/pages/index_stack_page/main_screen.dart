@@ -11,10 +11,10 @@ class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<MainScreen> createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   @override
@@ -50,8 +50,7 @@ class _MainScreenState extends State<MainScreen> {
                 label: '상품', icon: Icon(CupertinoIcons.cart)),
             BottomNavigationBarItem(
                 label: '커뮤니티', icon: Icon(CupertinoIcons.square_on_circle)),
-            BottomNavigationBarItem(
-                label: '주변위치', icon: Icon(Icons.place)),
+            BottomNavigationBarItem(label: '주변위치', icon: Icon(Icons.place)),
             BottomNavigationBarItem(
                 label: '채팅', icon: Icon(CupertinoIcons.chat_bubble_text_fill)),
             BottomNavigationBarItem(

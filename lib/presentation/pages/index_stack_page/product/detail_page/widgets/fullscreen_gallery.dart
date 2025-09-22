@@ -1,13 +1,19 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+
+import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 
 // 이미지 확대 및 슬라이드 기능
 class FullScreenGallery extends StatefulWidget {
   final List<String> imagePaths;
   final int initialIndex;
 
-  const FullScreenGallery({super.key, 
+  const FullScreenGallery({
+    super.key,
     required this.imagePaths,
     this.initialIndex = 0,
   });
@@ -42,8 +48,26 @@ class _FullScreenGalleryState extends State<FullScreenGallery> {
               });
             },
             builder: (context, index) {
-              return PhotoViewGalleryPageOptions(
-                imageProvider: AssetImage(widget.imagePaths[index]),
+              final imagePath = widget.imagePaths[index];
+              final imageBytes = base64ToBytes(imagePath);
+              if (imageBytes != null)
+                return PhotoViewGalleryPageOptions(
+                  imageProvider: MemoryImage(imageBytes),
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 3,
+                );
+              return PhotoViewGalleryPageOptions.customChild(
+                child: Container(
+                  color: Colors.grey[300], // 배경색
+                  child: const Center(
+                    // 아이콘을 중앙에 배치
+                    child: Icon(
+                      Icons.broken_image,
+                      size: 80, // PhotoView에서는 좀 더 크게 표시하는 것이 좋습니다.
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 3,
               );

@@ -13,7 +13,9 @@ class ProductDetail {
   final String sellerName;
   final String? sellerProfileUrl;
   final String sellerAddress;
-  final int? retransactionRate;
+  final double retransactionRate;
+  final int viewCount;
+  final bool liked;
 
   ProductDetail({
     required this.id,
@@ -28,25 +30,30 @@ class ProductDetail {
     required this.sellerName,
     this.sellerProfileUrl,
     required this.sellerAddress,
-    this.retransactionRate,
+    required this.retransactionRate,
+    required this.viewCount,
+    required this.liked,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
     return ProductDetail(
-        id: json['id'] as int,
-        itemCategoryId: json['itemCategoryId'] as int,
-        title: json['title'] as String,
-        content: json['content'] as String,
-        price: json['price'] as int,
-        tradeLocation: json['tradeLocation'] as String,
-        imageUrls: json['imageUrls'] != null
-            ? List<String>.from(json['imageUrls'])
-            : [],
-        favoriteCount: json['favoriteCount'] ?? 0,
-        sellerId: json['sellerId'] as int,
-        sellerName: json['sellerName'] as String,
-        sellerProfileUrl: json['sellerProfileUrl'] as String?,
-        sellerAddress: json['sellerAddress'],
-        retransactionRate: json['retransactionRate'] ?? 0);
+      id: json['id'] as int,
+      itemCategoryId: json['itemCategoryId'] as int,
+      title: json['title'] as String,
+      content: json['content'] as String,
+      price: json['price'] as int,
+      tradeLocation: json['tradeLocation'] as String,
+      imageUrls: json['base64Images'] != null
+          ? List<String>.from(json['base64Images'])
+          : [],
+      favoriteCount: json['favoriteCount'] ?? 0,
+      sellerId: json['sellerId'] as int,
+      sellerName: json['sellerName'] as String,
+      sellerProfileUrl: json['sellerProfileUrl'] as String?,
+      sellerAddress: json['sellerAddress'],
+      retransactionRate: json['retransactionRate'] as double,
+      viewCount: json['viewCount'] as int,
+      liked: json['liked'] as bool,
+    );
   }
 }

@@ -1,11 +1,14 @@
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
 import '../../../../../domain/chat/chat_dto/chat_message_dto.dart';
 import '../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
 import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../domain/product/providers/product_detail_notifier.dart';
 import 'widgets/detail_bottom_sheet.dart';
 
@@ -44,14 +47,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   @override
   Widget build(BuildContext context) {
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
-    final itemInfoNotifier =
-        ref.watch(productDetailProvider(widget.room.itemId));
-
-    final item = itemInfoNotifier.productDetail;
-
-    if (itemInfoNotifier.isLoading) return CircularProgressIndicator();
-    if (itemInfoNotifier.errorMessage != null)
-      return Text(itemInfoNotifier.errorMessage!);
+    final itemAsync = ref.watch(productDetailProvider(widget.room.itemId));
 
     if (chatDetailNotifier.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -120,45 +116,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           child: Column(
             children: [
               // 상품 정보 영역
-              Container(
-                height: 100,
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(bottom: BorderSide(color: Colors.black38))),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ClipOval(
-                        clipBehavior: Clip.hardEdge,
-                        child: Image.asset(
-                          "assets/product.jpg",
-                          height: 70,
-                          width: 70,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("${item?.productList.title}"),
-                          Row(children: [
-                            Text("${item?.productList.price}원"),
-                            Text(
-                              "(가격제안불가)",
-                              style: TextStyle(color: Colors.grey),
-                            )
-                          ])
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
+              _buildProductInfo(context, itemAsync),
               // 채팅 리스트
               Expanded(
                 child: ListView.builder(
@@ -262,6 +220,69 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           ),
         ],
       ),
+    );
+  }
+
+  // 상품 정보 영역
+  Widget _buildProductInfo(
+      BuildContext context, AsyncValue<ProductDetailDto> itemAsync) {
+    return itemAsync.when(
+      data: (item) {
+        final Uint8List? imageBytes = base64ToBytes(item.productList.thumbnail);
+
+        return Container(
+          height: 100,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(bottom: BorderSide(color: Colors.black38))),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipOval(
+                  clipBehavior: Clip.hardEdge,
+                  child: imageBytes != null
+                      ? Image.memory(
+                          imageBytes,
+                          height: 70,
+                          width: 70,
+                          fit: BoxFit.cover,
+                        )
+                      // 이미지가 없을 경우 대체이미지
+                      : Image.asset(
+                          "assets/product.jpg",
+                          height: 70,
+                          width: 70,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("${item.productList.title}"),
+                    Row(
+                      children: [
+                        Text("${item.productList.price}원"),
+                        const SizedBox(width: 4),
+                        const Text(
+                          "(가격제안불가)",
+                          style: TextStyle(color: Colors.grey),
+                        )
+                      ],
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text("상품 정보를 불러오지 못했습니다: $err")),
     );
   }
 }

@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../_core/constants/size.dart';
+import '../../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../../domain/product/providers/product_category_notifier.dart';
 import '../../../../../../domain/product/providers/product_item_notifier.dart';
 import '../../../../../../domain/product/providers/product_write_notifier.dart';
@@ -15,7 +17,8 @@ import '../../../../../../domain/product/providers/product_write_notifier.dart';
 import '../../../../../../_core/utils/notification_util.dart';
 
 class ProductWriteItem extends ConsumerStatefulWidget {
-  const ProductWriteItem({super.key});
+  ProductDetailDto? model;
+  ProductWriteItem({this.model, super.key});
 
   @override
   ConsumerState<ProductWriteItem> createState() => _ProductWriteItemState();
@@ -45,11 +48,14 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     );
 
     final initialModel = ref.read(productItemProvider);
-    _titleController = TextEditingController(text: initialModel.name);
-    _descriptionController =
-        TextEditingController(text: initialModel.description);
-    _priceController =
-        TextEditingController(text: initialModel.price?.toString() ?? "");
+    _titleController = TextEditingController(
+        text: widget.model?.productList.title ?? initialModel.name);
+    _descriptionController = TextEditingController(
+        text: widget.model?.productList.content ?? initialModel.description);
+    _priceController = TextEditingController(
+        text: widget.model?.productList.price.toString() ??
+            initialModel.price?.toString() ??
+            "");
   }
 
   @override
@@ -89,12 +95,10 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     final productItemModel = ref.watch(productItemProvider);
 
     ref.listen(productItemProvider, (prev, next) {
-      // 제목 업데이트
       if (prev?.name != next.name) {
         _titleController.text = next.name;
       }
 
-      // 실시간 스트리밍 텍스트 업데이트 (커서 위치 고정!)
       if (prev?.streamingText != next.streamingText &&
           next.streamingText.isNotEmpty) {
         _descriptionController.value = TextEditingValue(
@@ -105,7 +109,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
         );
       }
 
-      // 최종 설명 텍스트 업데이트 (커서 위치 고정!)
       if (prev?.description != next.description &&
           next.description.isNotEmpty) {
         _descriptionController.value = TextEditingValue(
@@ -136,12 +139,11 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
               children: [
                 _buildAiController(),
                 const SizedBox(height: 16),
-                _buildImageUpload(productItemModel),
+                _buildImageUpload(productItemModel, dto: widget.model),
                 _buildProductInfo(productItemModel),
               ],
             ),
           ),
-          // --- 2. 호출할 때 productItemModel을 전달해준다 ---
           if (productItemModel.isOn && productItemModel.isLoading)
             _buildLoadingOverlay(context, productItemModel),
         ],
@@ -177,7 +179,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // --- 3. 하드코딩된 텍스트 대신 model의 thinkingMessage를 사용! ---
                       CustomWidget.buildTitle(productItemModel.thinkingMessage),
                     ],
                   ),
@@ -257,14 +258,19 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
     );
   }
 
-  Widget _buildImageUpload(ProductItemModel productItemModel) {
-    final imageList = productItemModel.images;
+  Widget _buildImageUpload(ProductItemModel productItemModel,
+      {ProductDetailDto? dto}) {
+    // 모델에서 가져온 이미지 (로컬 업로드된 이미지들)
+    final localImages = productItemModel.images;
+
+    // 서버에서 받아온 기존 이미지들 (URL)
+    final networkImages = dto?.imageUrls ?? [];
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          if (imageList.length < _maxImageUpload)
+          if (localImages.length + networkImages.length < _maxImageUpload)
             InkWell(
               onTap: _uploadImage,
               child: Container(
@@ -282,7 +288,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "${productItemModel.images.length}/$_maxImageUpload",
+                      "${localImages.length + networkImages.length}/$_maxImageUpload",
                       style: const TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
@@ -293,10 +299,53 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                 ),
               ),
             ),
-          const SizedBox(
-            width: 15,
-          ),
-          ...imageList.map((imagePath) {
+          const SizedBox(width: 15),
+
+          // 서버에서 받아온 이미지 (기존 등록된 상품 이미지)
+          ...networkImages.map((base64Str) {
+            final bytes = base64ToBytes(base64Str);
+            if (bytes == null) {
+              return const SizedBox(); // 혹은 기본 placeholder 이미지
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        image: MemoryImage(bytes),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  Positioned.fill(
+                    top: -35,
+                    right: -35,
+                    child: IconButton(
+                      onPressed: () {
+                        // 서버에서 받은 base64 이미지 삭제
+                        ref
+                            .read(productItemProvider.notifier)
+                            .removeImage(base64Str as XFile);
+                      },
+                      icon: const Icon(
+                        Icons.cancel,
+                        color: Color.fromARGB(255, 179, 0, 0),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            );
+          }).toList(),
+
+          // 로컬에서 업로드한 이미지 (XFile or File)
+          ...localImages.map((imagePath) {
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Stack(children: [
@@ -344,7 +393,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           controller: _titleController,
           onChanged: (text) {
             ref.read(productItemProvider.notifier).updateName(text);
-            print('로그: 제목 입력됨 -> ${text}');
           },
           decoration: InputDecoration(
               hintText: productItemModel.isOn
@@ -363,7 +411,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           controller: _descriptionController,
           onChanged: (text) {
             ref.read(productItemProvider.notifier).updateDescription(text);
-            print('로그: 설명 입력됨 -> ${text}');
           },
           decoration: InputDecoration(
               hintText: productItemModel.isOn
@@ -445,7 +492,6 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
               ],
             ),
           ),
-          // 비동기 상태에 따라 다른 UI를 보여줍니다.
           asyncCategories.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (err, stack) => Center(child: Text('카테고리 로딩 에러: $err')),
@@ -457,8 +503,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                     spacing: 8.0,
                     runSpacing: 8.0,
                     children: categories.map((category) {
-                      return _buildListItem(
-                          category.name, category.id); // ID도 함께 전달
+                      return _buildListItem(category.name, category.id);
                     }).toList(),
                   ),
                   const SizedBox(height: 16),
@@ -468,7 +513,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           ),
           InkWell(
             onTap: () {
-              Navigator.pop(context); // 바텀시트 닫기
+              Navigator.pop(context);
             },
             child: Padding(
               padding: EdgeInsets.zero,

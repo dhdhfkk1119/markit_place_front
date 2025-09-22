@@ -5,57 +5,122 @@ import '../../../../../_core/constants/theme.dart';
 import '../../../../widgets/custom_button_large.dart';
 import '../../../../../domain/members/models/term.dart';
 import '../../../../../domain/members/providers/terms_provider.dart';
-
 import '../../../../../_core/constants/assets.dart';
 
-class TermsForm extends ConsumerStatefulWidget {
-  const TermsForm({super.key});
+// 1. State class for the agreement logic
+class TermsAgreementData {
+  final Map<int, bool> agreedMap;
+  final bool isAllAgreed;
 
-  @override
-  ConsumerState<TermsForm> createState() => _TermsFormState();
+  TermsAgreementData({required this.agreedMap, required this.isAllAgreed});
+
+  TermsAgreementData.initial()
+      : agreedMap = {},
+        isAllAgreed = false;
+
+  TermsAgreementData copyWith({
+    Map<int, bool>? agreedMap,
+    bool? isAllAgreed,
+  }) {
+    return TermsAgreementData(
+      agreedMap: agreedMap ?? this.agreedMap,
+      isAllAgreed: isAllAgreed ?? this.isAllAgreed,
+    );
+  }
 }
 
-class _TermsFormState extends ConsumerState<TermsForm> {
-  late Map<int, bool> _agreedState;
-  bool _isAllAgreed = false;
+// 2. StateNotifier for managing terms agreement
+class TermsAgreementNotifier extends StateNotifier<TermsAgreementData> {
+  final Ref _ref;
+  List<Term> _currentTerms = []; // To store the latest terms
 
-  @override
-  void initState() {
-    super.initState();
-    _agreedState = {};
+  TermsAgreementNotifier(this._ref) : super(TermsAgreementData.initial()) {
+    // Listen to termsListProvider to initialize/reset agreement state when terms change
+    _ref.listen<AsyncValue<List<Term>>>(termsListProvider, (previous, next) {
+      next.whenData((terms) {
+        _currentTerms = terms;
+        if (terms.isEmpty) {
+          state = TermsAgreementData(agreedMap: {}, isAllAgreed: false);
+        } else {
+          // Initialize only if the terms list has actually changed structure
+          // or if the map is currently empty for these terms.
+          bool needsReinitialization = state.agreedMap.isEmpty ||
+              !state.agreedMap.keys.every((k) => terms.any((t) => t.id == k)) ||
+              !terms.every((t) => state.agreedMap.containsKey(t.id));
+
+          if (needsReinitialization) {
+            final newAgreedMap = {for (var term in terms) term.id: false};
+            state =
+                TermsAgreementData(agreedMap: newAgreedMap, isAllAgreed: false);
+          }
+        }
+      });
+    });
   }
 
-  void _updateAllAgreedState(List<Term> currentTerms) {
-    if (currentTerms.isEmpty) {
-      _isAllAgreed = false;
+  void _recalculateAllAgreed() {
+    if (_currentTerms.isEmpty) {
+      state = state.copyWith(isAllAgreed: false);
       return;
     }
-    _isAllAgreed = currentTerms.every((term) => _agreedState[term.id] ?? false);
+    final allAgreed =
+        _currentTerms.every((term) => state.agreedMap[term.id] ?? false);
+    state = state.copyWith(isAllAgreed: allAgreed);
   }
 
-  void _onAllAgreedChanged(bool? newValue, List<Term> currentTerms) {
-    if (newValue == null || currentTerms.isEmpty) return;
-    setState(() {
-      _isAllAgreed = newValue;
-      for (var term in currentTerms) {
-        _agreedState[term.id] = newValue;
-      }
-    });
+  void toggleTerm(int termId, bool? newValue) {
+    if (newValue == null || !state.agreedMap.containsKey(termId)) return;
+    final newMap = Map<int, bool>.from(state.agreedMap);
+    newMap[termId] = newValue;
+    state = state.copyWith(agreedMap: newMap);
+    _recalculateAllAgreed();
   }
 
-  void _onTermAgreedChanged(
-      int termId, bool? newValue, List<Term> currentTerms) {
-    if (newValue == null) return;
-    setState(() {
-      _agreedState[termId] = newValue;
-      _updateAllAgreedState(currentTerms);
-    });
+  void toggleAll(bool? newValue) {
+    if (newValue == null || _currentTerms.isEmpty) return;
+    final newMap = {for (var term in _currentTerms) term.id: newValue};
+    state = TermsAgreementData(agreedMap: newMap, isAllAgreed: newValue);
   }
 
-  void _viewTermDetails(String title, String content) {
+  List<int>? getAgreedTermIdsForNavigation() {
+    if (_currentTerms.isEmpty && state.agreedMap.isEmpty) {
+      // If there were no terms to begin with, and thus nothing to agree to.
+      // This case might mean proceeding is allowed if no terms are mandatory.
+      // Or, if terms were expected, this indicates an issue (handled by terms.isEmpty check in UI).
+      // For safety, let's assume if currentTerms is empty, it means no mandatory terms were missed.
+      return [];
+    }
+
+    final allMandatoryAgreed = _currentTerms
+        .where((term) => term.required)
+        .every((term) => state.agreedMap[term.id] ?? false);
+
+    if (allMandatoryAgreed) {
+      final List<int> agreedIds = [];
+      state.agreedMap.forEach((termId, isAgreed) {
+        if (isAgreed) {
+          agreedIds.add(termId);
+        }
+      });
+      return agreedIds;
+    }
+    return null;
+  }
+}
+
+final termsAgreementNotifierProvider = StateNotifierProvider.autoDispose<
+    TermsAgreementNotifier, TermsAgreementData>((ref) {
+  return TermsAgreementNotifier(ref);
+});
+
+// 3. Refactored TermsForm as ConsumerWidget
+class TermsForm extends ConsumerWidget {
+  const TermsForm({super.key});
+
+  void _viewTermDetails(BuildContext context, String title, String content) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title:
             Text(title, style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
         content: SingleChildScrollView(
@@ -63,7 +128,7 @@ class _TermsFormState extends ConsumerState<TermsForm> {
                 style: TextStyle(fontFamily: Assets.Fonts.cookieRun))),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text('닫기',
                 style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
           ),
@@ -72,61 +137,22 @@ class _TermsFormState extends ConsumerState<TermsForm> {
     );
   }
 
-  void _onNextButtonPressed(List<Term> currentTerms) {
-    final allMandatoryAgreed = currentTerms
-        .where((term) => term.required)
-        .every((term) => _agreedState[term.id] ?? false);
-
-    if (allMandatoryAgreed) {
-      final List<int> agreedIds = [];
-      _agreedState.forEach((termId, isAgreed) {
-        if (isAgreed) {
-          agreedIds.add(termId);
-        }
-      });
-      // RegisterPage로 이동하면서 동의한 약관 ID 목록을 arguments로 전달
-      Navigator.pushReplacementNamed(context, '/register',
-          arguments: agreedIds);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('필수 약관에 모두 동의해주세요.',
-              style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final termsAsyncValue = ref.watch(termsListProvider);
+    final agreementState = ref.watch(termsAgreementNotifierProvider);
+    final agreementNotifier = ref.read(termsAgreementNotifierProvider.notifier);
 
     return termsAsyncValue.when(
       data: (terms) {
-        if (_agreedState.isEmpty && terms.isNotEmpty ||
-            _agreedState.length != terms.length && terms.isNotEmpty) {
-          Future.microtask(() {
-            if (mounted) {
-              setState(() {
-                _agreedState.clear();
-                for (var term in terms) {
-                  _agreedState[term.id] = false;
-                }
-                _updateAllAgreedState(terms);
-              });
-            }
-          });
-        }
+        // Notifier initializes based on terms data, no need for Future.microtask here.
 
-        if (terms.isEmpty && !termsAsyncValue.isLoading) {
+        if (terms.isEmpty) {
+          // Simplified check based on actual terms list
           return Center(
               child: Text('표시할 약관이 없습니다.',
                   style: TextStyle(fontFamily: Assets.Fonts.cookieRun)));
-        }
-        if (termsAsyncValue.isLoading) {
-          return const Center(child: CircularProgressIndicator());
         }
 
         return Column(
@@ -142,8 +168,8 @@ class _TermsFormState extends ConsumerState<TermsForm> {
                   style: theme.textTheme.labelLarge?.copyWith(
                       fontFamily: Assets.Fonts.cookieRun, fontSize: medium),
                 ),
-                value: _isAllAgreed,
-                onChanged: (value) => _onAllAgreedChanged(value, terms),
+                value: agreementState.isAllAgreed,
+                onChanged: (value) => agreementNotifier.toggleAll(value),
                 controlAffinity: ListTileControlAffinity.leading,
                 activeColor: theme.colorScheme.primary,
                 checkColor: Colors.white,
@@ -161,11 +187,11 @@ class _TermsFormState extends ConsumerState<TermsForm> {
                 final term = terms[index];
                 return _TermItemRow(
                   term: term,
-                  isAgreed: _agreedState[term.id] ?? false,
+                  isAgreed: agreementState.agreedMap[term.id] ?? false,
                   onAgreedChanged: (value) =>
-                      _onTermAgreedChanged(term.id, value, terms),
+                      agreementNotifier.toggleTerm(term.id, value),
                   onViewDetails: () =>
-                      _viewTermDetails(term.title, term.content),
+                      _viewTermDetails(context, term.title, term.content),
                 );
               },
               separatorBuilder: (context, index) =>
@@ -174,7 +200,22 @@ class _TermsFormState extends ConsumerState<TermsForm> {
             const SizedBox(height: medium),
             CustomButtonLarge(
               text: "다음",
-              onPressed: () => _onNextButtonPressed(terms),
+              onPressed: () {
+                final agreedIds =
+                    agreementNotifier.getAgreedTermIdsForNavigation();
+                if (agreedIds != null) {
+                  Navigator.pushReplacementNamed(context, '/register',
+                      arguments: agreedIds);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('필수 약관에 모두 동의해주세요.',
+                          style: TextStyle(fontFamily: Assets.Fonts.cookieRun)),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
             ),
             const SizedBox(height: small),
           ],
@@ -188,6 +229,7 @@ class _TermsFormState extends ConsumerState<TermsForm> {
   }
 }
 
+// _TermItemRow widget remains unchanged
 class _TermItemRow extends StatelessWidget {
   final Term term;
   final bool isAgreed;
@@ -195,6 +237,7 @@ class _TermItemRow extends StatelessWidget {
   final VoidCallback onViewDetails;
 
   const _TermItemRow({
+    super.key,
     required this.term,
     required this.isAgreed,
     required this.onAgreedChanged,

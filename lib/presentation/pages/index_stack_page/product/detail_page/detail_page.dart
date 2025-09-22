@@ -47,32 +47,49 @@ class _DetailPageState extends ConsumerState<DetailPage> {
   Widget build(BuildContext context) {
     final productState = ref.watch(productDetailProvider(widget.productId));
 
-    final sellerId = productState.productDetail?.sellerId ?? 0;
-    final itemId = productState.itemId;
+    return productState.when(
+      data: (productDetail) {
+        final product = productDetail.productList;
+        final sellerId = productDetail.sellerId;
+        final itemId = product.id;
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: DetailAppBar(
-        backgroundColor: _appBarColor,
-        iconColor: _iconColor,
-        onBack: () => Navigator.pop(context),
-        onMore: () {
-          showModalBottomSheet(
-            context: context,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            builder: (context) =>
-                CustomPopUp.buildAppBarPopUp(context, "조정우", "상품 이름적기", 1),
-          );
-        },
-      ),
-      body: DetailBody(
-          scrollController: _scrollController, productId: widget.productId),
-      bottomSheet: DetailBottomSheet(
-        receiverId: sellerId,
-        itemId: itemId,
-      ),
+        return Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: DetailAppBar(
+            productId: widget.productId,
+            backgroundColor: _appBarColor,
+            iconColor: _iconColor,
+            onBack: () => Navigator.pop(context),
+            onMore: () {
+              showModalBottomSheet(
+                context: context,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                builder: (context) {
+                  return CustomPopUp.buildAppBarPopUp(
+                    context,
+                    "${product.title}",
+                    "${product.content}",
+                    itemId,
+                    ref: ref,
+                  );
+                },
+              );
+            },
+          ),
+          body: DetailBody(
+            scrollController: _scrollController,
+            productId: widget.productId,
+          ),
+          bottomSheet: DetailBottomSheet(
+            receiverId: sellerId,
+            itemId: itemId,
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('상품 정보를 불러오는 중 오류 발생: $err')),
     );
   }
 }
