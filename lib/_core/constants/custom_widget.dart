@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import 'assets.dart';
 
@@ -48,6 +49,19 @@ class CustomWidget {
         size: size ?? icon.size,
         color: color ?? icon.color,
       ),
+    );
+  }
+
+  // Toast 메세지 보여주는 메서드 추가 (글 작성하기에 필요)
+  static void showToast(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.black54,
+      textColor: Colors.white,
+      fontSize: 16.0,
     );
   }
 }
