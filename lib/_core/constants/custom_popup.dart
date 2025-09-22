@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/members/models/session_user.dart';
 import '../../domain/members/providers/member_auth_provider.dart';
 import '../../domain/product/providers/product_detail_notifier.dart';
 import '../../domain/product/providers/product_list_notifier.dart';

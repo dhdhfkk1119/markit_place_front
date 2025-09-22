@@ -24,7 +24,6 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   int _currentMannerScore = 50;
   int _retransactionRate = 0;
 
-  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -115,27 +114,27 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
     }
   }
 
-  Future<void> _onRefresh() async {
-    try {
-      final int memberId = 1;
-      final latestProfile = await _apiService.fetchUserProfile(memberId);
-
-      setState(() {
-        _currentMannerScore = latestProfile.mannerScore;
-        _retransactionRate = latestProfile.retransactionRate;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("프로필이 새로고침 되었습니다")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("프로필 새로고침에 실패했습니다: $e")),
-      );
-    }
-
-    await Future.delayed(const Duration(seconds: 1));
-  }
+  // Future<void> _onRefresh() async {
+  //   try {
+  //     final int memberId = 1;
+  //     final latestProfile = await _apiService.fetchUserProfile(memberId);
+  //
+  //     setState(() {
+  //       _currentMannerScore = latestProfile.mannerScore;
+  //       _retransactionRate = latestProfile.retransactionRate;
+  //     });
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("프로필이 새로고침 되었습니다")),
+  //     );
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text("프로필 새로고침에 실패했습니다: $e")),
+  //     );
+  //   }
+  //
+  //   await Future.delayed(const Duration(seconds: 1));
+  // }
 
   static const Color primaryColor = Color(0xFFF96666);
   static const Color backgroundColor = Color(0xFFFFFFFF);
