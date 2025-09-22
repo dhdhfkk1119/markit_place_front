@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../domain/members/providers/member_auth_provider.dart';
 // import '../sessions/session_repository.dart'; // 삭제
@@ -124,3 +125,9 @@ void setupInterceptors(AuthNotifier authNotifier) {
     ),
   );
 }
+
+final dioProvider = Provider<Dio>((ref) {
+  final authNotifier = ref.watch(authNotifierProvider.notifier);
+  setupInterceptors(authNotifier);
+  return dio;
+});
