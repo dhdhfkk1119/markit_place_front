@@ -1,57 +1,81 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../community_dto/community_report_dto.dart';
 import '../community_repository/community_comment_repository.dart';
 
-import '../community_dto/community_comment_dto.dart';
-
-class CommunityCommentModel {
-  final List<CommunityCommentDTO> comments;
-  final bool isLoading;
+// 댓글 작성 상태
+class CommunityCommentState {
+  final bool isAdding; // 댓글 추가 중인지 여부
   final String? errorMessage;
+  final bool addSuccess; // 댓글 추가 성공 여부 (UI에서 감지용)
 
-  CommunityCommentModel({
-    required this.comments,
-    this.isLoading = false,
+  CommunityCommentState({
+    this.isAdding = false,
     this.errorMessage,
+    this.addSuccess = false,
   });
 
-  CommunityCommentModel copyWith({
-    List<CommunityCommentDTO>? comments,
-    bool? isLoading,
-    String? errorMessage,
+  CommunityCommentState copyWith({
+    bool? isAdding,
+    String? errorMessage, // 이전 에러를 지우기 위해 null 전달 가능
+    bool? addSuccess,
   }) {
-    return CommunityCommentModel(
-      comments: comments ?? this.comments,
-      isLoading: isLoading ?? this.isLoading,
+    return CommunityCommentState(
+      isAdding: isAdding ?? this.isAdding,
       errorMessage: errorMessage,
+      addSuccess: addSuccess ?? this.addSuccess,
     );
   }
 }
 
-class CommunityCommentNotifier extends StateNotifier<CommunityCommentModel> {
-  final CommunityCommentRepository _communityCommentRepository;
+class CommunityCommentNotifier extends StateNotifier<CommunityCommentState> {
+  final CommunityCommentRepository _repository;
 
-  CommunityCommentNotifier(this._communityCommentRepository)
-      : super(CommunityCommentModel(comments: []));
+  CommunityCommentNotifier(this._repository) : super(CommunityCommentState());
 
-  Future<void> getCommentsByPostId(int postId) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+  Future<void> addComment({
+    required int postId,
+    required String content,
+  }) async {
+    if (content.isEmpty) {
+      state = state.copyWith(
+          errorMessage: "댓글 내용을 입력해주세요.", addSuccess: false, isAdding: false);
+      return;
+    }
+
+    state =
+        state.copyWith(isAdding: true, errorMessage: null, addSuccess: false);
+
     try {
-      final ResponseDTO responseDTO =
-          await _communityCommentRepository.getComments(postId);
-      if (responseDTO.status == 200) {
-        final List<CommunityCommentDTO> comments =
-            (responseDTO.data as List<dynamic>)
-                .map((e) => CommunityCommentDTO.fromJson(e))
-                .toList();
-        state = state.copyWith(comments: comments, isLoading: false);
-      } else {
-        state =
-            state.copyWith(isLoading: false, errorMessage: responseDTO.message);
-      }
+      await _repository.createComment(postId: postId, content: content);
+      state = state.copyWith(isAdding: false, addSuccess: true);
     } catch (e) {
       state = state.copyWith(
-          isLoading: false, errorMessage: '댓글을 불러오는데 실패했습니다 : $e');
+          isAdding: false,
+          errorMessage: "댓글 작성 중 오류: ${e.toString()}",
+          addSuccess: false);
+      if (kDebugMode) {
+        print("CommunityCommentNotifier: Error adding comment - $e");
+      }
+    }
+  }
+
+  void resetAddSuccess() {
+    if (state.addSuccess) {
+      state = state.copyWith(addSuccess: false, errorMessage: null);
     }
   }
 }
+
+// Repository Provider
+final communityCommentRepositoryProvider =
+    Provider<CommunityCommentRepository>((ref) {
+  return CommunityCommentRepository();
+});
+
+// Comment Notifier Provider
+final communityCommentProvider =
+    StateNotifierProvider<CommunityCommentNotifier, CommunityCommentState>(
+        (ref) {
+  return CommunityCommentNotifier(
+      ref.watch(communityCommentRepositoryProvider));
+});

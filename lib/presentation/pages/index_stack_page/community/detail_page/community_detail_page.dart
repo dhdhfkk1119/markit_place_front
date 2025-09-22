@@ -5,139 +5,252 @@ import '../../../../../_core/constants/assets.dart';
 import '../../../../../_core/constants/custom_popup.dart';
 import '../../../../../domain/community/community_dto/community_detail_dto.dart';
 import '../../../../../domain/community/community_provider/community_detail_notifier.dart';
+import '../../../../../domain/community/community_provider/community_comment_notifier.dart';
 import 'widgets/community_detail_body.dart';
 
-class CommunityDetailPageDetailPage extends ConsumerWidget {
+class CommunityDetailPageDetailPage extends ConsumerStatefulWidget {
   final int postId;
   const CommunityDetailPageDetailPage({required this.postId, super.key});
 
   @override
-  Widget build(BuildContext context,WidgetRef ref) {
-    final notifier = ref.read(communityDetailProvider(postId).notifier);
-    final dto = notifier.communityDetail;
+  ConsumerState<CommunityDetailPageDetailPage> createState() =>
+      _CommunityDetailPageDetailPageState();
+}
 
+class _CommunityDetailPageDetailPageState
+    extends ConsumerState<CommunityDetailPageDetailPage> {
+  late TextEditingController _commentController;
 
-    if(dto == null || notifier.isLoading){
+  @override
+  void initState() {
+    super.initState();
+    _commentController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final communityDetailWatch =
+        ref.watch(communityDetailProvider(widget.postId));
+    final CommunityDetailDto? dto = communityDetailWatch.communityDetail;
+    final bool isLoadingDetail = communityDetailWatch.isLoading;
+    final String? detailErrorMessage = communityDetailWatch.errorMessage;
+
+    ref.listen<CommunityCommentState>(communityCommentProvider,
+        (previous, next) {
+      if (next.addSuccess) {
+        _commentController.clear();
+        ref
+            .read(communityDetailProvider(widget.postId).notifier)
+            .getCommunityDetailInfo();
+        ref.read(communityCommentProvider.notifier).resetAddSuccess();
+      }
+    });
+
+    if (isLoadingDetail && dto == null) {
       return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    } else if (dto == null && detailErrorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: _buildTitle(context, "오류")),
         body: Center(
-          child: CircularProgressIndicator(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 50),
+                const SizedBox(height: 10),
+                Text(
+                  "데이터를 불러오는데 실패했습니다.\n$detailErrorMessage",
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => ref
+                      .read(communityDetailProvider(widget.postId).notifier)
+                      .getCommunityDetailInfo(),
+                  child: const Text("다시 시도"),
+                )
+              ],
+            ),
+          ),
         ),
+      );
+    } else if (dto == null) {
+      return Scaffold(
+        appBar: AppBar(title: _buildTitle(context, "정보 없음")),
+        body: const Center(child: Text("게시글 정보를 찾을 수 없습니다.")),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        leading:
+            _buildIcon(context, const Icon(CupertinoIcons.back), onPressed: () {
+          Navigator.pop(context);
+        }),
+        title: _buildTitle(context, "커뮤니티"),
         actions: [
-          _buildLeftAppBarIcon(context),
-          const Spacer(),
-          _buildRightAppBarIcon(context,ref,dto),
+          _buildRightAppBarIcon(context, ref, dto),
         ],
       ),
-      body: CommunityDetailBody(postId: postId),
-      bottomSheet: _buildChatInput(),
+      body: CommunityDetailBody(postId: widget.postId),
+      bottomSheet:
+          _buildChatInput(context, ref, widget.postId, _commentController),
     );
   }
 
-  Widget _buildChatInput() {
+  Widget _buildChatInput(BuildContext context, WidgetRef ref, int currentPostId,
+      TextEditingController controller) {
+    final commentState = ref.watch(communityCommentProvider);
+    final isAddingComment = commentState.isAdding;
+    final addCommentError = commentState.errorMessage;
+
     return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            _buildIcon(const Icon(CupertinoIcons.heart)),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "메시지를 입력하세요...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16.0),
-                    borderSide: BorderSide.none,
+      child: Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (addCommentError != null && !isAddingComment)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4.0),
+                  child: Text(
+                    addCommentError,
+                    style: TextStyle(color: Colors.red.shade700, fontSize: 12),
+                    textAlign: TextAlign.center,
                   ),
-                  fillColor: Colors.grey[200],
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0, horizontal: 16.0),
                 ),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: controller,
+                      enabled: !isAddingComment,
+                      decoration: InputDecoration(
+                        hintText: "댓글을 입력하세요...",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        fillColor:
+                            Theme.of(context).inputDecorationTheme.fillColor ??
+                                Colors.grey[200],
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 16.0),
+                      ),
+                      maxLines: null,
+                      textInputAction: TextInputAction.newline,
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty && !isAddingComment) {
+                          ref
+                              .read(communityCommentProvider.notifier)
+                              .addComment(
+                                postId: currentPostId,
+                                content: value,
+                              );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  isAddingComment
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2.0))
+                      : IconButton(
+                          icon: Icon(Icons.send,
+                              color: Theme.of(context).colorScheme.primary),
+                          onPressed: () {
+                            final commentText = controller.text;
+                            if (commentText.isNotEmpty) {
+                              FocusScope.of(context).unfocus();
+                              ref
+                                  .read(communityCommentProvider.notifier)
+                                  .addComment(
+                                    postId: currentPostId,
+                                    content: commentText,
+                                  );
+                            }
+                          },
+                        ),
+                ],
               ),
-            ),
-            const SizedBox(width: 8),
-            _buildIcon(
-              const Icon(Icons.send, color: Colors.deepPurpleAccent),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildLeftAppBarIcon(BuildContext context) {
-    return SafeArea(
-      child: Row(
-        children: [
-          _buildIcon(const Icon(CupertinoIcons.back), onPressed: () {
-            Navigator.pop(context);
-          }),
-          _buildTitle("커뮤니티"),
-        ],
-      ),
+  Widget _buildRightAppBarIcon(
+      BuildContext context, WidgetRef ref, CommunityDetailDto dto) {
+    return Row(
+      children: [
+        _buildIcon(context, const Icon(CupertinoIcons.profile_circled),
+            color: Theme.of(context).iconTheme.color),
+        _buildIcon(context, const Icon(CupertinoIcons.heart),
+            color: Theme.of(context).iconTheme.color),
+        _buildIcon(context, const Icon(Icons.more_vert), onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            builder: (bContext) {
+              return CustomPopUp.buildCommunityAppBarPopUp(bContext, dto, ref);
+            },
+          );
+        }),
+      ],
     );
   }
 
-  Widget _buildRightAppBarIcon(BuildContext context, WidgetRef ref, CommunityDetailDto dto) {
-    return SafeArea(
-      child: Row(
-        children: [
-          _buildIcon(
-              const Icon(CupertinoIcons.profile_circled, color: Colors.black)),
-          _buildIcon(const Icon(CupertinoIcons.heart, color: Colors.black)),
-          _buildIcon(const Icon(Icons.more_vert), onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-              ),
-              builder: (context) {
-                // 커뮤니티 게시글용 팝업을 별도로 만들어 사용
-                return CustomPopUp.buildCommunityAppBarPopUp(context, dto, ref);
-              },
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTitle(String title, {Color? color, FontWeight? weight}) {
+  Widget _buildTitle(BuildContext context, String title,
+      {Color? color, FontWeight? weight}) {
     return Text(
       title,
       style: TextStyle(
         fontSize: 18,
         fontFamily: Assets.Fonts.cookieRun,
         fontWeight: weight ?? FontWeight.w700,
-        color: color ?? Colors.black,
+        color: color ??
+            Theme.of(context).appBarTheme.titleTextStyle?.color ??
+            Colors.black,
       ),
     );
   }
 
-  Widget _buildIcon(Icon icon,
+  Widget _buildIcon(BuildContext context, Icon icon,
       {double? size, Color? color, VoidCallback? onPressed}) {
     return IconButton(
       onPressed: onPressed ?? () {},
-      icon:
-          Icon(icon.icon, size: size ?? icon.size, color: color ?? icon.color),
+      icon: Icon(icon.icon,
+          size: size ?? icon.size ?? Theme.of(context).iconTheme.size,
+          color: color ?? icon.color ?? Theme.of(context).iconTheme.color),
     );
   }
 }

@@ -2,10 +2,31 @@ import 'package:flutter/material.dart';
 import '../../../../../../_core/constants/custom_popup.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/community/community_model/community_comment.dart';
+// import 'package:intl/intl.dart'; // intl 패키지 사용 시
 
 class CommunityDetailReply extends StatelessWidget {
   final CommunityComment comment;
   const CommunityDetailReply({required this.comment, super.key});
+
+  String _formatDateTime(String dateTimeString) {
+    if (dateTimeString.isEmpty) {
+      return '';
+    }
+    try {
+      DateTime dateTime = DateTime.parse(dateTimeString);
+      // 예: "2023년 10월 27일 15:30"
+      // return DateFormat('yyyy년 MM월 dd일 HH:mm').format(dateTime); // intl 패키지 사용 시
+
+      String year = dateTime.year.toString();
+      String month = dateTime.month.toString().padLeft(2, '0');
+      String day = dateTime.day.toString().padLeft(2, '0');
+      String hour = dateTime.hour.toString().padLeft(2, '0');
+      String minute = dateTime.minute.toString().padLeft(2, '0');
+      return '$year년 $month월 $day일 $hour:$minute';
+    } catch (e) {
+      return dateTimeString;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +36,7 @@ class CommunityDetailReply extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildReplyProfile(),
+          _buildReplyProfile(context),
           InkWell(
             onTap: () {
               showModalBottomSheet(
@@ -34,14 +55,16 @@ class CommunityDetailReply extends StatelessWidget {
     );
   }
 
-  Widget _buildReplyProfile() {
+  Widget _buildReplyProfile(BuildContext context) {
+    print('Writer Name for comment ID ${comment.id}: "${comment.writerName}"');
+    final String formattedDate = _formatDateTime(comment.createdAt);
+
     return Expanded(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(50),
-            // comment.imageUrl을 사용하여 프로필 이미지 표시, 없으면 기본 이미지
             child: (comment.imageUrl != null && comment.imageUrl!.isNotEmpty)
                 ? Image.network(
                     comment.imageUrl!,
@@ -49,10 +72,18 @@ class CommunityDetailReply extends StatelessWidget {
                     height: 40,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Image.asset(
-                        'assets/default_profile.png',
-                        width: 40), // 에러 이미지
+                      'assets/default_profile.png',
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    ),
                   )
-                : Image.asset('assets/default_profile.png', width: 40),
+                : Image.asset(
+                    'assets/default_profile.png',
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -60,15 +91,16 @@ class CommunityDetailReply extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // writerName을 직접 사용 (익명 처리 없음)
                 CustomWidget.buildTitle(comment.writerName, size: 13),
                 Padding(
                   padding: const EdgeInsets.only(top: 2.0, bottom: 2.0),
-                  child: CustomWidget.buildTitle(comment.createdAt,
+                  child: CustomWidget.buildTitle(formattedDate,
                       size: 13, color: Colors.grey, weight: FontWeight.w200),
                 ),
                 CustomWidget.buildTitle(comment.content,
                     size: 13, weight: FontWeight.w200),
-                _buildReplyIcon(),
+                _buildReplyIcon(context),
               ],
             ),
           )
@@ -77,7 +109,7 @@ class CommunityDetailReply extends StatelessWidget {
     );
   }
 
-  Widget _buildReplyIcon() {
+  Widget _buildReplyIcon(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 6.0, bottom: 6.0),
       child: Row(

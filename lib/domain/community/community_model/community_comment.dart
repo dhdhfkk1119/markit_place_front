@@ -16,6 +16,7 @@ class CommunityComment {
   });
 
   factory CommunityComment.fromMap(Map<String, dynamic> json) {
+    print('CommunityComment.fromMap received JSON: $json');
     return CommunityComment(
       id: json['id'] as int? ?? 0,
       content: json['content'] as String? ?? '',
