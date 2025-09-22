@@ -1,21 +1,18 @@
 import '../models/product_detail.dart';
-import '../models/product_list.dart';
 import 'product_list_dtos.dart';
 
 class ProductDetailDto {
   final ProductListDto productList;
   final List<String>? imageUrls;
 
-  // 판매자 정보
   final int sellerId;
   final String sellerName;
   final String? sellerProfileUrl;
-  final String sellerAddress;
+  final String? sellerAddress;
   final double retransactionRate;
-
   final int itemCategoryId;
-
   final bool liked;
+  final List<String> tags; // Added tags field
 
   ProductDetailDto({
     required this.productList,
@@ -23,12 +20,14 @@ class ProductDetailDto {
     required this.sellerId,
     required this.sellerName,
     this.sellerProfileUrl,
-    required this.sellerAddress,
+    this.sellerAddress,
     required this.retransactionRate,
     required this.itemCategoryId,
     required this.liked,
+    required this.tags,
   });
 
+  // copyWith 메서드도 tags를 포함하도록 업데이트
   ProductDetailDto copyWith({
     ProductListDto? productList,
     List<String>? imageUrls,
@@ -39,6 +38,7 @@ class ProductDetailDto {
     double? retransactionRate,
     int? itemCategoryId,
     bool? liked,
+    List<String>? tags,
   }) {
     return ProductDetailDto(
       productList: productList ?? this.productList,
@@ -50,6 +50,7 @@ class ProductDetailDto {
       retransactionRate: retransactionRate ?? this.retransactionRate,
       itemCategoryId: itemCategoryId ?? this.itemCategoryId,
       liked: liked ?? this.liked,
+      tags: tags ?? this.tags,
     );
   }
 
@@ -61,21 +62,24 @@ class ProductDetailDto {
         content: model.content,
         price: model.price,
         itemCategoryName: "",
-        tradeLocation: model.tradeLocation,
+        tradeLocation: null,
         thumbnail: (model.imageUrls != null && model.imageUrls!.isNotEmpty)
             ? model.imageUrls!.first
             : null,
         favoriteCount: model.favoriteCount,
         viewCount: model.viewCount,
+        itemCategoryId: model.itemCategoryId,
+        tags: model.tags,
       ),
       imageUrls: model.imageUrls ?? [],
       sellerId: model.sellerId,
       sellerName: model.sellerName,
       sellerProfileUrl: model.sellerProfileUrl ?? '',
-      sellerAddress: model.sellerAddress,
+      sellerAddress: model.sellerAddress ?? '',
       retransactionRate: model.retransactionRate,
       itemCategoryId: model.itemCategoryId,
-      liked: model.liked, // 초기값 false
+      liked: model.liked,
+      tags: model.tags,
     );
   }
 }

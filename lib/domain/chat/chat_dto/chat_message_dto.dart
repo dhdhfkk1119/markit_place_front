@@ -7,6 +7,7 @@ class ChatMessageDto {
   final String time;
   final int senderId;
   final int itemId;
+  final bool isRead;
 
   ChatMessageDto({
     required this.content,
@@ -15,6 +16,7 @@ class ChatMessageDto {
     required this.time,
     required this.senderId,
     required this.itemId,
+    required this.isRead,
   });
 
   factory ChatMessageDto.fromModel(ChatMessageModel model, int myId) {
@@ -25,6 +27,7 @@ class ChatMessageDto {
       time: model.createdAt,
       senderId: model.sender.id,
       itemId: model.itemId,
+      isRead: model.isRead,
     );
   }
 
@@ -35,6 +38,7 @@ class ChatMessageDto {
     String? time,
     int? senderId,
     int? itemId,
+    bool? isRead,
   }) {
     return ChatMessageDto(
       content: content ?? this.content,
@@ -43,6 +47,7 @@ class ChatMessageDto {
       time: time ?? this.time,
       senderId: senderId ?? this.senderId,
       itemId: itemId ?? this.itemId,
+      isRead: isRead ?? this.isRead,
     );
   }
 }

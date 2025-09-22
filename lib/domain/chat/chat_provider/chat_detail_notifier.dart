@@ -15,17 +15,23 @@ class ChatDetailNotifier extends ChangeNotifier {
     required int roomId,
     required int myId,
   }) async {
-    print("[Notifier] fetchMessages 호출: roomId=$roomId, myId=$myId");
+    print("[Notifier] enterChatRoom 호출: roomId=$roomId, myId=$myId");
 
     isLoading = true;
     notifyListeners();
 
     try {
+      // 1. 읽음 처리 API 호출 (메시지를 가져오기 전에 먼저 처리)
+      await repository.markMessagesAsRead(roomId: roomId, myId: myId);
+      print("[Notifier] 메시지 읽음 처리 완료");
+
+      // 2. 메시지 목록 가져오기
       messages = await repository.getMyRoomMessage(roomId: roomId, myId: myId);
-      print("[Notifier] fetchMessages 완료, messages.length=${messages.length}");
+      print("[Notifier] 메시지 목록 fetch 완료, messages.length=${messages.length}");
+
       errorMessage = '';
     } catch (e) {
-      print("[Notifier] fetchMessages 에러: $e");
+      print("[Notifier] enterChatRoom 에러: $e");
       errorMessage = e.toString();
     } finally {
       isLoading = false;

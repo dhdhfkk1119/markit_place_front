@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../_core/utils/my_http.dart';
 import '../dtos/product_write_dto.dart';
+import '../models/product_list.dart';
 
 String Url = baseUrl;
 const FlutterSecureStorage _storage = FlutterSecureStorage();
@@ -10,7 +11,7 @@ class ProductWriteRepository {
   Future<void> productWrite(
     ProductWriteDto dto,
     int memberId,
-    String tradeLocation,
+    ProductLocation? tradeLocation,
     List<String> base64Images,
   ) async {
     final token = await _storage.read(key: "accessToken");
@@ -41,7 +42,7 @@ class ProductWriteRepository {
     int productId,
     ProductWriteDto dto,
     int memberId,
-    String tradeLocation,
+    ProductLocation? tradeLocation,
     List<String> base64Images,
   ) async {
     final token = await _storage.read(key: "accessToken");

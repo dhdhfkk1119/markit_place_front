@@ -1,3 +1,4 @@
+import '../models/product_list.dart';
 import '../models/product_write.dart';
 
 class ProductWriteDto {
@@ -5,7 +6,7 @@ class ProductWriteDto {
   final String title;
   final String content;
   final int price;
-  String? tradeLocation; // ← 오타 수정
+  ProductLocation? tradeLocation;
 
   ProductWriteDto({
     required this.itemCategoryId,
@@ -21,7 +22,7 @@ class ProductWriteDto {
       title: model.title,
       content: model.content,
       price: model.price,
-      tradeLocation: model.tradeLocation ?? '',
+      tradeLocation: model.tradeLocation, // 추후 추가되면 model.tradeLocation으로 대체
     );
   }
 }
