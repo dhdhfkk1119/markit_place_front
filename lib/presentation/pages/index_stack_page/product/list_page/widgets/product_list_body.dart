@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../domain/product/dtos/product_list_dtos.dart';
+import '../../../../../../domain/product/dtos/product_search_dto.dart';
 import '../../../../../../domain/product/providers/product_list_notifier.dart';
+import '../../../../../../domain/product/providers/product_sort_state_provider.dart';
 import 'product_filter_list.dart';
 import 'product_list_item.dart';
 import '../../../../../widgets/WriteButton.dart';
@@ -58,6 +60,7 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
   Widget build(BuildContext context) {
     final AsyncValue<List<ProductListDto>> productListState =
         ref.watch(productListProvider);
+    final productListNotifier = ref.read(productListProvider.notifier);
 
     return SafeArea(
       child: Stack(
@@ -135,15 +138,20 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
                 child: TextField(
                   controller: widget.searchController,
                   decoration: InputDecoration(
-                    hintText: "검색어를 입력하세요",
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onSubmitted: (value) {
-                    print("검색: $value");
-                  },
+                      hintText: "검색어를 입력하세요",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      suffixIcon: InkWell(
+                        onTap: () {
+                          productListNotifier.searchProducts(
+                            ProductSearchDTO(
+                                keyword: widget.searchController.text),
+                          );
+                        },
+                        child: Icon(Icons.send),
+                      )),
                 ),
               ),
             ),
