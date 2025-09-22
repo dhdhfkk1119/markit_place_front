@@ -9,6 +9,7 @@ class CommunityList {
   final int? viewCount;
   final String createdAt;
   final int? commentCount;
+  final bool isLiked; // isLiked 필드 추가
 
   CommunityList({
     required this.id,
@@ -21,20 +22,22 @@ class CommunityList {
     this.viewCount,
     required this.createdAt,
     this.commentCount,
+    this.isLiked = false,
   });
 
   factory CommunityList.fromMap(Map<String, dynamic> data) {
     return CommunityList(
-      id: data['id'],
-      title: data['title'],
-      topic: data['topic'],
-      location: data['location'],
-      preview: data['preview'],
-      thumbnail: data['thumbnail'],
-      likeCount: data['likeCount'] ?? 0,
-      viewCount: data['viewCount'] ?? 0,
-      createdAt: data['createdAt'],
-      commentCount: data['commentCount'] ?? 0,
+      id: data['id'] as int? ?? 0,
+      title: data['title'] as String? ?? '',
+      topic: data['topic'] as String? ?? '',
+      location: data['location'] as String? ?? '',
+      preview: data['preview'] as String? ?? '',
+      thumbnail: data['thumbnail'] as String? ?? '',
+      likeCount: data['likeCount'] as int? ?? 0,
+      viewCount: data['viewCount'] as int? ?? 0,
+      createdAt: data['createdAt'] as String? ?? '',
+      commentCount: data['commentCount'] as int? ?? 0,
+      isLiked: data['isLiked'] as bool? ?? false,
     );
   }
 }

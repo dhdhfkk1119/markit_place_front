@@ -1,14 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../community_dto/community_detail_dto.dart';
-import '../community_model/community_comment.dart'; // CommunityComment 임포트 추가
+import '../community_model/community_comment.dart';
 import '../community_model/community_detail.dart';
 import '../community_repository/community_detail_repository.dart';
+import 'community_list_notifier.dart';
 
-// 정렬 기준 Enum 정의
 enum CommentSortOrder {
-  registration, // 등록순
-  latest, // 최신순
+  registration,
+  latest,
 }
 
 class CommunityDetailState {
@@ -44,14 +45,14 @@ class CommunityDetailState {
 }
 
 class CommunityDetailNotifier extends ChangeNotifier {
+  final Ref ref;
   late final CommunityDetailRepository _repository;
   final int postId;
   late CommunityDetailState state;
 
-  // 원본 댓글 리스트를 저장할 변수 (정렬되지 않은 초기 상태)
   List<CommunityComment> _originalComments = [];
 
-  CommunityDetailNotifier({required this.postId}) {
+  CommunityDetailNotifier({required this.ref, required this.postId}) {
     _repository = CommunityDetailRepository();
     state =
         CommunityDetailState(currentSortOrder: CommentSortOrder.registration);
@@ -67,10 +68,7 @@ class CommunityDetailNotifier extends ChangeNotifier {
       final Map<String, dynamic> responseData =
           response as Map<String, dynamic>;
       final communityDetailModel = CommunityDetail.fromMap(responseData);
-
-      // 원본 댓글 리스트 저장 및 초기 정렬 (등록순)
       _originalComments = List.from(communityDetailModel.comments ?? []);
-
       final sortedComments =
           _sortComments(_originalComments, state.currentSortOrder);
       final dto = CommunityDetailDto.fromModel(communityDetailModel)
@@ -79,12 +77,14 @@ class CommunityDetailNotifier extends ChangeNotifier {
       state = state.copyWith(communityDetail: dto, isLoading: false);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      if (kDebugMode) {
+        print("CommunityDetailNotifier: Error fetching detail - $e");
+      }
     } finally {
       notifyListeners();
     }
   }
 
-  // 댓글 정렬 메소드 추가
   void sortComments(CommentSortOrder newOrder) {
     if (state.communityDetail == null) return;
     if (state.currentSortOrder == newOrder &&
@@ -101,17 +101,15 @@ class CommunityDetailNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 내부 정렬 로직 헬퍼 메소드
   List<CommunityComment> _sortComments(
       List<CommunityComment> comments, CommentSortOrder order) {
     try {
       if (order == CommentSortOrder.latest) {
-        comments.sort((a, b) => DateTime.parse(b.createdAt)
-            .compareTo(DateTime.parse(a.createdAt))); // 최신순 (내림차순)
+        comments.sort((a, b) =>
+            DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)));
       } else {
-        // CommentSortOrder.registration (기본)
-        comments.sort((a, b) => DateTime.parse(a.createdAt)
-            .compareTo(DateTime.parse(b.createdAt))); // 등록순 (오름차순)
+        comments.sort((a, b) =>
+            DateTime.parse(a.createdAt).compareTo(DateTime.parse(b.createdAt)));
       }
     } catch (e) {
       if (kDebugMode) {
@@ -127,7 +125,6 @@ class CommunityDetailNotifier extends ChangeNotifier {
     }
 
     state = state.copyWith(isLiking: true);
-    notifyListeners();
 
     CommunityDetailDto originalDetail = state.communityDetail!;
     CommunityDetailDto optimisticDetail = originalDetail.copyWith(
@@ -143,12 +140,17 @@ class CommunityDetailNotifier extends ChangeNotifier {
     try {
       await _repository.toggleLike(postId: postId);
       state = state.copyWith(isLiking: false);
+
+      ref.read(communityListProvider.notifier).getCommunityList();
     } catch (e) {
       state = state.copyWith(
         communityDetail: originalDetail,
         errorMessage: "좋아요 처리에 실패했습니다: ${e.toString()}",
         isLiking: false,
       );
+      if (kDebugMode) {
+        print("CommunityDetailNotifier: Error toggling like - $e");
+      }
     } finally {
       notifyListeners();
     }
@@ -163,5 +165,5 @@ class CommunityDetailNotifier extends ChangeNotifier {
 
 final communityDetailProvider =
     ChangeNotifierProvider.family<CommunityDetailNotifier, int>(
-  (ref, postId) => CommunityDetailNotifier(postId: postId),
+  (ref, postId) => CommunityDetailNotifier(postId: postId, ref: ref),
 );
