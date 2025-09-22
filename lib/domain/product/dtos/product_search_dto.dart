@@ -7,7 +7,9 @@ class ProductSearchDTO {
   final int? maxPrice;
   final String? priceRange;
   final int? itemCategoryId;
-  final String? tradeLocation;
+  final double? latitude;
+  final double? longitude;
+  final double? distanceInMeter;
   final int page;
   final int size;
   final bool? hasNext;
@@ -21,7 +23,9 @@ class ProductSearchDTO {
     this.maxPrice,
     this.priceRange,
     this.itemCategoryId,
-    this.tradeLocation,
+    this.latitude,
+    this.longitude,
+    this.distanceInMeter,
     this.page = 0,
     this.size = 10,
     this.hasNext = true,
@@ -37,7 +41,9 @@ class ProductSearchDTO {
     int? maxPrice,
     String? priceRange,
     int? itemCategoryId,
-    String? tradeLocation,
+    double? latitude,
+    double? longitude,
+    double? distanceInMeter,
     int? page,
     int? size,
     bool? hasNext,
@@ -51,7 +57,9 @@ class ProductSearchDTO {
       maxPrice: maxPrice ?? this.maxPrice,
       priceRange: priceRange ?? this.priceRange,
       itemCategoryId: itemCategoryId ?? this.itemCategoryId,
-      tradeLocation: tradeLocation ?? this.tradeLocation,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      distanceInMeter: distanceInMeter ?? this.distanceInMeter,
       page: page ?? this.page,
       size: size ?? this.size,
       hasNext: hasNext ?? this.hasNext,
@@ -72,7 +80,9 @@ class ProductSearchDTO {
     if (maxPrice != null) map['maxPrice'] = maxPrice;
     if (priceRange != null) map['priceRange'] = priceRange;
     if (itemCategoryId != null) map['itemCategoryId'] = itemCategoryId;
-    if (tradeLocation != null) map['tradeLocation'] = tradeLocation;
+    if (latitude != null) map['latitude'] = latitude;
+    if (longitude != null) map['longitude'] = longitude;
+    if (distanceInMeter != null) map['distanceInMeter'] = distanceInMeter;
     return map;
   }
 }
