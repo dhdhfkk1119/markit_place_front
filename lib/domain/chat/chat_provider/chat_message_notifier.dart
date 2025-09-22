@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../chat_dto/chat_message_dto.dart';
 import '../chat_model/chat_message.dart';
+import '../chat_repository/chat_detail_repository.dart';
 import 'chat_room_notifier.dart';
 import '../chat_repository/chat_repository.dart';
 // import '../../providers/SessionNotifier.dart'; // 수정: SessionNotifier import 제거
@@ -8,11 +9,13 @@ import '../../members/providers/member_auth_provider.dart'; // 수정: AuthNotif
 
 class ChatNotifier extends StateNotifier<ChatMessageDto?> {
   final ChatRepository repository;
+  final ChatDetailRepository? chatDetailRepository;
   final int myId; // 로그인된 사용자의 ID (null이 아님을 가정)
   int? _roomId;
   final Function(ChatMessageModel) onNewMessage;
 
-  ChatNotifier(this.repository, this.myId, {required this.onNewMessage})
+  ChatNotifier(this.repository, this.myId,
+      {this.chatDetailRepository, required this.onNewMessage})
       : super(null);
 
   void setRoomId(int? roomId) {
@@ -69,7 +72,6 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
       receiverId: receiverId,
       message: message,
       itemId: itemId,
-      // repository.sendMessage에도 myId (senderId)가 필요하다면 전달해야 함. 현재 API 명세에는 없음.
     );
     print(
         "[ChatNotifier] sendMessage: newRoomId received from repository: $newRoomId");
@@ -94,22 +96,7 @@ final chatProvider =
   (ref, roomId) {
     final authState = ref.watch(authNotifierProvider);
 
-    // 사용자의 의견에 따라, authState.user가 null인 경우는
-    // 중복 로그인으로 튕겼을 때와 같은 예외적인 상황으로 간주합니다.
-    // 이 경우 채팅 기능을 사용하는 것이 적절하지 않을 수 있습니다.
-    // 따라서 user가 null이면 ChatNotifier를 생성하지 않거나,
-    // 생성하더라도 기능이 제한된 Notifier를 반환하는 것이 안전합니다.
-    // 여기서는 null일 경우를 대비해 memberId에 `!`를 사용하고,
-    // 만약 이것이 문제가 된다면 (런타임 에러 발생), 이 부분의 로직을 재검토해야 합니다.
     if (authState.user == null) {
-      // 이 시점에서 ChatNotifier를 요구하는 것은 로직상 문제가 있을 수 있음.
-      // 예를 들어, 로그인 화면으로 리디렉션 중이거나, 채팅 화면에 접근하면 안 되는 상태일 수 있음.
-      print(
-          "[chatProvider] Error: User is not authenticated. Cannot create ChatNotifier effectively. authState.status: ${authState.status}");
-      // 안전하게 가려면 여기서 ChatNotifier를 생성하지 않거나,
-      // myId를 특수 값(예: 0 또는 -1)으로 설정하고 ChatNotifier 내부에서 해당 ID를 처리하도록 합니다.
-      // ChatNotifier는 myId를 non-nullable int로 받으므로, 0을 임시로 사용합니다.
-      // 이 부분은 앱의 전체적인 인증 흐름과 에러 처리 정책에 따라 결정되어야 합니다.
       const int invalidMyId = 0; // 혹은 -1
       final chatRoomNotifier = ref.read(chatRoomNotifierProvider);
       final notifier = ChatNotifier(

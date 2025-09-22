@@ -57,6 +57,7 @@ class ChatRoomNotifier extends ChangeNotifier {
       message: message,
       itemId: itemId,
     );
+
     await fetchMyChatRooms();
   }
 

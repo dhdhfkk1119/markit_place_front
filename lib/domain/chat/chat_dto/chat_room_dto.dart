@@ -7,6 +7,7 @@ class ChatRoomDTO {
   final String lastMessage;
   final String createdAt;
   final int itemId;
+  int? unreadMessageCount;
 
   ChatRoomDTO({
     required this.roomId,
@@ -15,6 +16,7 @@ class ChatRoomDTO {
     required this.lastMessage,
     required this.createdAt,
     required this.itemId,
+    this.unreadMessageCount,
   });
 
   factory ChatRoomDTO.fromModel(ChatRoom dto) {
@@ -24,7 +26,8 @@ class ChatRoomDTO {
         otherUserName: dto.otherUser.name,
         lastMessage: dto.lastMessage,
         createdAt: dto.createdAt,
-        itemId: dto.itemId);
+        itemId: dto.itemId,
+        unreadMessageCount: dto.unreadMessageCount);
   }
 
   ChatRoomDTO copyWith({
@@ -34,6 +37,7 @@ class ChatRoomDTO {
     String? lastMessage,
     String? createdAt,
     int? itemId,
+    int? unreadMessageCount,
   }) {
     return ChatRoomDTO(
       roomId: roomId ?? this.roomId,
@@ -42,6 +46,7 @@ class ChatRoomDTO {
       lastMessage: lastMessage ?? this.lastMessage,
       createdAt: createdAt ?? this.createdAt,
       itemId: itemId ?? this.itemId,
+      unreadMessageCount: unreadMessageCount ?? this.unreadMessageCount,
     );
   }
 }

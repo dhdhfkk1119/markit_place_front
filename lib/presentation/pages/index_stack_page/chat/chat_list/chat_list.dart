@@ -173,11 +173,12 @@ class _ChatListState extends ConsumerState<ChatList> {
                       height: 10,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(30),
-                        color: Colors.purple,
+                        color: room.unreadMessageCount == 0
+                            ? Colors.white
+                            : Colors.purple,
                       ),
                     ),
                     onTap: () {
-                      print("해당 방의 번호는 ${room.roomId}");
                       Navigator.push(
                           context,
                           MaterialPageRoute(
