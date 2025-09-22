@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../_core/constants/assets.dart';
 import '../../../../../domain/chat/chat_provider/chat_room_notifier.dart';
-import '../../../../../domain/providers/SessionNotifier.dart';
 import '../chat_detail/chat_datail.dart';
 
 class ChatList extends ConsumerStatefulWidget {
