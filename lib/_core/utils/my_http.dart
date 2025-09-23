@@ -55,33 +55,33 @@ void setupInterceptors(AuthNotifier authNotifier) {
           final accessToken = await secureStorage.read(key: tokenKey);
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers["Authorization"] = "Bearer $accessToken";
-            print(
-                "AuthInterceptor (onRequest): Token header added for ${options.path}");
+            print("인증 인터셉터 (onRequest): 토큰 헤더 추가됨 - 경로: ${options.path}");
           } else {
             print(
-                "AuthInterceptor (onRequest): No access token found for protected route ${options.path}");
+                "인증 인터셉터 (onRequest): 보호된 경로에 접근 토큰 없음 - 경로: ${options.path}");
           }
         } else {
           print(
-              "AuthInterceptor (onRequest): Token header not added (public path): ${options.path}");
+              "인증 인터셉터 (onRequest): 토큰 헤더 추가 안됨 (공개 경로) - 경로: ${options.path}");
         }
         return handler.next(options);
       },
       onResponse: (response, handler) async {
         print(
-            "AuthInterceptor (onResponse): Received response for ${response.requestOptions.path}, Status: ${response.statusCode}");
+            "인증 인터셉터 (onResponse): 응답 수신 - 경로: ${response.requestOptions.path}, 상태: ${response.statusCode}");
         return handler.next(response);
       },
       onError: (DioException e, handler) async {
         print(
-            "AuthInterceptor (onError): Error on ${e.requestOptions.path}, Status: ${e.response?.statusCode}");
+            "인증 인터셉터 (onError): 오류 발생 - 경로: ${e.requestOptions.path}, 상태: ${e.response?.statusCode}");
         if (e.response?.statusCode == 401) {
-          print(
-              "AuthInterceptor: Detected 401 Unauthorized error. Path: ${e.requestOptions.path}");
+          print("인증 인터셉터: 401 인증 오류 감지 - 경로: ${e.requestOptions.path}");
 
-          String serverMessage =
-              "세션이 만료되었거나 다른 기기에서 로그인하여 자동으로 로그아웃됩니다. 다시 로그인해주세요.";
+          // 토큰 만료에 대한 새로운 기본 메시지.
+          String serverMessage = "인증 토큰이 만료되었습니다. 다시 로그인해주세요.";
 
+          // 서버로부터 더 구체적인 메시지를 받을 수 있도록 파싱 로직 유지,
+          // 하지만 기본값은 이제 일반적인 토큰 만료에 관한 것입니다.
           if (e.response?.data != null) {
             dynamic responseData = e.response!.data;
             if (responseData is Map<String, dynamic>) {
@@ -107,15 +107,15 @@ void setupInterceptors(AuthNotifier authNotifier) {
             }
           }
 
-          print(
-              "AuthInterceptor: Extracted server message for 401: \"$serverMessage\"");
+          print("인증 인터셉터: 401에 대한 추출/기본 서버 메시지: $serverMessage");
 
           await authNotifier.handleSessionInvalidation(serverMessage);
 
           return handler.reject(
             DioException(
               requestOptions: e.requestOptions,
-              error: "세션 만료 또는 동시 접속으로 인해 로그아웃 처리됨: $serverMessage",
+              // 수정된 DioException 오류 메시지
+              error: serverMessage, // 단순화됨
               type: DioExceptionType.cancel,
             ),
           );
