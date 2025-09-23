@@ -30,6 +30,7 @@ class ChatRoomNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 방 목록을 가져오는 메서드
   Future<void> fetchMyChatRooms() async {
     isLoading = true;
     notifyListeners();

@@ -100,4 +100,6 @@ class ProfileRepository {
     }
     return finalErrorMessage;
   }
+
+  // Future<MyProfileResponseDataDto> getFindById(int userId) async {}
 }

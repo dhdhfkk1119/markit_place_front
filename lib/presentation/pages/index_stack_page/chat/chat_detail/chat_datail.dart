@@ -7,6 +7,7 @@ import '../../../../../_core/constants/custom_widget.dart';
 import '../../../../../domain/chat/chat_dto/chat_message_dto.dart';
 import '../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
 import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
+import '../../../../../domain/chat/chat_provider/chat_room_notifier.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../../domain/members/providers/profile_provider.dart';
 import '../../../../../domain/product/dtos/product_detail_dto.dart';
@@ -49,6 +50,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   Widget build(BuildContext context) {
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
     final itemAsync = ref.watch(productDetailProvider(widget.room.itemId));
+    ref.read(chatRoomNotifierProvider.notifier).fetchMyChatRooms();
     // 유저의 정보를 찾아옴
 
     if (chatDetailNotifier.isLoading) {

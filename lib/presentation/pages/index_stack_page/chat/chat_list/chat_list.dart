@@ -125,10 +125,10 @@ class _ChatListState extends ConsumerState<ChatList> {
                           const SizedBox(width: 5),
                           IconButton(
                               onPressed: () {
-                                // 'read()'를 사용하여 메서드 호출
                                 ref
                                     .read(chatRoomNotifierProvider)
                                     .toggleBanner(false);
+                                // 방 목록을 다시 불러옴
                               },
                               icon: const Icon(Icons.cancel,
                                   color: Colors.purple))
