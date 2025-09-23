@@ -1,80 +1,103 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../domain/qna/model/qna_list_model.dart';
+import '../../../../../domain/qna/provider/qna_list_notifier.dart';
 
-class QnaScreen extends StatefulWidget {
+class QnaScreen extends ConsumerStatefulWidget {
   const QnaScreen({super.key});
 
   @override
-  State<QnaScreen> createState() => _QnaScreenState();
+  ConsumerState<QnaScreen> createState() => _QnaScreenState();
 }
 
-class _QnaScreenState extends State<QnaScreen> {
-  // TODO: 여기에 Q&A 리스트 데이터를 관리할 변수 추가
+class _QnaScreenState extends ConsumerState<QnaScreen> {
+  ScrollController _scrollController = ScrollController();
 
-  Future<void> _refreshData() async {
-    // TODO: 여기에 백엔드 API를 호출하여 최신 Q&A 데이터를 가져오는 로직 구현
-    print("데이터 새로고침 요청됨!");
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(
+      () {
+        if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 100) {
+          ref.read(qnaListProvider.notifier).loadNextPage();
+        }
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(qnaListProvider);
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: CustomWidget.buildIcon(
-          const Icon(Icons.close, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: CustomWidget.buildTitle(
-          '고객 센터',
-          color: Colors.black,
-        ),
-        centerTitle: true,
-        actions: [
-          CustomWidget.buildIcon(
-            const Icon(Icons.refresh, color: Colors.black),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: CustomWidget.buildIcon(
+            const Icon(Icons.close, color: Colors.black),
             onPressed: () {
-              _refreshData(); // 새로고침 기능 호출
+              Navigator.pop(context);
             },
           ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _buildQnaItem(
-                  title: '상품이 잘못 도착했어요. 어떻게 해야 하나요?',
-                  date: '2025. 08. 13',
-                ),
-                _buildQnaItem(
-                  title: '계정을 삭제하고 싶어요.',
-                  date: '2025. 08. 11',
-                ),
-                _buildQnaItem(
-                  title: 'MP PAY 충전이 안돼요.',
-                  date: '2025. 08. 08',
-                ),
-                _buildQnaItem(
-                  title: '비밀번호를 잊어버렸어요.',
-                  date: '2025. 08. 07',
-                ),
-              ],
-            ),
+          title: CustomWidget.buildTitle(
+            '고객 센터',
+            color: Colors.black,
           ),
+          centerTitle: true,
+          actions: [
+            CustomWidget.buildIcon(
+              const Icon(Icons.refresh, color: Colors.black),
+              onPressed: () async {
+                await ref.read(qnaListProvider.notifier).refresh();
+              },
+            ),
+          ],
         ),
-      ),
-    );
+        body: state.when(
+            data: (data) {
+              if (data.items.isEmpty) {
+                return const Center(
+                  child: Text(
+                    '질문 내역이 없습니다',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  await ref.read(qnaListProvider.notifier).refresh();
+                },
+                child: ListView.builder(
+                    controller: _scrollController,
+                    itemCount: data.items.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            _buildQnaItem(model: data.items[index]),
+                          ],
+                        ),
+                      );
+                    }),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, stack) => Center(
+                  child: Text('에러 발생: $err'),
+                )));
   }
 
-  Widget _buildQnaItem({required String title, required String date}) {
+  Widget _buildQnaItem({required QnaListModel model}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       decoration: BoxDecoration(
@@ -98,13 +121,13 @@ class _QnaScreenState extends State<QnaScreen> {
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  title,
+                  model.question,
                   size: 16,
                   weight: FontWeight.normal,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  date,
+                  model.createdAt == null ? '----/--/--' : model.createdAt,
                   size: 12,
                   color: Colors.grey[600],
                   weight: FontWeight.normal,

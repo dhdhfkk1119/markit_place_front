@@ -1,25 +1,25 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../model/product_favorite.dart';
-import '../repository/product_favorite_repository.dart';
+import '../model/notice_list_model.dart';
+import '../repository/notice_list_repository.dart';
 
-class ProductFavoriteListState {
-  final List<ProductFavoriteModel> items;
+class NoticeListState {
+  final List<NoticeListModel> items;
   final int page;
   final bool hasNext;
 
-  ProductFavoriteListState({
+  NoticeListState({
     required this.items,
     required this.page,
     required this.hasNext,
   });
 
-  ProductFavoriteListState copyWith({
-    List<ProductFavoriteModel>? items,
+  NoticeListState copyWith({
+    List<NoticeListModel>? items,
     int? page,
     bool? hasNext,
   }) {
-    return ProductFavoriteListState(
+    return NoticeListState(
       items: items ?? this.items,
       page: page ?? this.page,
       hasNext: hasNext ?? this.hasNext,
@@ -27,25 +27,25 @@ class ProductFavoriteListState {
   }
 }
 
-class ProductFavoriteNotifier extends AsyncNotifier<ProductFavoriteListState> {
-  final ProductFavoriteRepository _repository = ProductFavoriteRepository();
+class NoticeListNotifier extends AsyncNotifier<NoticeListState> {
+  final NoticeListRepository _repository = NoticeListRepository();
 
   @override
-  Future<ProductFavoriteListState> build() async {
+  Future<NoticeListState> build() async {
     return loadPage(0); // 초기 페이지 로딩
   }
 
-  Future<ProductFavoriteListState> loadPage(int page) async {
-    final response = await _repository.productFavorite(page: page);
+  Future<NoticeListState> loadPage(int page) async {
+    final response = await _repository.noticeList(page: page);
     final List<dynamic> content = response['content'];
-    final List<ProductFavoriteModel> newItems =
-        content.map((json) => ProductFavoriteModel.fromJson(json)).toList();
+    final List<NoticeListModel> newItems =
+        content.map((json) => NoticeListModel.fromJson(json)).toList();
 
     final hasNext = !response['last']; // 마지막 페이지 여부
     final currentItems = state.value?.items ?? [];
     final allItems = page == 0 ? newItems : [...currentItems, ...newItems];
 
-    final newState = ProductFavoriteListState(
+    final newState = NoticeListState(
       items: allItems,
       page: page,
       hasNext: hasNext,
@@ -77,6 +77,6 @@ class ProductFavoriteNotifier extends AsyncNotifier<ProductFavoriteListState> {
   }
 }
 
-final productFavoriteListProvider =
-    AsyncNotifierProvider<ProductFavoriteNotifier, ProductFavoriteListState>(
-        () => ProductFavoriteNotifier());
+final noticeListProvider =
+    AsyncNotifierProvider<NoticeListNotifier, NoticeListState>(
+        () => NoticeListNotifier());

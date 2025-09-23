@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
 import '../../../../../domain/trade/model/trade_model.dart';
 import '../../../../../domain/trade/provider/trade_provider.dart';
+import '../../product/detail_page/detail_page.dart';
 
 class PurchaseListScreen extends ConsumerStatefulWidget {
   const PurchaseListScreen({super.key});
@@ -17,7 +19,12 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {});
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 100) {
+        ref.read(tradeProvider.notifier).loadNextPage();
+      }
+    });
   }
 
   @override
@@ -42,20 +49,57 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
         ),
         title: CustomWidget.buildTitle('구매 내역'),
         centerTitle: true,
+        actions: [
+          CustomWidget.buildIcon(
+            const Icon(Icons.refresh, color: Colors.black),
+            onPressed: () async {
+              await ref.read(tradeProvider.notifier).refresh();
+            },
+          ),
+        ],
       ),
       body: state.when(
         data: (tradeList) {
+          final List<TradeListModel> trade = tradeList.items;
+
+          if (trade.isEmpty) {
+            return const Center(
+              child: Text(
+                '구매 내역이 없습니다',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            );
+          }
+
           return RefreshIndicator(
             onRefresh: () async {
               await ref.read(tradeProvider.notifier).refresh();
             },
             child: ListView.builder(
               controller: _scrollController,
-              itemCount: tradeList.length,
+              itemCount: trade.length,
               itemBuilder: (context, index) {
-                final item = tradeList[index];
-                return _buildPurchaseItem(
-                  model: item,
+                final item = trade[index];
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailPage(
+                                  productId: tradeList.items[index].id),
+                            ),
+                          );
+                        },
+                        child: _buildPurchaseItem(
+                          model: item,
+                        ),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -68,6 +112,8 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
   }
 
   Widget _buildPurchaseItem({required TradeListModel model}) {
+    final imageBytes = base64ToBytes(model?.thumbnailUrl);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -79,12 +125,20 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 상품 이미지
-          Container(
-            width: 80,
-            height: 80,
-            color: Colors.grey[200],
-            child: const Center(child: Icon(Icons.photo, color: Colors.grey)),
-          ),
+          if (imageBytes != null)
+            Image.memory(
+              imageBytes,
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            )
+          else
+            Container(
+              width: 80,
+              height: 80,
+              color: Colors.grey[200],
+              child: const Center(child: Icon(Icons.photo, color: Colors.grey)),
+            ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -110,7 +164,7 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  model.completedAt,
+                  model.completedAt ?? '----/--/--',
                   size: 12,
                   color: Colors.grey,
                 ),

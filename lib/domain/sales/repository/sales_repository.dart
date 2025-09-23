@@ -8,7 +8,7 @@ const FlutterSecureStorage _storage = FlutterSecureStorage();
 class SalesRepository {
   Future<Map<String, dynamic>> salesList({int page = 0, int size = 10}) async {
     final token = await _storage.read(key: "accessToken");
-
+    print("상품 거내 내역 Token: $token");
     try {
       final response = await dio.get(
         '/items/sales',

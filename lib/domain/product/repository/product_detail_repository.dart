@@ -28,7 +28,7 @@ class ProductDetailRepository {
       if (response.statusCode == 200) {
         print("상품에 대한 상세 정보 : ${response.data}");
 
-        return ProductDetail.fromJson(response.data['data']);
+        return ProductDetail.fromJson(response.data);
       } else {
         throw Exception('Failed to load products: ${response.statusCode}');
       }

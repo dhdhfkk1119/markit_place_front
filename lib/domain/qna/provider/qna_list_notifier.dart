@@ -1,25 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../model/qna_list_model.dart';
+import '../repository/qna_list_repository.dart';
 
-import '../model/product_favorite.dart';
-import '../repository/product_favorite_repository.dart';
-
-class ProductFavoriteListState {
-  final List<ProductFavoriteModel> items;
+class QnaListState {
+  final List<QnaListModel> items;
   final int page;
   final bool hasNext;
 
-  ProductFavoriteListState({
+  QnaListState({
     required this.items,
     required this.page,
     required this.hasNext,
   });
 
-  ProductFavoriteListState copyWith({
-    List<ProductFavoriteModel>? items,
+  QnaListState copyWith({
+    List<QnaListModel>? items,
     int? page,
     bool? hasNext,
   }) {
-    return ProductFavoriteListState(
+    return QnaListState(
       items: items ?? this.items,
       page: page ?? this.page,
       hasNext: hasNext ?? this.hasNext,
@@ -27,25 +26,25 @@ class ProductFavoriteListState {
   }
 }
 
-class ProductFavoriteNotifier extends AsyncNotifier<ProductFavoriteListState> {
-  final ProductFavoriteRepository _repository = ProductFavoriteRepository();
+class QnaListNotifier extends AsyncNotifier<QnaListState> {
+  final QnaListRepository _repository = QnaListRepository();
 
   @override
-  Future<ProductFavoriteListState> build() async {
+  Future<QnaListState> build() async {
     return loadPage(0); // 초기 페이지 로딩
   }
 
-  Future<ProductFavoriteListState> loadPage(int page) async {
-    final response = await _repository.productFavorite(page: page);
+  Future<QnaListState> loadPage(int page) async {
+    final response = await _repository.qnaList(page: page);
     final List<dynamic> content = response['content'];
-    final List<ProductFavoriteModel> newItems =
-        content.map((json) => ProductFavoriteModel.fromJson(json)).toList();
+    final List<QnaListModel> newItems =
+        content.map((json) => QnaListModel.fromJson(json)).toList();
 
     final hasNext = !response['last']; // 마지막 페이지 여부
     final currentItems = state.value?.items ?? [];
     final allItems = page == 0 ? newItems : [...currentItems, ...newItems];
 
-    final newState = ProductFavoriteListState(
+    final newState = QnaListState(
       items: allItems,
       page: page,
       hasNext: hasNext,
@@ -77,6 +76,5 @@ class ProductFavoriteNotifier extends AsyncNotifier<ProductFavoriteListState> {
   }
 }
 
-final productFavoriteListProvider =
-    AsyncNotifierProvider<ProductFavoriteNotifier, ProductFavoriteListState>(
-        () => ProductFavoriteNotifier());
+final qnaListProvider = AsyncNotifierProvider<QnaListNotifier, QnaListState>(
+    () => QnaListNotifier());
