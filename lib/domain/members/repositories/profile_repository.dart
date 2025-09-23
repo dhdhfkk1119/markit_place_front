@@ -1,5 +1,6 @@
 // D:/workspace-flutter/markit_place_front/lib/domain/members/repositories/profile_repository.dart
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../_core/dtos/api_response_dto.dart';
 import '../../../_core/dtos/error_dto.dart';
 import '../../../_core/utils/error_utils.dart';
@@ -7,6 +8,8 @@ import '../../../_core/utils/my_http.dart';
 import '../models/session_user.dart';
 import '../dtos/profile_update_request_dto.dart';
 import '../dtos/my_profile_response_data_dto.dart';
+
+final _storage = FlutterSecureStorage();
 
 class ProfileRepository {
   final Dio _dio = dio;
@@ -99,5 +102,25 @@ class ProfileRepository {
           '$logPrefix Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
     }
     return finalErrorMessage;
+  }
+
+  Future<MyProfileResponseDataDto> getFindByUser(int id) async {
+    final token = await _storage.read(key: "accessToken");
+    try {
+      final response = await _dio.get(
+        '/members/$id',
+        options: Options(
+          headers: {"Authorization": "Bearer $token"},
+        ),
+      );
+      if (response.statusCode == 200) {
+        final dto =
+            MyProfileResponseDataDto.fromJson(response.data['response']);
+        return dto;
+      }
+      throw Exception("조회 실패 (HTTP ${response.statusCode})");
+    } catch (e) {
+      throw Exception('프로필 조회 중 알 수 없는 오류: $e');
+    }
   }
 }

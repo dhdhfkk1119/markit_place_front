@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../../_core/constants/assets.dart';
+import '../../../mypage/main_profile/my_page.dart';
 
 class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String currentTitle;
@@ -48,7 +49,9 @@ class ProductListAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(CupertinoIcons.profile_circled),
-          onPressed: () {},
+          onPressed: () {
+            // 프로필 페이지로 이동
+          },
         ),
         IconButton(
           icon: const Icon(CupertinoIcons.search),

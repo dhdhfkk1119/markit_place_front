@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../chat_dto/chat_message_dto.dart';
 import '../chat_repository/chat_detail_repository.dart';
 import '../../members/providers/member_auth_provider.dart';
+import '../chat_repository/chat_room_repository.dart';
 
 class ChatDetailNotifier extends ChangeNotifier {
   final ChatDetailRepository repository = ChatDetailRepository();
+  final ChatRoomRepository roomRepository = ChatRoomRepository();
 
   List<ChatMessageDto> messages = [];
   bool isLoading = false;

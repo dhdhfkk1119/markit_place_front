@@ -49,9 +49,6 @@ class ChatRoomRepository {
         ),
       );
 
-      print("응답 코드: ${response.statusCode}");
-      print("응답 바디: ${response.data}");
-
       if (response.statusCode == 200) {
         final List<dynamic> dataList = response.data["content"];
         return dataList.map((data) {

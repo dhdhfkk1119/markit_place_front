@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import '../../../_core/sessions/session_provider.dart'; // 삭제
 // import '../../../_core/sessions/session_repository.dart'; // 삭제
 import '../../../_core/utils/error_utils.dart';
+import '../dtos/my_profile_response_data_dto.dart';
 import '../dtos/profile_update_request_dto.dart';
 import '../models/session_user.dart';
 import '../repositories/profile_repository.dart';

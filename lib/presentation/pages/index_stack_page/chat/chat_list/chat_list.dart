@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../_core/constants/assets.dart';
+import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../domain/chat/chat_provider/chat_room_notifier.dart';
+import '../../../../../domain/members/providers/OtherProfileNotifier.dart';
+import '../../../../../domain/members/providers/profile_provider.dart';
 import '../chat_detail/chat_datail.dart';
 
 class ChatList extends ConsumerStatefulWidget {
@@ -41,6 +46,11 @@ class _ChatListState extends ConsumerState<ChatList> {
     if (chatRoomNotifier.chatRooms.isEmpty) {
       return const Center(child: Text('채팅방이 없습니다.'));
     }
+    final filteredRooms = chatRoomNotifier.selectedButtonId == 4
+        ? chatRoomNotifier.chatRooms
+            .where((room) => room.unreadMessageCount! > 0)
+            .toList()
+        : chatRoomNotifier.chatRooms;
 
     return SafeArea(
       child: Column(
@@ -73,20 +83,6 @@ class _ChatListState extends ConsumerState<ChatList> {
                     ref,
                     1,
                     "전체",
-                    chatRoomNotifier.selectedButtonId,
-                    chatRoomNotifier.setSelectedButtonId),
-                const SizedBox(width: 15),
-                _buildSelectButton(
-                    ref,
-                    2,
-                    "판매",
-                    chatRoomNotifier.selectedButtonId,
-                    chatRoomNotifier.setSelectedButtonId),
-                const SizedBox(width: 15),
-                _buildSelectButton(
-                    ref,
-                    3,
-                    "구매",
                     chatRoomNotifier.selectedButtonId,
                     chatRoomNotifier.setSelectedButtonId),
                 const SizedBox(width: 15),
@@ -125,10 +121,10 @@ class _ChatListState extends ConsumerState<ChatList> {
                           const SizedBox(width: 5),
                           IconButton(
                               onPressed: () {
-                                // 'read()'를 사용하여 메서드 호출
                                 ref
                                     .read(chatRoomNotifierProvider)
                                     .toggleBanner(false);
+                                // 방 목록을 다시 불러옴
                               },
                               icon: const Icon(Icons.cancel,
                                   color: Colors.purple))
@@ -143,46 +139,67 @@ class _ChatListState extends ConsumerState<ChatList> {
                 separatorBuilder: (context, index) {
                   return const Divider(height: 0.5, thickness: 0.5);
                 },
-                itemCount: chatRoomNotifier.chatRooms.length,
+                itemCount: filteredRooms.length,
                 itemBuilder: (context, index) {
-                  final room = chatRoomNotifier.chatRooms[index];
-                  return ListTile(
-                    leading: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: ClipOval(
-                        clipBehavior: Clip.hardEdge,
-                        child: Image.asset(
-                          Assets.Images.logo,
-                          height: 10,
-                          width: 10,
-                          fit: BoxFit.cover,
+                  final room = filteredRooms[index];
+                  return Consumer(
+                    builder: (context, ref, _) {
+                      final profileState =
+                          ref.watch(userProfileProvider(room.otherUserId));
+
+                      return ListTile(
+                        leading: SizedBox(
+                          width: 30,
+                          height: 30,
+                          child: ClipOval(
+                            child: profileState.when(
+                              data: (user) {
+                                if (user?.profileImageBase64 != null) {
+                                  final bytes =
+                                      base64Decode(user!.profileImageBase64!);
+                                  return Image.memory(bytes, fit: BoxFit.cover);
+                                } else {
+                                  return Image.asset(
+                                    Assets.Images.logo,
+                                    fit: BoxFit.cover,
+                                  );
+                                }
+                              },
+                              loading: () => const CircularProgressIndicator(
+                                  strokeWidth: 2),
+                              error: (e, _) => Image.asset(
+                                Assets.Images.logo,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    title: Text(
-                      room.otherUserName,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      room.lastMessage,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    trailing: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        color: room.unreadMessageCount == 0
-                            ? Colors.white
-                            : Colors.purple,
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ChatDetail(room: room)));
+                        title: Text(
+                          room.otherUserName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          room.lastMessage,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        trailing: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            color: room.unreadMessageCount == 0
+                                ? Colors.white
+                                : Colors.purple,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ChatDetail(room: room)),
+                          );
+                        },
+                      );
                     },
                   );
                 }),
