@@ -25,10 +25,6 @@ class _DetailItemImageState extends State<DetailItemImage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.imagePaths.isEmpty) {
-      return _buildDefaultImage();
-    }
-
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.5,
       child: Stack(
