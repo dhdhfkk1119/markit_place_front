@@ -38,10 +38,8 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
       final notifier = ref.read(productListProvider.notifier);
 
       if (_scrollController.position.pixels >=
-                  _scrollController.position.maxScrollExtent - 50 &&
-              notifier.hasNext ??
-          false) {
-        notifier.fetchNextPage();
+          _scrollController.position.maxScrollExtent - 200) {
+        ref.read(productListProvider.notifier).fetchNextPage();
       }
     });
   }
@@ -93,11 +91,7 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
                           : ListView.separated(
                               controller: _scrollController,
                               itemCount: productList.length +
-                                  (ref
-                                          .read(productListProvider.notifier)
-                                          .hasNext
-                                      ? 1
-                                      : 0),
+                                  (productListState.isLoading ? 1 : 0),
                               itemBuilder: (context, index) {
                                 if (index < productList.length) {
                                   final product = productList[index];

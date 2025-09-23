@@ -6,16 +6,16 @@ import 'product_list_notifier.dart';
 
 // FamilyAsyncNotifier를 사용
 class ProductDetailNotifier extends FamilyAsyncNotifier<ProductDetailDto, int> {
-  final ProductDetailRepository _repository = ProductDetailRepository();
+  late final ProductDetailRepository _repository;
 
   @override
   Future<ProductDetailDto> build(int itemId) async {
+    _repository = ref.read(productDetailRepositoryProvider);
     // itemId는 build의 인자로 바로 받음
     try {
-      final response = await _repository.productDetail(itemId: itemId);
-      final productDetail = ProductDetail.fromJson(response);
-      final dto = ProductDetailDto.fromModel(productDetail);
-      return dto;
+      final productDetailModel =
+          await _repository.productDetail(itemId: itemId);
+      return ProductDetailDto.fromModel(productDetailModel);
     } catch (e) {
       throw Exception("서버를 연결할수없습니다");
     }
@@ -28,32 +28,13 @@ class ProductDetailNotifier extends FamilyAsyncNotifier<ProductDetailDto, int> {
 
     try {
       final status = await _repository.productFavorite(itemId: itemId);
+      state = AsyncValue.data(currentProductDetail);
 
-      final updatedProductDetail = currentProductDetail.copyWith(
-        productList: currentProductDetail.productList.copyWith(
-          favoriteCount: status.favoriteCount?.toInt() ??
-              currentProductDetail.productList.favoriteCount,
-        ),
-        liked: status.liked,
-      );
-
-      state = AsyncValue.data(updatedProductDetail);
-
-      final productListNotifier = ref.read(productListProvider.notifier);
-      final currentList = productListNotifier.state.value;
-
-      if (currentList != null) {
-        final updatedList = currentList.map((item) {
-          if (item.id == itemId) {
-            return item.copyWith(
-              favoriteCount: status.favoriteCount?.toInt(),
-            );
-          }
-          return item;
-        }).toList();
-
-        productListNotifier.state = AsyncValue.data(updatedList);
-      }
+      // 리스트 Notifier에게는 "이 아이템의 좋아요 수가 이걸로 바뀌었어" 라고 알려주기만 함
+      ref.read(productListProvider.notifier).updateItemFavoriteStatus(
+            itemId,
+            status.favoriteCount?.toInt() ?? 0,
+          );
     } catch (e) {
       throw Exception("좋아요 처리 실패: $e");
     }
