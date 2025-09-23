@@ -16,7 +16,6 @@ class ProductListItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print("리스트 상품 정보들 ${product.thumbnail}");
     return InkWell(
       onTap: () {
         Navigator.push(
