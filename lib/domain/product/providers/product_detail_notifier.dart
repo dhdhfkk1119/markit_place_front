@@ -28,12 +28,20 @@ class ProductDetailNotifier extends FamilyAsyncNotifier<ProductDetailDto, int> {
 
     try {
       final status = await _repository.productFavorite(itemId: itemId);
-      state = AsyncValue.data(currentProductDetail);
+      final newProductList = currentProductDetail.productList.copyWith(
+        favoriteCount: status.favoriteCount,
+      );
 
-      // 리스트 Notifier에게는 "이 아이템의 좋아요 수가 이걸로 바뀌었어" 라고 알려주기만 함
+      final newState = currentProductDetail.copyWith(
+        liked: status.liked,
+        productList: newProductList,
+      );
+
+      state = AsyncValue.data(newState);
+
       ref.read(productListProvider.notifier).updateItemFavoriteStatus(
             itemId,
-            status.favoriteCount?.toInt() ?? 0,
+            status.favoriteCount,
           );
     } catch (e) {
       throw Exception("좋아요 처리 실패: $e");
