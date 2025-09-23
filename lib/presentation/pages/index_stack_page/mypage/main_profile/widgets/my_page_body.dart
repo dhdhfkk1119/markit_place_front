@@ -31,7 +31,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const SocialLoginPage()),
-                (Route<dynamic> route) => false,
+            (Route<dynamic> route) => false,
           );
         }
       });
@@ -198,7 +198,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
               const Divider(height: 30),
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -305,7 +305,7 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const SocialLoginPage()),
-                          (Route<dynamic> route) => false,
+                      (Route<dynamic> route) => false,
                     );
                   }
                 },
