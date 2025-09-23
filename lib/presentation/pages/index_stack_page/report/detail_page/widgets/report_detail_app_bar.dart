@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 class ReportDetailAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  final VoidCallback onBack;
-
-  const ReportDetailAppBar({super.key, required this.onBack});
+  final VoidCallback? onBack;
+  const ReportDetailAppBar({super.key, this.onBack});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -12,10 +11,17 @@ class ReportDetailAppBar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: const Text("신고 내역"),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: false,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios),
-        onPressed: onBack,
+        onPressed: onBack ?? () => Navigator.of(context).maybePop(),
+        icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+      ),
+      title: const Text(
+        '신고 내역',
+        style: TextStyle(
+            fontSize: 22, fontWeight: FontWeight.w800, color: Colors.black),
       ),
     );
   }

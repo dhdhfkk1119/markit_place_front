@@ -5,6 +5,7 @@ import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
 // import '../../../../../../domain/providers/SessionNotifier.dart'; // 수정: SessionNotifier import 제거
 import '../../../../auth/social_login_page/social_login_page.dart';
+import '../../../report/list_page/report_list_page.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
 import '../qna_screen.dart';
 import '../notice_screen.dart';
@@ -262,9 +263,19 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                 icon: Icons.my_location_outlined,
                 text: "내 동네 설정",
               ),
-              _buildMenuTile(
-                icon: Icons.check_circle_outline,
-                text: "동네 인증",
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ReportListPage(),
+                    ),
+                  );
+                },
+                child: _buildMenuTile(
+                  icon: Icons.check_circle_outline,
+                  text: "동네 인증",
+                ),
               ),
               _buildMenuTile(
                 icon: Icons.search_outlined,

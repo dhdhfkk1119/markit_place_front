@@ -1,32 +1,28 @@
 import 'package:flutter/material.dart';
+import 'report_detail_info_row.dart';
+import 'report_detail_product_card.dart';
+import 'report_detail_status_section.dart';
 
 class ReportDetailBody extends StatelessWidget {
-  final String productTitle;
-  final int price;
-  final String location;
-  final String reporterName;
-  final String createdAt;
-  final String reason;
-  final String status;
-
-  const ReportDetailBody({
-    super.key,
-    required this.productTitle,
-    required this.price,
-    required this.location,
-    required this.reporterName,
-    required this.createdAt,
-    required this.reason,
-    required this.status,
-  });
+  const ReportDetailBody({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const divider = Divider(height: 1, color: Color(0xFFEDEDED));
     return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [],
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      children: const [
+        ReportDetailProductCard(),
+        SizedBox(height: 16),
+        divider,
+        ReportDetailInfoRow(label: '신고자', value: '유저2'),
+        divider,
+        ReportDetailInfoRow(label: '신고 일자', value: '2025.09.23'),
+        divider,
+        ReportDetailInfoRow(label: '신고 사유', value: '사기 의심 거래'),
+        divider,
+        ReportDetailStatusSection(statusLabel: '대기중'),
+      ],
     );
   }
 }
-
-/// 상품 카드
