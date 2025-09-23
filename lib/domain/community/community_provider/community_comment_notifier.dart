@@ -2,27 +2,42 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../community_repository/community_comment_repository.dart';
 
-// 댓글 작성 상태
 class CommunityCommentState {
-  final bool isAdding; // 댓글 추가 중인지 여부
+  final bool isAdding;
+  final bool isUpdating;
+  final bool isDeleting;
   final String? errorMessage;
-  final bool addSuccess; // 댓글 추가 성공 여부 (UI에서 감지용)
+  final bool addSuccess;
+  final bool updateSuccess;
+  final bool deleteSuccess;
 
   CommunityCommentState({
     this.isAdding = false,
+    this.isUpdating = false,
+    this.isDeleting = false,
     this.errorMessage,
     this.addSuccess = false,
+    this.updateSuccess = false,
+    this.deleteSuccess = false,
   });
 
   CommunityCommentState copyWith({
     bool? isAdding,
-    String? errorMessage, // 이전 에러를 지우기 위해 null 전달 가능
+    bool? isUpdating,
+    bool? isDeleting,
+    String? errorMessage,
     bool? addSuccess,
+    bool? updateSuccess,
+    bool? deleteSuccess,
   }) {
     return CommunityCommentState(
       isAdding: isAdding ?? this.isAdding,
+      isUpdating: isUpdating ?? this.isUpdating,
+      isDeleting: isDeleting ?? this.isDeleting,
       errorMessage: errorMessage,
       addSuccess: addSuccess ?? this.addSuccess,
+      updateSuccess: updateSuccess ?? this.updateSuccess,
+      deleteSuccess: deleteSuccess ?? this.deleteSuccess,
     );
   }
 }
@@ -41,10 +56,8 @@ class CommunityCommentNotifier extends StateNotifier<CommunityCommentState> {
           errorMessage: "댓글 내용을 입력해주세요.", addSuccess: false, isAdding: false);
       return;
     }
-
     state =
         state.copyWith(isAdding: true, errorMessage: null, addSuccess: false);
-
     try {
       await _repository.createComment(postId: postId, content: content);
       state = state.copyWith(isAdding: false, addSuccess: true);
@@ -53,26 +66,60 @@ class CommunityCommentNotifier extends StateNotifier<CommunityCommentState> {
           isAdding: false,
           errorMessage: "댓글 작성 중 오류: ${e.toString()}",
           addSuccess: false);
-      if (kDebugMode) {
-        print("CommunityCommentNotifier: Error adding comment - $e");
-      }
+    }
+  }
+
+  Future<void> updateComment({
+    required int commentId,
+    required String content,
+  }) async {
+    if (content.isEmpty) {
+      state =
+          state.copyWith(errorMessage: "수정할 내용을 입력해주세요.", updateSuccess: false);
+      return;
+    }
+    state = state.copyWith(
+        isUpdating: true, errorMessage: null, updateSuccess: false);
+    try {
+      await _repository.updateComment(commentId: commentId, content: content);
+      state = state.copyWith(isUpdating: false, updateSuccess: true);
+    } catch (e) {
+      state = state.copyWith(
+          isUpdating: false,
+          errorMessage: "댓글 수정 중 오류: ${e.toString()}",
+          updateSuccess: false);
+    }
+  }
+
+  Future<void> deleteComment(int commentId) async {
+    state = state.copyWith(
+        isDeleting: true, errorMessage: null, deleteSuccess: false);
+    try {
+      await _repository.deleteComment(commentId: commentId);
+      state = state.copyWith(isDeleting: false, deleteSuccess: true);
+    } catch (e) {
+      state = state.copyWith(
+          isDeleting: false,
+          errorMessage: "댓글 삭제 중 오류: ${e.toString()}",
+          deleteSuccess: false);
     }
   }
 
   void resetAddSuccess() {
-    if (state.addSuccess) {
-      state = state.copyWith(addSuccess: false, errorMessage: null);
-    }
+    state = state.copyWith(
+      addSuccess: false,
+      updateSuccess: false,
+      deleteSuccess: false,
+      errorMessage: null,
+    );
   }
 }
 
-// Repository Provider
 final communityCommentRepositoryProvider =
     Provider<CommunityCommentRepository>((ref) {
   return CommunityCommentRepository();
 });
 
-// Comment Notifier Provider
 final communityCommentProvider =
     StateNotifierProvider<CommunityCommentNotifier, CommunityCommentState>(
         (ref) {

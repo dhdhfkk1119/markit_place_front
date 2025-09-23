@@ -43,8 +43,10 @@ class _CommunityDetailPageDetailPageState
 
     ref.listen<CommunityCommentState>(communityCommentProvider,
         (previous, next) {
-      if (next.addSuccess) {
-        _commentController.clear();
+      if (next.addSuccess || next.updateSuccess || next.deleteSuccess) {
+        if (next.addSuccess) {
+          _commentController.clear();
+        }
         ref
             .read(communityDetailProvider(widget.postId).notifier)
             .getCommunityDetailInfo();
@@ -211,8 +213,6 @@ class _CommunityDetailPageDetailPageState
     return Row(
       children: [
         _buildIcon(context, const Icon(CupertinoIcons.profile_circled),
-            color: Theme.of(context).iconTheme.color),
-        _buildIcon(context, const Icon(CupertinoIcons.heart),
             color: Theme.of(context).iconTheme.color),
         _buildIcon(context, const Icon(Icons.more_vert), onPressed: () {
           showModalBottomSheet(
