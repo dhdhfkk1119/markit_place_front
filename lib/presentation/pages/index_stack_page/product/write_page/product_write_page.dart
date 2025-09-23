@@ -56,7 +56,9 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
         ? widget.model?.productList.content ?? ""
         : productItem.description;
 
-    final price = productItem.price ?? widget.model?.productList.price;
+    final price = (productItem.price == 0)
+        ? widget.model?.productList.price ?? 0
+        : productItem.price;
 
     // 신규 작성일 때만 "빈값 검사" 강제
     if (widget.model == null &&
@@ -71,26 +73,26 @@ class _ProductWritePageState extends ConsumerState<ProductWritePage> {
       if (widget.model == null) {
         // 신규 작성
         await ref.read(productWriteProvider.notifier).writeProduct(
-              selectedCategoryId: selectedCategoryId!,
-              title: title,
-              content: description,
-              price: price!,
-              images: productItem.images,
-              memberAddressId: authState.user!.memberId,
-              tradeLocation: authState.user!.name,
+            selectedCategoryId: selectedCategoryId!,
+            title: title,
+            content: description,
+            price: price,
+            images: productItem.images,
+            memberAddressId: authState.user!.memberId,
+            tradeLocation: null // 추후 추가되면 저장,
             );
       } else {
         // 수정하기
         await ref.read(productWriteProvider.notifier).updateProduct(
-              productId: widget.model!.productList.id,
-              selectedCategoryId:
-                  selectedCategoryId ?? widget.model!.itemCategoryId,
-              title: title,
-              content: description,
-              price: price!,
-              images: productItem.images,
-              memberAddressId: authState.user!.memberId,
-              tradeLocation: authState.user!.name,
+            productId: widget.model!.productList.id,
+            selectedCategoryId:
+                selectedCategoryId ?? widget.model!.itemCategoryId,
+            title: title,
+            content: description,
+            price: price,
+            images: productItem.images,
+            memberAddressId: authState.user!.memberId,
+            tradeLocation: null // 추후 추가되면 저장,
             );
       }
 

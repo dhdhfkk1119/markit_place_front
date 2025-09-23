@@ -17,7 +17,7 @@ class ProductDetailNotifier extends FamilyAsyncNotifier<ProductDetailDto, int> {
       final dto = ProductDetailDto.fromModel(productDetail);
       return dto;
     } catch (e) {
-      throw Exception(e);
+      throw Exception("서버를 연결할수없습니다");
     }
   }
 

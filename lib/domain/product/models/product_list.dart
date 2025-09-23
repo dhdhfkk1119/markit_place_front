@@ -1,13 +1,32 @@
+class ProductLocation {
+  final double latitude;
+  final double longitude;
+
+  ProductLocation({
+    required this.latitude,
+    required this.longitude,
+  });
+
+  factory ProductLocation.fromJson(Map<String, dynamic> json) {
+    return ProductLocation(
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
+    );
+  }
+}
+
 class ProductList {
-  int id;
-  String title;
-  String content;
-  int price;
-  String itemCategoryName;
-  String tradeLocation;
-  String? thumbnail;
-  int? favoriteCount;
-  int viewCount;
+  final int id;
+  final String title;
+  final String content;
+  final int price;
+  final String itemCategoryName;
+  final ProductLocation? tradeLocation; // Changed to ProductLocation
+  final String? thumbnail;
+  final int favoriteCount;
+  final int viewCount;
+  final int itemCategoryId;
+  final List<String> tags; // Added tags field
 
   ProductList({
     required this.id,
@@ -15,33 +34,29 @@ class ProductList {
     required this.content,
     required this.price,
     required this.itemCategoryName,
-    required this.tradeLocation,
+    this.tradeLocation,
     this.thumbnail,
-    this.favoriteCount,
+    required this.favoriteCount,
     required this.viewCount,
+    required this.itemCategoryId,
+    required this.tags,
   });
 
   factory ProductList.fromJson(Map<String, dynamic> json) {
-    String locationString;
-    final category = json['itemCategoryName']?.toString() ?? '카테고리 없음';
-
-    if (json['tradeLocation'] is Map<String, dynamic>) {
-      final locationMap = json['tradeLocation'];
-      final latitude = locationMap['latitude']?.toString() ?? '위도 정보 없음';
-      final longitude = locationMap['longitude']?.toString() ?? '경도 정보 없음';
-
-      // TODO -> Geocoding으로 위치 표시
-    }
-
     return ProductList(
-      id: json['id'] ?? 0,
-      title: json['title'] ?? '제목 없음',
-      content: json['content'] ?? '내용 없음',
-      price: json['price'] ?? 0,
-      itemCategoryName: category,
-      tradeLocation: "locationString",
-      favoriteCount: json['favoriteCount'] ?? 0,
-      viewCount: json['viewCount'] ?? 0,
+      id: (json['id'] as num).toInt(),
+      title: json['title'] as String,
+      content: json['content'] as String,
+      price: (json['price'] as num).toInt(),
+      itemCategoryName: json['itemCategoryName'] as String,
+      tradeLocation: json['tradeLocation'] != null
+          ? ProductLocation.fromJson(json['tradeLocation'])
+          : null,
+      thumbnail: json['thumbnail'] as String?,
+      favoriteCount: (json['favoriteCount'] as num).toInt(),
+      viewCount: (json['viewCount'] as num).toInt(),
+      itemCategoryId: (json['itemCategoryId'] as num).toInt(),
+      tags: List<String>.from(json['tags'] ?? []),
     );
   }
 }

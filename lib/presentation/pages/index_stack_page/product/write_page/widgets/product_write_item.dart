@@ -427,9 +427,11 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
           controller: _priceController,
           keyboardType: TextInputType.number,
           onChanged: (text) {
-            final price = int.tryParse(text) ?? 0;
-            ref.read(productItemProvider.notifier).updatePrice(price);
-            print('로그: 가격 입력됨 -> ${price}');
+            final finalPrice = _priceController.text.isEmpty
+                ? widget.model?.productList.price // 기존 가격
+                : int.tryParse(_priceController.text);
+
+            ref.read(productItemProvider.notifier).updatePrice(finalPrice);
           },
           decoration: InputDecoration(
               hintText: '상품의 가격을 입력해주세요',

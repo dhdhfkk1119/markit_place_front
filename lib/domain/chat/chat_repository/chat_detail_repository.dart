@@ -59,4 +59,33 @@ class ChatDetailRepository {
       throw Exception("채팅방메세지 목록을 가져오는데 실패");
     }
   }
+
+  Future<void> markMessagesAsRead({
+    required int roomId,
+    required int myId,
+  }) async {
+    print("[Repository] markMessagesAsRead 호출: roomId=$roomId, myId=$myId");
+
+    final token = await _storage.read(key: "accessToken");
+    if (token == null) {
+      throw Exception("토큰이 없어 읽음 처리를 할 수 없습니다.");
+    }
+
+    try {
+      print("[Repository] Dio PUT 요청 시작");
+      final response = await Dio().put(
+        Url + '/chat/room/$roomId/read',
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
+
+      print("[Repository] Dio PUT 요청 완료, statusCode=${response.statusCode}");
+      if (response.statusCode != 200) {
+        throw Exception("읽음 처리 실패 (HTTP ${response.statusCode})");
+      }
+    } catch (e, st) {
+      print("[Repository] 에러 발생: $e");
+      print(st);
+      throw Exception("읽음 처리 실패");
+    }
+  }
 }

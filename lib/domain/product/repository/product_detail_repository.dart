@@ -22,7 +22,11 @@ class ProductDetailRepository {
           headers: {"Authorization": "Bearer $token"},
         ),
       );
+      print("상품에 대한 상세 정보 : ${response.data}");
+
       if (response.statusCode == 200) {
+        print("상품에 대한 상세 정보 : ${response.data}");
+
         return response.data;
       } else {
         throw Exception('Failed to load products: ${response.statusCode}');

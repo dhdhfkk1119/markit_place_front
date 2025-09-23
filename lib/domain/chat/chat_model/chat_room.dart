@@ -7,6 +7,7 @@ class ChatRoom {
   final String lastMessage;
   final String createdAt;
   final int itemId;
+  int? unreadMessageCount;
 
   ChatRoom({
     required this.roomId,
@@ -14,6 +15,7 @@ class ChatRoom {
     required this.lastMessage,
     required this.createdAt,
     required this.itemId,
+    this.unreadMessageCount,
   });
 
   factory ChatRoom.fromJson(Map<String, dynamic> data) {
@@ -28,6 +30,7 @@ class ChatRoom {
       lastMessage: data['lastMessage'],
       createdAt: data['lastMessageCreatedAt'],
       itemId: data['itemId'],
+      unreadMessageCount: data['unreadMessageCount'],
     );
   }
 }

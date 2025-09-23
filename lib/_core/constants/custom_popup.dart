@@ -5,6 +5,7 @@ import '../../domain/community/community_provider/community_post_write_notifier.
 import '../../domain/members/providers/member_auth_provider.dart';
 import '../../domain/product/providers/product_detail_notifier.dart';
 import '../../domain/product/providers/product_list_notifier.dart';
+import '../../domain/report/report_notifier/product_report_notifier.dart';
 import '../../presentation/pages/index_stack_page/main_screen.dart';
 import '../../presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
 import '../../presentation/pages/index_stack_page/product/write_page/product_write_page.dart';
@@ -56,14 +57,16 @@ class CustomPopUp {
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const Icon(Icons.report, color: Colors.red),
-              title: CustomWidget.buildTitle("신고하기", weight: FontWeight.w200),
-              onTap: () {
-                Navigator.pop(context);
-                showReportPopUp(context, userName, productName, productId);
-              },
-            ),
+            if (!isOwner)
+              ListTile(
+                leading: const Icon(Icons.report, color: Colors.red),
+                title: CustomWidget.buildTitle("신고하기", weight: FontWeight.w200),
+                onTap: () {
+                  Navigator.pop(context);
+                  showReportPopUp(
+                      context, userName, productName, productId, ref);
+                },
+              ),
             if (isOwner) ...[
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
@@ -126,9 +129,9 @@ class CustomPopUp {
   }
 
   static showReportPopUp(BuildContext context, String userName,
-      String productName, int productId) {
+      String productName, int productId, WidgetRef ref) {
     final TextEditingController reasonController = TextEditingController();
-
+    final report = ref.read(productReportProvider.notifier);
     showDialog(
       context: context,
       barrierDismissible: false, // 바깥 터치로 닫히지 않도록
@@ -190,7 +193,7 @@ class CustomPopUp {
               child: const Text("취소"),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 String reason = reasonController.text;
                 if (reason.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -198,11 +201,21 @@ class CustomPopUp {
                   );
                   return;
                 }
-                // TODO: 서버에 신고 내용 전송 로직 추가
-                print(
-                    "신고자: $userName, 상품: $productName($productId), 사유: $reason");
-
-                Navigator.pop(context); // 팝업 닫기
+                try {
+                  await report.saveProductReport(
+                      itemId: productId, reason: reason);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("신고가 접수되었습니다.")),
+                  );
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("신고 실패: $e")),
+                  );
+                  Navigator.pop(context); // 팝업 닫기
+                }
               },
               child: const Text("확인"),
             ),
@@ -213,10 +226,10 @@ class CustomPopUp {
   }
 
   static Widget buildCommunityAppBarPopUp(
-      BuildContext context,
-      CommunityDetailDto dto,
-      WidgetRef ref,
-      ) {
+    BuildContext context,
+    CommunityDetailDto dto,
+    WidgetRef ref,
+  ) {
     // 현재 로그인된 유저 ID 가져오기 (예시)
     final authState = ref.watch(authNotifierProvider);
     final currentUserId = authState.user?.loginId;
@@ -258,7 +271,8 @@ class CustomPopUp {
                     ElevatedButton(
                       onPressed: () async {
                         await communityNotifier.deletePost(dto.id);
-                        Navigator.of(context, rootNavigator: true).pop(); // 다이얼로그 닫기
+                        Navigator.of(context, rootNavigator: true)
+                            .pop(); // 다이얼로그 닫기
                         Navigator.pop(context); // 상세 페이지 닫고 목록으로 돌아가기
                       },
                       style: ElevatedButton.styleFrom(

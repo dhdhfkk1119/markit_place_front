@@ -77,6 +77,7 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
               _buildTitleSection(title: '가격 정렬'),
               _buildMinPrice(),
               _buildMaxPrice(),
+              _buildApplyFilterButton(context, ref),
             ],
           ),
         );
@@ -161,8 +162,6 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
                 controller: _minPriceController,
                 hint: "최소가격 입력",
                 onChanged: (value) {
-                  // 입력값이 변경될 때마다 StateProvider의 상태를 업데이트합니다.
-                  // 숫자가 아니면 null을 전달합니다.
                   final price = int.tryParse(value);
                   ref.read(minPriceProvider.notifier).state = price;
                 },
@@ -203,18 +202,15 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
   Widget _buildApplyFilterButton(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
       onPressed: () {
-        // 버튼이 눌렸을 때 모든 필터 상태를 읽어와 검색을 실행합니다.
         final minPrice = ref.read(minPriceProvider);
         final maxPrice = ref.read(maxPriceProvider);
         final sortBy = ref.read(sortOptionProvider);
-        //... 다른 필터들도 읽어옵니다.
 
         ref.read(productListProvider.notifier).searchProducts(
               ProductSearchDTO(
                 minPrice: minPrice,
                 maxPrice: maxPrice,
                 sortBy: sortBy,
-                //... 다른 필터들도 전달합니다.
               ),
             );
       },
