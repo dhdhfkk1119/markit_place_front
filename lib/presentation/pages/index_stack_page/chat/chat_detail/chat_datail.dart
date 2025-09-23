@@ -275,11 +275,10 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                           fit: BoxFit.cover,
                         )
                       // 이미지가 없을 경우 대체이미지
-                      : Image.asset(
-                          "assets/product.jpg",
-                          height: 70,
-                          width: 70,
-                          fit: BoxFit.cover,
+                      : const Icon(
+                          Icons.broken_image,
+                          size: 70,
+                          color: Colors.grey,
                         ),
                 ),
                 const SizedBox(width: 10),
