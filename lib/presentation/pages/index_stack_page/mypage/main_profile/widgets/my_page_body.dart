@@ -4,6 +4,7 @@ import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../auth/social_login_page/social_login_page.dart';
+import '../../../report/list_page/report_list_page.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
 import '../qna_screen.dart';
 import '../notice_screen.dart';
@@ -258,9 +259,19 @@ class _MyPageBodyState extends ConsumerState<MyPageBody> {
                 icon: Icons.my_location_outlined,
                 text: "내 동네 설정",
               ),
-              _buildMenuTile(
-                icon: Icons.check_circle_outline,
-                text: "신고 내역",
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const ReportListPage(),
+                    ),
+                  );
+                },
+                child: _buildMenuTile(
+                  icon: Icons.check_circle_outline,
+                  text: "신고 내역",
+                ),
               ),
               _buildMenuTile(
                 icon: Icons.search_outlined,
