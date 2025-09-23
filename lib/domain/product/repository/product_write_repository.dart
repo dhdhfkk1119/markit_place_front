@@ -4,7 +4,6 @@ import '../../../_core/utils/my_http.dart';
 import '../dtos/product_write_dto.dart';
 import '../models/product_list.dart';
 
-String Url = baseUrl;
 const FlutterSecureStorage _storage = FlutterSecureStorage();
 
 class ProductWriteRepository {
@@ -18,7 +17,7 @@ class ProductWriteRepository {
 
     try {
       final response = await dio.post(
-        '$Url/items',
+        '/items',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
@@ -63,7 +62,7 @@ class ProductWriteRepository {
       }
 
       final response = await dio.patch(
-        '$Url/items/$productId',
+        '/items/$productId',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),

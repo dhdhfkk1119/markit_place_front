@@ -8,17 +8,9 @@ class ReportDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ReportDetailAppBar(onBack: () => Navigator.pop(context)),
-      body: const ReportDetailBody(
-        productTitle: '싸도 너무 싸다 아무나 사세요(사기아님)',
-        price: 2000,
-        location: '범일동',
-        reporterName: '유저2',
-        createdAt: '2025.09.23',
-        reason: '사기 의심 거래',
-        status: '대기중',
-      ),
+    return const Scaffold(
+      appBar: ReportDetailAppBar(onBack: null),
+      body: ReportDetailBody(),
     );
   }
 }
