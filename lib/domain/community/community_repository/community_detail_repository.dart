@@ -20,7 +20,7 @@ class CommunityDetailRepository {
         ),
       );
 
-      print('커뮤니티 글 상세 정보 응답 코드: ${response.statusCode}');
+      print('커뮤니티 글 상세 정보 응답 코드: ${response.data['response']}');
 
       if (response.statusCode == 200) {
         if (response.data != null && response.data['response'] != null) {

@@ -229,6 +229,7 @@ class _CommunityDetailPageDetailPageState
     );
   }
 
+  //
   Widget _buildTitle(BuildContext context, String title,
       {Color? color, FontWeight? weight}) {
     return Text(
