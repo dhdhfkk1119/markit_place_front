@@ -8,6 +8,7 @@ import '../../../../../domain/chat/chat_dto/chat_message_dto.dart';
 import '../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
 import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../domain/members/providers/profile_provider.dart';
 import '../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../domain/product/providers/product_detail_notifier.dart';
 import 'widgets/detail_bottom_sheet.dart';
@@ -48,6 +49,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   Widget build(BuildContext context) {
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
     final itemAsync = ref.watch(productDetailProvider(widget.room.itemId));
+    // 유저의 정보를 찾아옴
 
     if (chatDetailNotifier.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -192,8 +194,16 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
               child: Text(message.content),
             ),
           ),
-          CustomWidget.buildTitle(message.time,
-              size: 11, color: Colors.black87),
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomWidget.buildTitle(message.time,
+                    size: 11, color: Colors.black87)
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -206,8 +216,20 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          CustomWidget.buildTitle(message.time,
-              size: 11, color: Colors.black87),
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                !message.isRead
+                    ? CustomWidget.buildTitle("1",
+                        size: 11, color: Colors.black)
+                    : const SizedBox.shrink(),
+                CustomWidget.buildTitle(message.time,
+                    size: 11, color: Colors.black87),
+              ],
+            ),
+          ),
           Container(
             constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.7),

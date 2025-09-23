@@ -1,21 +1,23 @@
+import 'product_list.dart';
+
 class ProductDetail {
-  final int id; // 상품 번호
+  final int id;
   final int itemCategoryId;
   final String title;
   final String content;
   final int price;
-  final String tradeLocation;
-  final List<String>? imageUrls; // 이미지 전체 리스트
+  final ProductLocation? tradeLocation; // Changed to ProductLocation
+  final List<String>? imageUrls; // Corresponds to `base64Images`
   final int favoriteCount;
 
-  // 판매자 정보
   final int sellerId;
   final String sellerName;
   final String? sellerProfileUrl;
-  final String sellerAddress;
+  final String? sellerAddress; // Nullable
   final double retransactionRate;
   final int viewCount;
   final bool liked;
+  final List<String> tags; // Added tags field
 
   ProductDetail({
     required this.id,
@@ -23,37 +25,41 @@ class ProductDetail {
     required this.title,
     required this.content,
     required this.price,
-    required this.tradeLocation,
+    this.tradeLocation,
     this.imageUrls,
     required this.favoriteCount,
     required this.sellerId,
     required this.sellerName,
     this.sellerProfileUrl,
-    required this.sellerAddress,
+    this.sellerAddress,
     required this.retransactionRate,
     required this.viewCount,
     required this.liked,
+    required this.tags,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
     return ProductDetail(
-      id: json['id'] as int,
-      itemCategoryId: json['itemCategoryId'] as int,
+      id: (json['id'] as num).toInt(),
+      itemCategoryId: (json['itemCategoryId'] as num).toInt(),
       title: json['title'] as String,
       content: json['content'] as String,
-      price: json['price'] as int,
-      tradeLocation: json['tradeLocation'] as String,
+      price: (json['price'] as num).toInt(),
+      tradeLocation: json['tradeLocation'] != null
+          ? ProductLocation.fromJson(json['tradeLocation'])
+          : null,
       imageUrls: json['base64Images'] != null
           ? List<String>.from(json['base64Images'])
           : [],
-      favoriteCount: json['favoriteCount'] ?? 0,
-      sellerId: json['sellerId'] as int,
+      favoriteCount: (json['favoriteCount'] as num).toInt(),
+      sellerId: (json['sellerId'] as num).toInt(),
       sellerName: json['sellerName'] as String,
       sellerProfileUrl: json['sellerProfileUrl'] as String?,
-      sellerAddress: json['sellerAddress'],
-      retransactionRate: json['retransactionRate'] as double,
-      viewCount: json['viewCount'] as int,
+      sellerAddress: json['sellerAddress'] as String?,
+      retransactionRate: (json['retransactionRate'] as num).toDouble(),
+      viewCount: (json['viewCount'] as num).toInt(),
       liked: json['liked'] as bool,
+      tags: List<String>.from(json['tags'] ?? []),
     );
   }
 }

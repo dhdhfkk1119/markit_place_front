@@ -12,6 +12,7 @@ class ChatMessageModel {
   final MessageType messageType;
   final List<String> imageUrls;
   final int itemId;
+  final bool isRead;
 
   ChatMessageModel({
     required this.messageId,
@@ -23,6 +24,7 @@ class ChatMessageModel {
     required this.messageType,
     required this.imageUrls,
     required this.itemId,
+    required this.isRead,
   });
 
   factory ChatMessageModel.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,7 @@ class ChatMessageModel {
       ),
       imageUrls: List<String>.from(json['imageUrls'] ?? []),
       itemId: json["itemId"],
+      isRead: json["read"],
     );
   }
 }

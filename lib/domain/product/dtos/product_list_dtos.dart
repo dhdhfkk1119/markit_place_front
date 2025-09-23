@@ -1,15 +1,17 @@
 import '../models/product_list.dart';
 
 class ProductListDto {
-  int id;
-  String title;
-  String content;
-  int price;
-  String itemCategoryName;
-  String tradeLocation;
-  String? thumbnail;
-  int? favoriteCount;
-  int viewCount;
+  final int id;
+  final String title;
+  final String content;
+  final int price;
+  final String itemCategoryName;
+  final ProductLocation? tradeLocation; // Changed to ProductLocation
+  final String? thumbnail;
+  final int? favoriteCount;
+  final int viewCount;
+  final int itemCategoryId;
+  final List<String> tags; // Added tags field
 
   ProductListDto({
     required this.id,
@@ -17,10 +19,12 @@ class ProductListDto {
     required this.content,
     required this.price,
     required this.itemCategoryName,
-    required this.tradeLocation,
+    this.tradeLocation,
     this.thumbnail,
     this.favoriteCount,
     required this.viewCount,
+    required this.itemCategoryId,
+    required this.tags,
   });
 
   factory ProductListDto.fromModel(ProductList model) {
@@ -34,6 +38,8 @@ class ProductListDto {
       thumbnail: model.thumbnail,
       favoriteCount: model.favoriteCount,
       viewCount: model.viewCount,
+      itemCategoryId: model.itemCategoryId,
+      tags: model.tags,
     );
   }
 
@@ -43,10 +49,12 @@ class ProductListDto {
     String? content,
     int? price,
     String? itemCategoryName,
-    String? tradeLocation,
+    ProductLocation? tradeLocation,
     String? thumbnail,
     int? favoriteCount,
     int? viewCount,
+    int? itemCategoryId,
+    List<String>? tags,
   }) {
     return ProductListDto(
       id: id ?? this.id,
@@ -58,6 +66,8 @@ class ProductListDto {
       thumbnail: thumbnail ?? this.thumbnail,
       favoriteCount: favoriteCount ?? this.favoriteCount,
       viewCount: viewCount ?? this.viewCount,
+      itemCategoryId: itemCategoryId ?? this.itemCategoryId,
+      tags: tags ?? this.tags,
     );
   }
 }

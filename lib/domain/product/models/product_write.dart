@@ -1,9 +1,11 @@
+import 'product_list.dart';
+
 class ProductWrite {
   final int itemCategoryId;
   final String title;
   final String content;
   final int price;
-  String? tradeLocation;
+  ProductLocation? tradeLocation;
 
   ProductWrite(
       {required this.itemCategoryId,
@@ -18,7 +20,9 @@ class ProductWrite {
       title: json['title'],
       content: json['content'],
       price: json['price'],
-      tradeLocation: json['tradeLocation'] ?? '',
+      tradeLocation: json['tradeLocation'] != null
+          ? ProductLocation.fromJson(json['tradeLocation'])
+          : null,
     );
   }
 }

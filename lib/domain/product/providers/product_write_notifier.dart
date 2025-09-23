@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../dtos/product_write_dto.dart';
+import '../models/product_list.dart';
 import 'product_detail_notifier.dart';
 import 'product_list_notifier.dart';
 import '../repository/product_write_repository.dart';
@@ -21,7 +22,7 @@ class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {
     required int price,
     List<XFile>? images,
     required int memberAddressId,
-    String? tradeLocation,
+    ProductLocation? tradeLocation,
   }) async {
     state = const AsyncLoading();
 
@@ -37,7 +38,7 @@ class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {
       final base64Images = await _convertImagesToBase64(images ?? []);
 
       await _repository.productWrite(
-          writeDto, memberAddressId, tradeLocation!, base64Images);
+          writeDto, memberAddressId, tradeLocation, base64Images);
 
       ref.read(productListProvider.notifier).refreshProductList();
 
@@ -55,7 +56,7 @@ class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {
     required int price,
     List<XFile>? images,
     required int memberAddressId,
-    String? tradeLocation,
+    ProductLocation? tradeLocation,
   }) async {
     state = const AsyncLoading();
 
@@ -71,7 +72,7 @@ class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {
       final base64Images = await _convertImagesToBase64(images ?? []);
 
       await _repository.productUpdate(
-          productId, updateDto, memberAddressId, tradeLocation!, base64Images);
+          productId, updateDto, memberAddressId, tradeLocation, base64Images);
 
       // 상품 리스트 다시 불러오기 (업데이트 반영)
       ref.read(productListProvider.notifier).refreshProductList();
