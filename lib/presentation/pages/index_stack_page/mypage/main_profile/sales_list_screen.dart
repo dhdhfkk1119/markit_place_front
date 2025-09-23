@@ -1,37 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../domain/sales/model/sales_model.dart';
+import '../../../../../domain/sales/providers/sales_list_provider.dart';
 
-class SalesListScreen extends StatelessWidget {
+class SalesListScreen extends ConsumerStatefulWidget {
   const SalesListScreen({super.key});
 
   @override
+  ConsumerState<SalesListScreen> createState() => _SalesListScreenState();
+}
+
+class _SalesListScreenState extends ConsumerState<SalesListScreen> {
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 100) {
+        ref.read(salesListProvider.notifier).loadNextPage();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: CustomWidget.buildIcon(
-          const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: CustomWidget.buildTitle('판매 내역'),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: List.generate(
-            20, // 더미 데이터 20개 생성
-                (index) => _buildSaleItem(
-              title: '판매 상품 ${index + 1}',
-              status: index % 3 == 0 ? '판매중' : '판매완료',
-              price: '${(index + 1) * 1000} 원',
-              date: '2025.08.${15 + index}',
+    final state = ref.watch(salesListProvider);
+
+    return state.when(
+      data: (salesState) {
+        final List<SalesModel> sales = salesState.items;
+
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: CustomWidget.buildIcon(
+              const Icon(Icons.arrow_back_ios, color: Colors.black),
+              onPressed: () {
+                Navigator.pop(context);
+              },
             ),
+            title: CustomWidget.buildTitle('판매 내역'),
+            centerTitle: true,
           ),
-        ),
-      ),
+          body: RefreshIndicator(
+              onRefresh: () async {
+                await ref.read(salesListProvider.notifier).refresh();
+              },
+              child: ListView.builder(
+                itemCount: sales.length,
+                itemBuilder: (context, index) {
+                  final item = sales[index];
+                  return _buildSaleItem(
+                    title: item.title,
+                    status: item.statusLabel,
+                    price: '${item.price} 원',
+                    date: item.createdAt,
+                    thumbnailUrl: item.thumbnailUrl,
+                  );
+                },
+              )),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('에러 발생: $err')),
     );
   }
 
@@ -40,7 +82,9 @@ class SalesListScreen extends StatelessWidget {
     required String status,
     required String price,
     required String date,
+    String? thumbnailUrl,
   }) {
+    final imageBytes = base64ToBytes(thumbnailUrl);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -52,12 +96,20 @@ class SalesListScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 상품 이미지
-          Container(
-            width: 80,
-            height: 80,
-            color: Colors.grey[200],
-            child: const Center(child: Icon(Icons.photo, color: Colors.grey)),
-          ),
+          if (imageBytes != null)
+            Image.memory(
+              imageBytes,
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            )
+          else
+            Container(
+              width: 80,
+              height: 80,
+              color: Colors.grey[200],
+              child: const Center(child: Icon(Icons.photo, color: Colors.grey)),
+            ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

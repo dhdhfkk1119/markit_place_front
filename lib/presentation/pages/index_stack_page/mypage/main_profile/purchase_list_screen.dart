@@ -1,11 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../domain/trade/model/trade_model.dart';
+import '../../../../../domain/trade/provider/trade_provider.dart';
 
-class PurchaseListScreen extends StatelessWidget {
+class PurchaseListScreen extends ConsumerStatefulWidget {
   const PurchaseListScreen({super.key});
 
   @override
+  ConsumerState<PurchaseListScreen> createState() => _PurchaseListScreenState();
+}
+
+class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {});
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(tradeProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -19,28 +43,31 @@ class PurchaseListScreen extends StatelessWidget {
         title: CustomWidget.buildTitle('구매 내역'),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: List.generate(
-            10,
-                (index) => _buildPurchaseItem(
-              title: '구매 상품 ${index + 1}',
-              status: index % 2 == 0 ? '구매완료' : '거래확정',
-              price: '${(index + 1) * 2000} 원',
-              date: '2025.08.${20 + index}',
+      body: state.when(
+        data: (tradeList) {
+          return RefreshIndicator(
+            onRefresh: () async {
+              await ref.read(tradeProvider.notifier).refresh();
+            },
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: tradeList.length,
+              itemBuilder: (context, index) {
+                final item = tradeList[index];
+                return _buildPurchaseItem(
+                  model: item,
+                );
+              },
             ),
-          ),
-        ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('에러 발생: $err')),
       ),
     );
   }
 
-  Widget _buildPurchaseItem({
-    required String title,
-    required String status,
-    required String price,
-    required String date,
-  }) {
+  Widget _buildPurchaseItem({required TradeListModel model}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -64,26 +91,26 @@ class PurchaseListScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomWidget.buildTitle(
-                  title,
+                  model.title,
                   size: 16,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  price,
+                  "${model.price}",
                   size: 14,
                   weight: FontWeight.w600,
                   color: Colors.black,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  status,
+                  model.status,
                   size: 12,
-                  color: status == '구매완료' ? Colors.blue : Colors.purple,
+                  color: model.status == '구매완료' ? Colors.blue : Colors.purple,
                   weight: FontWeight.w500,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  date,
+                  model.completedAt,
                   size: 12,
                   color: Colors.grey,
                 ),
