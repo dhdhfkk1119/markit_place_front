@@ -158,7 +158,7 @@ class ProductListItem extends ConsumerWidget {
       children: [
         _buildTitle(product.title, 16),
         Text(
-          "${product.tradeLocation} / ${product.itemCategoryName}",
+          product.itemCategoryName,
           style: TextStyle(fontSize: 14, color: Colors.grey),
           overflow: TextOverflow.ellipsis,
           maxLines: 1,

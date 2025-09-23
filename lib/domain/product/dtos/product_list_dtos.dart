@@ -6,12 +6,13 @@ class ProductListDto {
   final String content;
   final int price;
   final String itemCategoryName;
-  final ProductLocation? tradeLocation; // Changed to ProductLocation
+  // 1. 타입을 ProductLocation? 으로 변경
+  final ProductLocation? tradeLocation;
   final String? thumbnail;
   final int? favoriteCount;
   final int viewCount;
   final int itemCategoryId;
-  final List<String> tags; // Added tags field
+  final List<String> tags;
 
   ProductListDto({
     required this.id,

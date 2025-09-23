@@ -15,18 +15,28 @@ class ProductLocation {
   }
 }
 
+class ProductListPages {
+  final List<ProductList> productList;
+  final bool isLastPage; // 마지막 페이지인지 여부
+
+  ProductListPages({
+    required this.productList,
+    required this.isLastPage,
+  });
+}
+
 class ProductList {
   final int id;
   final String title;
   final String content;
   final int price;
   final String itemCategoryName;
-  final ProductLocation? tradeLocation; // Changed to ProductLocation
+  final ProductLocation? tradeLocation;
   final String? thumbnail;
   final int favoriteCount;
   final int viewCount;
   final int itemCategoryId;
-  final List<String> tags; // Added tags field
+  final List<String> tags;
 
   ProductList({
     required this.id,
@@ -50,7 +60,8 @@ class ProductList {
       price: (json['price'] as num).toInt(),
       itemCategoryName: json['itemCategoryName'] as String,
       tradeLocation: json['tradeLocation'] != null
-          ? ProductLocation.fromJson(json['tradeLocation'])
+          ? ProductLocation.fromJson(
+              json['tradeLocation'] as Map<String, dynamic>)
           : null,
       thumbnail: json['thumbnail'] as String?,
       favoriteCount: (json['favoriteCount'] as num).toInt(),

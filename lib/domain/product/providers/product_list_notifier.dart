@@ -8,62 +8,56 @@ class ProductListNotifier extends AsyncNotifier<List<ProductListDto>> {
   final ProductListRepository _repository = ProductListRepository();
 
   // 검색 및 페이지네이션 상태를 통합 관리하는 DTO
-  ProductSearchDTO _searchDto = const ProductSearchDTO();
-  bool get hasNext => _searchDto.hasNext ?? false;
+  int _currentPage = 0;
+  bool _isLastPage = false;
 
   @override
   Future<List<ProductListDto>> build() async {
-    // 새로운 검색을 시작할 때, 페이지를 0으로 초기화
-    _searchDto = _searchDto.copyWith(page: 0);
+    // build 메소드는 첫 페이지만 불러오는 역할
+    return _fetchProducts(page: 0);
+  }
 
-    // _searchDto를 사용하여 Repository에 상품 목록 요청
-    final response = await _repository.getProducts(_searchDto);
-    final List<dynamic> content = response['content'];
+  Future<List<ProductListDto>> _fetchProducts(
+      {required int page, String? keyword}) async {
+    // Repository에 상품 목록 요청
+    final searchDto = ProductSearchDTO(page: page, keyword: keyword);
+    final pageData = await _repository.getProducts(searchDto);
 
-    // 서버 응답에 따라 다음 페이지 존재 여부 업데이트
-    _searchDto = _searchDto.copyWith(hasNext: !response['last']);
+    // Notifier의 페이지 상태 업데이트
+    _currentPage = page;
+    _isLastPage = pageData.isLastPage;
 
-    return content
-        .map((json) => ProductList.fromJson(json))
+    // Model -> DTO 변환
+    final dtoList = pageData.productList
         .map((model) => ProductListDto.fromModel(model))
         .toList();
+
+    return dtoList;
   }
 
   // 새로운 검색어/조건으로 검색
-  Future<void> searchProducts(ProductSearchDTO newSearchDto) async {
-    // 검색 조건 업데이트 (페이지는 0으로 초기화)
-    _searchDto = newSearchDto.copyWith(page: 0);
-
-    // 로딩 상태로 변경하고 build()를 호출하여 새 검색 시작
+  Future<void> searchProducts(ProductSearchDTO? product) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => build());
+    // guard는 try-catch를 자동으로 해줘서 편리해
+    state = await AsyncValue.guard(
+        () => _fetchProducts(page: 0, keyword: product!.keyword));
   }
 
   // 다음 페이지 불러오기 (페이지네이션)
   Future<void> fetchNextPage() async {
-    // _searchDto의 hasNext 값을 사용하여 다음 페이지 존재 여부 확인
-    if (!(_searchDto.hasNext ?? false)) return;
+    // 3. 로딩 중이거나 마지막 페이지이면 더 이상 호출하지 않음
+    if (state.isLoading || _isLastPage) return;
 
-    // 기존 데이터를 유지하여 로딩 중에도 화면에 표시
-    state = AsyncValue.data(state.value ?? []);
+    // 현재 데이터를 유지하면서 로딩 상태 표시 (화면 깜빡임 방지)
+    state = AsyncValue.loading();
 
     try {
-      // 페이지 번호를 1 증가시키고, _searchDto를 사용하여 다음 페이지 요청
-      _searchDto = _searchDto.copyWith(page: _searchDto.page + 1);
-      final response = await _repository.getProducts(_searchDto);
-      final List<dynamic> content = response['content'];
-
-      // 서버 응답에 따라 다음 페이지 존재 여부 업데이트
-      _searchDto = _searchDto.copyWith(hasNext: !response['last']);
-
-      final nextItems = content
-          .map((json) => ProductList.fromJson(json))
-          .map((model) => ProductListDto.fromModel(model))
-          .toList();
+      final nextPage = _currentPage + 1;
+      final nextItems = await _fetchProducts(page: nextPage);
 
       state = AsyncValue.data([
-        ...(state.value ?? []),
-        ...nextItems,
+        ...(state.value ?? []), // 기존 리스트
+        ...nextItems, // 새로 불러온 리스트 추가
       ]);
     } catch (e, st) {
       state = AsyncError(e, st);
@@ -72,22 +66,36 @@ class ProductListNotifier extends AsyncNotifier<List<ProductListDto>> {
 
   // 목록 새로고침
   Future<void> refreshProductList() async {
-    // 검색 조건을 기본값으로 초기화
-    _searchDto = const ProductSearchDTO();
-    state = const AsyncLoading();
+    state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => build());
+  }
+
+  void updateItemFavoriteStatus(int itemId, int newFavoriteCount) {
+    if (state.value == null) return;
+
+    final updatedList = state.value!.map((item) {
+      if (item.id == itemId) {
+        return item.copyWith(favoriteCount: newFavoriteCount);
+      }
+      return item;
+    }).toList();
+
+    state = AsyncValue.data(updatedList);
   }
 
   // 상품 삭제
   Future<void> deleteProduct(int productId) async {
     try {
-      await _repository.productDelete(productId);
-
-      final currentList = state.value ?? [];
-      final updatedList = currentList.where((p) => p.id != productId).toList();
-
-      state = AsyncValue.data(updatedList);
+      final success = await _repository.productDelete(productId);
+      if (success) {
+        // UI 낙관적 업데이트 (서버 응답을 기다리지 않고 UI를 먼저 변경)
+        final currentList = state.value ?? [];
+        final updatedList =
+            currentList.where((p) => p.id != productId).toList();
+        state = AsyncValue.data(updatedList);
+      }
     } catch (e, st) {
+      // 에러가 발생하면 원래 상태로 되돌리거나 에러 메시지 표시
       state = AsyncError(e, st);
     }
   }

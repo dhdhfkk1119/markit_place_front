@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../../_core/utils/my_http.dart';
+import '../models/product_detail.dart';
 import '../models/product_favorites.dart';
 
 const String Url = baseUrl;
@@ -9,7 +11,7 @@ const FlutterSecureStorage _storage = FlutterSecureStorage();
 
 class ProductDetailRepository {
   // 상품 상세 정보
-  Future<Map<String, dynamic>> productDetail({required int itemId}) async {
+  Future<ProductDetail> productDetail({required int itemId}) async {
     final token = await _storage.read(key: "accessToken");
     if (token == null) {
       throw Exception('토큰 정보가 존재하지 않습니다');
@@ -27,7 +29,7 @@ class ProductDetailRepository {
       if (response.statusCode == 200) {
         print("상품에 대한 상세 정보 : ${response.data}");
 
-        return response.data;
+        return ProductDetail.fromJson(response.data['data']);
       } else {
         throw Exception('Failed to load products: ${response.statusCode}');
       }
@@ -61,3 +63,7 @@ class ProductDetailRepository {
     }
   }
 }
+
+final productDetailRepositoryProvider = Provider((ref) {
+  return ProductDetailRepository();
+});
