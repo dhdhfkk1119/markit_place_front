@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:logger/logger.dart';
 import '../../domain/members/providers/member_auth_provider.dart';
 // import '../sessions/session_repository.dart'; // 삭제
 import '../../domain/members/repositories/member_auth_repository.dart'; // tokenKey를 사용하기 위해 추가
@@ -24,6 +26,8 @@ final dio = Dio(
 
 const secureStorage =
     FlutterSecureStorage(); // 이 파일에서 직접 사용되는 secureStorage 인스턴스 유지
+
+final logger = Logger();
 
 // setupInterceptors는 AuthNotifier 인스턴스를 받아 인터셉터를 설정합니다.
 void setupInterceptors(AuthNotifier authNotifier) {
@@ -55,27 +59,27 @@ void setupInterceptors(AuthNotifier authNotifier) {
           final accessToken = await secureStorage.read(key: tokenKey);
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers["Authorization"] = "Bearer $accessToken";
-            print("인증 인터셉터 (onRequest): 토큰 헤더 추가됨 - 경로: ${options.path}");
+            logger.d("인증 인터셉터 (onRequest): 토큰 헤더 추가됨 - 경로: ${options.path}");
           } else {
-            print(
+            logger.w(
                 "인증 인터셉터 (onRequest): 보호된 경로에 접근 토큰 없음 - 경로: ${options.path}");
           }
         } else {
-          print(
+          logger.v(
               "인증 인터셉터 (onRequest): 토큰 헤더 추가 안됨 (공개 경로) - 경로: ${options.path}");
         }
         return handler.next(options);
       },
       onResponse: (response, handler) async {
-        print(
+        logger.i(
             "인증 인터셉터 (onResponse): 응답 수신 - 경로: ${response.requestOptions.path}, 상태: ${response.statusCode}");
         return handler.next(response);
       },
       onError: (DioException e, handler) async {
-        print(
+        logger.e(
             "인증 인터셉터 (onError): 오류 발생 - 경로: ${e.requestOptions.path}, 상태: ${e.response?.statusCode}");
         if (e.response?.statusCode == 401) {
-          print("인증 인터셉터: 401 인증 오류 감지 - 경로: ${e.requestOptions.path}");
+          logger.w("인증 인터셉터: 401 인증 오류 감지 - 경로: ${e.requestOptions.path}");
 
           // 토큰 만료에 대한 새로운 기본 메시지.
           String serverMessage = "인증 토큰이 만료되었습니다. 다시 로그인해주세요.";
@@ -107,7 +111,7 @@ void setupInterceptors(AuthNotifier authNotifier) {
             }
           }
 
-          print("인증 인터셉터: 401에 대한 추출/기본 서버 메시지: $serverMessage");
+          logger.w("인증 인터셉터: 401에 대한 추출/기본 서버 메시지: $serverMessage");
 
           await authNotifier.handleSessionInvalidation(serverMessage);
 

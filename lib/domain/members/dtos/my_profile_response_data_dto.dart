@@ -11,6 +11,7 @@ class MyProfileResponseDataDto {
   final String role;
   final String? status;
   final String? profileImageBase64;
+  final String? profileImageUrl;
 
   // 추가된 필드 (백엔드 /api/members/me 응답에 이 필드들이 포함되어야 함)
   final int? mannerScore;
@@ -25,6 +26,7 @@ class MyProfileResponseDataDto {
     required this.role,
     this.status,
     this.profileImageBase64,
+    this.profileImageUrl,
     this.mannerScore,
     this.retransactionRate,
     this.userCode,
@@ -40,6 +42,7 @@ class MyProfileResponseDataDto {
       role: json['role'] as String,
       status: json['status'] as String?,
       profileImageBase64: json['profileImageBase64'] as String?,
+      profileImageUrl: json['profileImageUrl'] as String?,
       // 추가된 필드 파싱 (백엔드 응답 키와 일치해야 함)
       mannerScore: json['mannerScore'] as int?,
       retransactionRate: json['retransactionRate'] as int? ??
@@ -53,6 +56,8 @@ class MyProfileResponseDataDto {
     String? finalProfileImageUrl;
     if (profileImageBase64 != null && profileImageBase64!.isNotEmpty) {
       finalProfileImageUrl = 'data:image/png;base64,$profileImageBase64';
+    } else if (profileImageUrl != null && profileImageUrl!.isNotEmpty) {
+      finalProfileImageUrl = profileImageUrl;
     }
 
     return SessionUser(

@@ -3,10 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/logger.dart';
 import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
+import 'package:dio/dio.dart';
+import '../../../../../../_core/utils/my_http.dart';
 import '../../../../../../domain/profile/profile.dart';
 import '../../../../../../domain/profile/profile_provider.dart';
+
+final _logger = Logger();
 
 class MyProfileEditPage extends ConsumerStatefulWidget {
   const MyProfileEditPage({super.key});
@@ -35,26 +40,26 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
         backgroundImage: FileImage(_imageFile!),
       );
     } else if (_profileImageUrl != null && _profileImageUrl!.isNotEmpty) {
+      // URL이면 NetworkImage로 바로 표시
       if (_profileImageUrl!.startsWith('http')) {
         return CircleAvatar(
           radius: 50,
           backgroundColor: profileAvatarColor,
           backgroundImage: NetworkImage(_profileImageUrl!),
         );
-      } else {
-        try {
-          return CircleAvatar(
-            radius: 50,
-            backgroundColor: profileAvatarColor,
-            backgroundImage: MemoryImage(base64Decode(_profileImageUrl!)),
-          );
-        } catch (_) {
-          return CircleAvatar(
-            radius: 50,
-            backgroundColor: profileAvatarColor,
-            child: const Icon(Icons.person, size: 60, color: Colors.white),
-          );
-        }
+      }
+      try {
+        return CircleAvatar(
+          radius: 50,
+          backgroundColor: profileAvatarColor,
+          backgroundImage: MemoryImage(base64Decode(_profileImageUrl!)),
+        );
+      } catch (_) {
+        return CircleAvatar(
+          radius: 50,
+          backgroundColor: profileAvatarColor,
+          child: const Icon(Icons.person, size: 60, color: Colors.white),
+        );
       }
     } else {
       return CircleAvatar(
@@ -70,15 +75,51 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     super.didChangeDependencies();
     final profileInfoAsync = ref.read(profileInfoFutureProvider);
     profileInfoAsync.whenData((info) {
-      if (_nicknameController.text.isEmpty) {
-        _nicknameController.text = info.name ?? '';
-      }
-      setState(() {
-        _profileImageUrl = info.profileImageBase64 ?? '';
-        _originalName = info.name ?? '';
-        _originalImage = info.profileImageBase64 ?? '';
-      });
+      // delegate to async handler to avoid async callback issues
+      _handleProfileInfo(info);
     });
+  }
+
+  Future<void> _handleProfileInfo(dynamic info) async {
+    if (info == null) {
+      _logger.w('[MyProfileEditPage] profile info is null');
+      return;
+    }
+
+    try {
+      final name = (info.name == null) ? '' : info.name.toString();
+      if (_nicknameController.text.isEmpty) {
+        _nicknameController.text = name;
+      }
+    } catch (e) {
+      _logger.e(
+          '[MyProfileEditPage] failed to set nickname from profile info', e);
+    }
+
+    try {
+      String img = '';
+      final rawImg = (info.profileImageBase64 == null)
+          ? ''
+          : info.profileImageBase64.toString();
+      if (rawImg.isNotEmpty) {
+        img = rawImg;
+      }
+
+      // If server provided a URL, keep the URL and render via NetworkImage.
+      if (img.isNotEmpty && img.startsWith('http')) {
+        _logger.d(
+            '[MyProfileEditPage] profile image is a URL, will render via NetworkImage: $img');
+        // keep img as-is (URL). Do NOT download here to avoid timeouts.
+      }
+
+      setState(() {
+        _profileImageUrl = (img.isNotEmpty) ? img : '';
+        _originalName = (info.name == null) ? '' : info.name.toString();
+        _originalImage = (img.isNotEmpty) ? img : '';
+      });
+    } catch (e) {
+      _logger.e('[MyProfileEditPage] failed to set profile image/originals', e);
+    }
   }
 
   Future<void> _onEditPressed(ProfileEditViewModel viewModel) async {
@@ -158,9 +199,8 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
         _showSuccess = true;
         // 수정 성공 시 최신 데이터로 갱신
         _nicknameController.text = state.response!.name;
-        _profileImageUrl = state.response!.profileImageBase64.startsWith('http')
-            ? state.response!.profileImageBase64
-            : _profileImageUrl;
+        // 서버에서 profileImageBase64가 반환되므로 그대로 저장
+        _profileImageUrl = state.response!.profileImageBase64;
       });
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) Navigator.pop(context);
@@ -183,7 +223,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
 
     // 토큰 만료 에러 발생 시 로그인 화면으로 이동
     if (state.error?.contains('토큰이 만료되었습니다') ?? false) {
-      print('[MyProfileEditPage] 토큰 만료 감지 - 로그인 화면으로 이동');
+      _logger.w('[MyProfileEditPage] 토큰 만료 감지 - 로그인 화면으로 이동');
       Future.microtask(() {
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/login');
@@ -205,7 +245,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
           body: Center(child: Text('불러오는중', style: TextStyle(fontSize: 18)))),
       error: (err, stack) {
         if (err.toString().contains('토큰이 만료되었습니다')) {
-          print('[MyProfileEditPage] 프로필 정보 조회에서 토큰 만료 감지 - 로그인 화면으로 이동');
+          _logger.w('[MyProfileEditPage] 프로필 정보 조회에서 토큰 만료 감지 - 로그인 화면으로 이동');
           Future.microtask(() {
             if (mounted) {
               Navigator.pushReplacementNamed(context, '/login');
@@ -221,10 +261,28 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
       },
       data: (profileInfo) {
         // 닉네임과 이미지 상태를 최신 데이터로 반영
-        if (_nicknameController.text.isEmpty) {
-          _nicknameController.text = profileInfo.name ?? '';
+        try {
+          final name = (profileInfo == null || profileInfo.name == null)
+              ? ''
+              : profileInfo.name.toString();
+          if (_nicknameController.text.isEmpty) {
+            _nicknameController.text = name;
+          }
+        } catch (e) {
+          _logger.e('[MyProfileEditPage] error assigning profileInfo.name', e);
         }
-        _profileImageUrl = profileInfo.profileImageBase64 ?? '';
+        try {
+          final imgField =
+              (profileInfo == null || profileInfo.profileImageBase64 == null)
+                  ? ''
+                  : profileInfo.profileImageBase64.toString();
+          _profileImageUrl = imgField;
+        } catch (e) {
+          _logger.e(
+              '[MyProfileEditPage] error assigning profileInfo.profileImageBase64',
+              e);
+          _profileImageUrl = '';
+        }
 
         return Scaffold(
           backgroundColor: lightGrey,
@@ -300,7 +358,8 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _nicknameController,
-                      enabled: !isLoading, // 수정 중에는 입력 불가
+                      enabled: !isLoading,
+                      // 수정 중에는 입력 불가
                       decoration: InputDecoration(
                         hintText: "닉네임을 입력하세요",
                         hintStyle: TextStyle(

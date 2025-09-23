@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:logger/logger.dart';
 import '../../_core/dtos/api_response_dto.dart';
 import '../../_core/dtos/error_dto.dart';
 import '../../_core/utils/error_utils.dart';
@@ -10,6 +11,8 @@ import '../../_core/utils/my_http.dart';
 import '../members/dtos/login_response.dto.dart';
 import '../members/models/session_user.dart';
 import 'social_login_request_dto.dart';
+
+final logger = Logger();
 
 /// 소셜 로그인 관련 API 요청을 처리하는 리포지토리입니다.
 class SocialLoginRepository {
@@ -30,7 +33,7 @@ class SocialLoginRepository {
   Future<Map<String, dynamic>?> signInWithNaver() async {
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
-      print(
+      logger.i(
           "[NaverLogin] SDK Result: Status: ${result.status}, AccountID: ${result.account.id}");
 
       if (result.status == NaverLoginStatus.loggedIn) {
@@ -41,7 +44,7 @@ class SocialLoginRepository {
         );
         return await _loginToServerWithSocialToken(requestDto);
       } else {
-        print(
+        logger.w(
             "[NaverLogin] Naver login not successful. Status: ${result.status}, Message: ${result.errorMessage}");
         if (result.errorMessage != null && result.errorMessage!.isNotEmpty) {
           throw Exception("네이버 로그인 실패: ${result.errorMessage}");
@@ -49,7 +52,7 @@ class SocialLoginRepository {
         return null; // 사용자 취소 등
       }
     } catch (e) {
-      print("[NaverLogin] signInWithNaver Error: $e");
+      logger.e('[NaverLogin] signInWithNaver Error', e);
       throw Exception("네이버 로그인 중 오류 발생: ${extractErrorMessage(e)}");
     }
   }
@@ -61,10 +64,10 @@ class SocialLoginRepository {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        print("[GoogleLogin] Google sign-in cancelled by user.");
+        logger.w("[GoogleLogin] Google sign-in cancelled by user.");
         return null; // 사용자가 로그인 취소
       }
-      print(
+      logger.i(
           "[GoogleLogin] SDK Result: User Email: ${googleUser.email}, ID: ${googleUser.id}, Name: ${googleUser.displayName}, Photo: ${googleUser.photoUrl}");
 
       final requestDto = SocialLoginRequestDto(
@@ -85,11 +88,11 @@ class SocialLoginRepository {
         };
       } else {
         // 서버 로그인 실패 (예: _loginToServerWithSocialToken에서 null 반환 또는 예외 발생 후 catch)
-        print("[GoogleLogin] Server login failed after Google SDK success.");
+        logger.w("[GoogleLogin] Server login failed after Google SDK success.");
         return null;
       }
     } catch (e) {
-      print("[GoogleLogin] signInWithGoogleAndGetAccount Error: $e");
+      logger.e('[GoogleLogin] signInWithGoogleAndGetAccount Error', e);
       throw Exception("구글 로그인 중 오류 발생: ${extractErrorMessage(e)}");
     }
   }
@@ -99,10 +102,10 @@ class SocialLoginRepository {
     try {
       if (await _googleSignIn.isSignedIn()) {
         await _googleSignIn.signOut();
-        print("[GoogleLoginRepo] Signed out from Google.");
+        logger.i("[GoogleLoginRepo] Signed out from Google.");
       }
     } catch (e) {
-      print("[GoogleLoginRepo] Error signing out from Google: $e");
+      logger.e("[GoogleLoginRepo] Error signing out from Google: $e");
     }
   }
 
@@ -112,7 +115,7 @@ class SocialLoginRepository {
   Future<Map<String, dynamic>?> _loginToServerWithSocialToken(
       SocialLoginRequestDto requestDto) async {
     try {
-      print(
+      logger.i(
           "[SocialLoginRepo] Attempting server login with ${requestDto.provider} data: ${json.encode(requestDto.toJson())}");
       final dioResponse = await _dio.post(
         "/members/login/social",
@@ -130,23 +133,23 @@ class SocialLoginRepository {
           apiResponse.success &&
           apiResponse.response != null) {
         final sessionUser = apiResponse.response!.toSessionUser();
-        print(
+        logger.i(
             "[SocialLoginRepo] Server login success! User: ${sessionUser.loginId}, Provider: ${requestDto.provider}");
         return {
           'sessionUser': sessionUser,
           'token': token.replaceFirst('Bearer ', ''),
         };
       } else if (!apiResponse.success && apiResponse.error != null) {
-        print(
+        logger.w(
             "[SocialLoginRepo] Server login failed for ${requestDto.provider}: ${apiResponse.error!.message}");
         throw Exception(apiResponse.error!.message ??
             '${requestDto.provider} 소셜 로그인 처리 중 서버 오류');
       } else if (token == null || token.isEmpty) {
-        print(
+        logger.w(
             "[SocialLoginRepo] Server login failed for ${requestDto.provider}: Token missing.");
         throw Exception('${requestDto.provider} 소셜 로그인 응답에 토큰이 없습니다.');
       } else {
-        print(
+        logger.w(
             "[SocialLoginRepo] Server login failed for ${requestDto.provider}: Unknown reason.");
         throw Exception('알 수 없는 이유로 ${requestDto.provider} 소셜 로그인에 실패했습니다.');
       }
@@ -155,8 +158,9 @@ class SocialLoginRepository {
           e, '[SocialLoginRepo DioException - ${requestDto.provider}]');
       throw Exception(errorMessage);
     } catch (e) {
-      print(
-          "[SocialLoginRepo] _loginToServerWithSocialToken (${requestDto.provider}) Error: $e");
+      logger.e(
+          "[SocialLoginRepo] _loginToServerWithSocialToken (${requestDto.provider}) Error",
+          e);
       throw Exception(
           "${requestDto.provider} 정보로 서버 로그인 중 오류: ${extractErrorMessage(e)}");
     }
@@ -176,7 +180,7 @@ class SocialLoginRepository {
           parsedErrorDto =
               ErrorDto.fromJson(responseData['error'] as Map<String, dynamic>);
         } catch (parseError) {
-          print('$logPrefix - Failed to parse ErrorDto: $parseError');
+          logger.e('$logPrefix - Failed to parse ErrorDto', parseError);
         }
       }
     }
@@ -187,10 +191,10 @@ class SocialLoginRepository {
     } else {
       finalErrorMessage = extractErrorMessage(e);
     }
-    print(
+    logger.i(
         '$logPrefix Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
     if (parsedErrorDto != null) {
-      print(
+      logger.i(
           '$logPrefix Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
     }
     return finalErrorMessage;
