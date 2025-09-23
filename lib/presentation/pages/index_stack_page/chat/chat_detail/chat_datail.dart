@@ -32,7 +32,6 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   @override
   void initState() {
     super.initState();
-    print("[ChatDetail] initState 호출됨");
 
     Future.microtask(() {
       final authState = ref.read(authNotifierProvider);
@@ -40,9 +39,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       if (authState.user != null) {
         ref.read(chatDetailNotifierProvider).fetchMessages(
             roomId: widget.room.roomId, myId: authState.user!.memberId);
-      } else {
-        print("[ChatDetail] fetchMessages 호출 실패: 세션 사용자 정보가 없음");
-      }
+      } else {}
     });
   }
 
@@ -104,8 +101,16 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           actions: [
             IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
             IconButton(
-                onPressed: () {},
-                icon: const Icon(CupertinoIcons.ellipsis_vertical)),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return buildAppBar(context, "결제하기", '방나가기');
+                  },
+                );
+              },
+              icon: const Icon(CupertinoIcons.ellipsis_vertical),
+            ),
           ],
           bottom: const PreferredSize(
               preferredSize: Size.zero,
@@ -306,6 +311,89 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(child: Text("상품 정보를 불러오지 못했습니다: $err")),
+    );
+  }
+
+  // 팝업 방나기 및 결제하기
+  Widget buildAppBar(BuildContext context, String? title, String? title2) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.output, color: Colors.pink),
+          title: CustomWidget.buildTitle("$title2", weight: FontWeight.w200),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('방 나가기 확인'),
+                  content: const Text('정말로 이 채팅방을 나가시겠습니까?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('취소'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('나가기'),
+                      onPressed: () {
+                        ref
+                            .read(chatRoomNotifierProvider.notifier)
+                            .deleteRoom(widget.room.roomId);
+
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.payment, color: Colors.deepPurpleAccent),
+          title: CustomWidget.buildTitle("$title", weight: FontWeight.w200),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('결제 확인'),
+                  content: const Text('정말로 결제하시겠습니까?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('취소'),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // 다이얼로그 닫기
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('결제'),
+                      onPressed: () {
+                        // TODO: 여기에 결제 로직 추가
+                        // 결제 하는 상품의 정보를 -> DB에다가 보내주기
+                        Navigator.of(context).pop(); // 다이얼로그 닫기
+                        Navigator.of(context).pop(); // 바텀시트 닫기
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.close, color: Colors.grey),
+          title: const Text("닫기"),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+      ],
     );
   }
 }

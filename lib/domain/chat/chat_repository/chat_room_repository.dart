@@ -6,8 +6,6 @@ import '../chat_model/chat_room.dart';
 
 final _storage = FlutterSecureStorage();
 
-String Url = baseUrl;
-
 class ChatRoomRepository {
   // 서버에 room 요청 (없으면 생성, 있으면 기존 roomId 반환)
   static Future<int> getOrCreateRoom(
@@ -15,7 +13,7 @@ class ChatRoomRepository {
     final token = await _storage.read(key: "accessToken");
 
     final response = await dio.post(
-      Url + '/chat/rooms/create',
+      '/chat/rooms/create',
       options: Options(
         headers: {"Authorization": "Bearer $token"},
       ),
@@ -43,7 +41,7 @@ class ChatRoomRepository {
       print("Authorization 헤더: Bearer $token");
 
       final response = await dio.get(
-        baseUrl + '/chat/rooms',
+        '/chat/rooms',
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
@@ -60,6 +58,29 @@ class ChatRoomRepository {
     } on DioError catch (e) {
       print("DioError 발생: ${e.response?.statusCode}, ${e.response?.data}");
       throw Exception("채팅방 목록을 가져오는데 실패");
+    }
+  }
+
+  Future<void> deleteRoom(int roomId) async {
+    final token = await _storage.read(key: "accessToken");
+    if (token == null) {
+      throw Exception("토큰이 없어 채팅방을 불러올 수 없습니다");
+    }
+    try {
+      final response = await dio.delete(
+        '/chat/rooms/$roomId',
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+          },
+        ),
+      );
+      if (response.statusCode == 200) {
+        print("${roomId} 해서 나갔습니다");
+      }
+      return;
+    } catch (e) {
+      throw Exception("채팅방을 나가는데 실패");
     }
   }
 }
