@@ -21,6 +21,16 @@ class ProfileInfoRepository {
     );
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
+      // 디버그 로그: 서버에서 내려온 response 요약
+      try {
+        final res = json['response'] ?? {};
+        final img = res['profileImageBase64'] ?? res['profileImageUrl'];
+        print(
+            '[ProfileInfoRepository] fetchProfileInfo response: id=${res['id']}, name=${res['name']}, imagePresent=${img != null}, imageLength=${img != null ? img.toString().length : 0}');
+      } catch (e) {
+        print(
+            '[ProfileInfoRepository] fetchProfileInfo: failed to parse debug info: $e');
+      }
       return ProfileInfoResponseDto.fromJson(json);
     } else if (response.statusCode == 401) {
       print(

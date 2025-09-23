@@ -30,11 +30,13 @@ class ProfileEditResponseDto {
   // JSON 응답을 DTO로 변환
   factory ProfileEditResponseDto.fromJson(Map<String, dynamic> json) {
     final res = json['response'] ?? {};
+    final dynamic img =
+        res['profileImageBase64'] ?? res['profileImageUrl'] ?? '';
     return ProfileEditResponseDto(
       id: res['id'],
-      name: res['name'],
-      status: res['status'],
-      profileImageBase64: res['profileImageBase64'],
+      name: (res['name'] ?? '').toString(),
+      status: (res['status'] ?? '').toString(),
+      profileImageBase64: img == null ? '' : img.toString(),
     );
   }
 }
