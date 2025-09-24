@@ -49,12 +49,18 @@ class CommunityReportRepository {
         },
       );
       if (response.statusCode == 200) {
-        print("신고 게시물 정보 : ${response.data}");
+        print("Raw 응답 데이터: ${response.data}");
+        print("응답 타입: ${response.data.runtimeType}");
+        if (response.data['response'] != null) {
+          print("리스트 데이터: ${response.data['response']}");
+          print("리스트 길이: ${response.data['response'].length}");
+        }
         return response.data;
       } else {
         throw Exception('Failed to load community: ${response.statusCode}');
       }
     } catch (e) {
+      print("API 호출 에러: $e");
       throw Exception('Failed to connect to the server: $e');
     }
   }
