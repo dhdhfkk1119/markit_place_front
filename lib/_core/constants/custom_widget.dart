@@ -56,6 +56,7 @@ class CustomWidget {
 
   // Toast 메세지 보여주는 메서드 추가 (글 작성하기에 필요)
   static void showToast(String message) {
+    print(message);
     Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,

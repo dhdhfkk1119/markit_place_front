@@ -8,7 +8,7 @@ import '../community_repository/community_list_repository.dart';
 
 class CommunityListNotifier extends ChangeNotifier {
   final CommunityListRepository _communityListRepository =
-      CommunityListRepository();
+  CommunityListRepository();
 
   List<CommunityListDTO> _communityList = [];
 
@@ -30,7 +30,7 @@ class CommunityListNotifier extends ChangeNotifier {
 
       _communityList = list
           .map((json) => CommunityList.fromMap(json))
-          .map((model) => CommunityListDTO.fromModel(model))
+          .map((model) => CommunityListDTO.fromJson(model))
           .toList();
       _isLoading = false;
 
@@ -74,4 +74,4 @@ class CommunityListNotifier extends ChangeNotifier {
 }
 
 final communityListProvider = ChangeNotifierProvider<CommunityListNotifier>(
-    (ref) => CommunityListNotifier());
+        (ref) => CommunityListNotifier());

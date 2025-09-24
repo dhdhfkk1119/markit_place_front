@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../../../_core/constants/custom_widget.dart';
 import '../community_dto/community_post_write_dto.dart';
 import '../community_repository/community_post_write_repositroy.dart';
@@ -43,7 +45,6 @@ class CommunityPostWriteNotifier
     try {
       List<String> base64Images = await _convertImageToBase64(postData.images);
 
-
       final newPostData = CommunityPostWriteDTO(
         title: postData.title,
         content: postData.content,
@@ -63,7 +64,8 @@ class CommunityPostWriteNotifier
   }
 
   Future<void> updatePost(int postId, CommunityPostWriteDTO postData) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, isSuccess: false);
+    state =
+        state.copyWith(isLoading: true, errorMessage: null, isSuccess: false);
     try {
       List<String> base64Images = await _convertImageToBase64(postData.images);
       final updatedPostData = postData.copyWith(images: base64Images);
@@ -78,7 +80,8 @@ class CommunityPostWriteNotifier
   }
 
   Future<void> deletePost(int postId) async {
-    state = state.copyWith(isLoading: true, errorMessage: null, isSuccess: false);
+    state =
+        state.copyWith(isLoading: true, errorMessage: null, isSuccess: false);
     try {
       await _repository.deletePost(postId);
 
@@ -90,16 +93,20 @@ class CommunityPostWriteNotifier
     }
   }
 
-
-
-
-  Future<List<String>> _convertImageToBase64(List<String> imagePaths) async {
+  Future<List<String>> _convertImageToBase64(List<dynamic> images) async {
     List<String> base64Images = [];
-    for (String imagePath in imagePaths) {
-      final File imageFile = File(imagePath);
-      final bytes = await imageFile.readAsBytes();
-      String base64String = base64Encode(bytes);
-      base64Images.add(base64String);
+    for (var image in images) {
+      if (image is String) {
+        base64Images.add(image);
+      } else if (image is File) {
+        final bytes = await image.readAsBytes();
+        String base64String = base64Encode(bytes);
+        base64Images.add(base64String);
+      } else if (image is XFile) {
+        final bytes = await image.readAsBytes();
+        String base64String = base64Encode(bytes);
+        base64Images.add(base64String);
+      }
     }
     return base64Images;
   }

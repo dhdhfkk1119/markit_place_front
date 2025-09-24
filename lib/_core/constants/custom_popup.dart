@@ -6,6 +6,7 @@ import '../../domain/members/providers/member_auth_provider.dart';
 import '../../domain/product/providers/product_detail_notifier.dart';
 import '../../domain/product/providers/product_list_notifier.dart';
 import '../../domain/report/report_notifier/product_report_notifier.dart';
+import '../../presentation/pages/index_stack_page/community/write_page/widgets/community_write_body.dart';
 import '../../presentation/pages/index_stack_page/main_screen.dart';
 import '../../presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
 import '../../presentation/pages/index_stack_page/product/write_page/product_write_page.dart';
@@ -35,13 +36,13 @@ class CustomPopUp {
   }
 
   static buildAppBarPopUp(
-    BuildContext context,
-    String userName,
-    String productName,
-    int productId, {
-    String? title,
-    WidgetRef? ref,
-  }) {
+      BuildContext context,
+      String userName,
+      String productName,
+      int productId, {
+        String? title,
+        WidgetRef? ref,
+      }) {
     if (ref == null) return const SizedBox.shrink();
 
     final notifier = ref.read(productListProvider.notifier);
@@ -103,7 +104,7 @@ class CustomPopUp {
               ),
               ListTile(
                 leading:
-                    const Icon(Icons.update, color: Colors.deepPurpleAccent),
+                const Icon(Icons.update, color: Colors.deepPurpleAccent),
                 title: CustomWidget.buildTitle("수정하기", weight: FontWeight.w200),
                 onTap: () {
                   Navigator.pushReplacement(
@@ -138,7 +139,7 @@ class CustomPopUp {
       builder: (context) {
         return AlertDialog(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Center(child: CustomWidget.buildTitle("신고하기")),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -226,13 +227,18 @@ class CustomPopUp {
   }
 
   static Widget buildCommunityAppBarPopUp(
-    BuildContext context,
-    CommunityDetailDto dto,
-    WidgetRef ref,
-  ) {
+      BuildContext context,
+      CommunityDetailDto dto,
+      WidgetRef ref,
+      ) {
     // 현재 로그인된 유저 ID 가져오기 (예시)
     final authState = ref.watch(authNotifierProvider);
-    final currentUserId = authState.user?.loginId;
+    final currentUserId = authState.user?.name;
+    final postWriterId = dto.writerMemberId;
+
+    print('Current User ID: $currentUserId');
+    print('Post Writer ID: $postWriterId');
+    print('Is Owner? ${currentUserId != null && currentUserId == postWriterId}');
 
     // 게시글 작성자 ID와 현재 유저 ID가 같은지 확인
     final isOwner = currentUserId != null && currentUserId == dto.writerName;
@@ -250,7 +256,7 @@ class CustomPopUp {
             onTap: () {
               Navigator.pop(context);
               // TODO: 수정 페이지로 이동하는 로직 추가
-              // Navigator.push(context, MaterialPageRoute(builder: (context) => CommunityEditPage(dto: dto)));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => CommunityWriteBody(dto: dto)));
             },
           ),
           ListTile(

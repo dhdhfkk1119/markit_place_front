@@ -5,7 +5,9 @@ class CommunityDetail {
   final String title;
   final String content;
   final String writerName; // 작성자 이름
+  final int? writerMemberId;
   final String topic;
+  final int? topicId;
   final int? likeCount;
   final int? viewCount;
   final String createdAt;
@@ -20,7 +22,9 @@ class CommunityDetail {
     required this.title,
     required this.content,
     required this.writerName,
+    required this.writerMemberId,
     required this.topic,
+    required this.topicId,
     this.likeCount,
     this.viewCount,
     required this.createdAt,
@@ -37,7 +41,9 @@ class CommunityDetail {
       title: json['title'] as String,
       content: json['content'] as String,
       writerName: json['writerName'] as String,
+      writerMemberId: (json['writerMemberId'] ?? 0) as int?,
       topic: json['topic'] as String,
+      topicId: (json['topicId'] ?? 0) as int?,
       likeCount: (json['likeCount'] ?? 0) as int,
       viewCount: (json['viewCount'] ?? 0) as int,
       createdAt: json['createdAt'] as String,
@@ -45,8 +51,8 @@ class CommunityDetail {
       images: json['images'] != null ? List<String>.from(json['images']) : [],
       comments: json['comments'] != null
           ? (json['comments'] as List)
-              .map((e) => CommunityComment.fromMap(e as Map<String, dynamic>))
-              .toList()
+          .map((e) => CommunityComment.fromMap(e as Map<String, dynamic>))
+          .toList()
           : [],
       commentCount: (json['commentCount'] ?? 0) as int,
       isLiked: json['liked'] ?? false,
