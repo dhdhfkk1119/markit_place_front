@@ -1,8 +1,9 @@
+import 'package:dotenv/dotenv.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '_core/utils/my_http.dart';
-import 'domain/repositories/naver_map_repository.dart';
 import 'presentation/pages/auth/find_account_page/find_account_page.dart';
 import 'presentation/pages/auth/register_page/register_page.dart';
 import 'presentation/pages/auth/social_login_page/social_login_page.dart';
@@ -20,17 +21,16 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
-  await NaverMapRepository().fetchClientId().then((clientId) {
-    FlutterNaverMap().init(
-      clientId: clientId,
-      onAuthFailed: (ex) {
-        print("Naver Map Auth Failed: $ex");
-        SnackBarUtil.showErrorGlobally(
-            "네이버 지도 클라이언트 ID 인증에 실패했습니다. 관리자에게 문의해주세요.");
-      },
-    );
-  });
+  FlutterNaverMap().init(
+    clientId: dotenv.env['NAVER_MAP_CLIENT_ID']!,
+    onAuthFailed: (ex) {
+      print("Naver Map Auth Failed: $ex");
+      SnackBarUtil.showErrorGlobally(
+          "네이버 지도 클라이언트 ID 인증에 실패했습니다. 관리자에게 문의해주세요.");
+    },
+  );
 
   await NotificationUtil.init();
 
