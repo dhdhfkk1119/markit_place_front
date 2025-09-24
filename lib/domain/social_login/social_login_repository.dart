@@ -67,7 +67,7 @@ class SocialLoginRepository {
 
         final requestDto = SocialLoginRequestDto(
           provider: "NAVER",
-          providerId: accessToken, // Access Token을 전송
+          providerId: result.account.id,
           email: result.account.email,
         );
 
