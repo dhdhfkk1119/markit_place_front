@@ -1,6 +1,6 @@
-import 'package:dotenv/dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '_core/utils/my_http.dart';
@@ -22,6 +22,11 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
+
+  await FlutterNaverLogin.initSdk(
+      clientId: dotenv.env['NAVER_LOGIN_CLIENT_ID']!,
+      clientSecret: dotenv.env['NAVER_LOGIN_CLIENT_SECRET']!,
+      clientName: dotenv.env['NAVER_LOGIN_CLIENT_NAME']!);
 
   FlutterNaverMap().init(
     clientId: dotenv.env['NAVER_MAP_CLIENT_ID']!,
