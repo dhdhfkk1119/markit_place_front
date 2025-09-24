@@ -1,4 +1,4 @@
-enum CommunityReportStatus { PENDING, REJECTED, RESOLVED }
+import '../report_dto/community_report_dto.dart';
 
 class CommunityReportModel {
   final int id;

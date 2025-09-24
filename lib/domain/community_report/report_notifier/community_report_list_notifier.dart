@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../report/report_notifier/product_report_list_notifier.dart';
 import '../report_dto/community_report_dto.dart';
+import '../report_model/community_report_model.dart';
 import '../report_repository/community_report_repository.dart';
 
 class CommunityReportListNotifier

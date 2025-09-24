@@ -24,8 +24,7 @@ class CommunityReportDto {
       id: model.id,
       postId: model.postId,
       reason: model.reason,
-      status: CommunityReportStatus.values
-          .firstWhere((status) => status.name == model.status),
+      status: model.status,
       createdAt: model.createdAt,
     );
   }
