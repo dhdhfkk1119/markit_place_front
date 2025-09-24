@@ -13,7 +13,8 @@ class CommunityReportDetailNotifier
   Future<CommunityReportDto> build(int reportId) async {
     try {
       final response = await _reportRepository.reportDetail(reportId: reportId);
-      final communityReport = CommunityReportModel.fromJson(response);
+      final communityReport =
+          CommunityReportModel.fromJson(response['response']);
       final dto = CommunityReportDto.fromModel(communityReport);
       return dto;
     } catch (e) {

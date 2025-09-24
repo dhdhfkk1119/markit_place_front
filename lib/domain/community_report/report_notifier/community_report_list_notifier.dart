@@ -12,7 +12,11 @@ class CommunityReportListNotifier
   Future<List<CommunityReportDto>> build() async {
     final response = await _repository.reportMyPost();
     final List<dynamic> content = response['response'];
-    return content.map((json) => CommunityReportDto.fromModel(json)).toList();
+
+    return content.map((json) {
+      final model = CommunityReportModel.fromJson(json);
+      return CommunityReportDto.fromModel(model);
+    }).toList();
   }
 
   Future<void> refreshReportCommunityList() async {
