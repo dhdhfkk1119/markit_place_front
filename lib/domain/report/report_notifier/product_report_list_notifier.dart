@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../report_dto/product_report_dto.dart';
 import '../report_repository/product_report_repository.dart';
+import '../report_model/product_report_model.dart';
 
 class ProductReportListNotifier extends AsyncNotifier<List<ProductReportDto>> {
   final ProductReportRepository _repository = ProductReportRepository();
@@ -9,8 +10,11 @@ class ProductReportListNotifier extends AsyncNotifier<List<ProductReportDto>> {
   @override
   Future<List<ProductReportDto>> build() async {
     final response = await _repository.reportMyProduct();
-    final List<dynamic> content = response['content'];
-    return content.map((json) => ProductReportDto.fromModel(json)).toList();
+    final List<dynamic> content = response['content'] as List<dynamic>;
+    return content.map((e) {
+      final model = ProductReportModel.fromJson(e as Map<String, dynamic>); // ★
+      return ProductReportDto.fromModel(model);
+    }).toList();
   }
 
   Future<void> refreshReportProductList() async {
