@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
 import '../../domain/members/providers/member_auth_provider.dart';
-// import '../sessions/session_repository.dart'; // 삭제
-import '../../domain/members/repositories/member_auth_repository.dart'; // tokenKey를 사용하기 위해 추가
+import '../../domain/members/repositories/member_auth_repository.dart';
 
 /// todo - 개인 로컬 컴퓨터 주소로 수정하세요
 /// 기본 서버 주소 - http://125.134.0.135:8080/api
@@ -18,25 +17,22 @@ final dio = Dio(
   BaseOptions(
     baseUrl: baseUrl,
     contentType: "application/json; charset=utf-8",
-    validateStatus: (status) => true, // 모든 상태 코드를 성공으로 간주하고 인터셉터에서 처리
-    connectTimeout: const Duration(seconds: 30), // 연결 타임아웃 30초로 설정
-    receiveTimeout: const Duration(seconds: 30), // 응답 수신 타임아웃 30초로 설정
+    validateStatus: (status) => true,
+    connectTimeout: const Duration(seconds: 60), // 30초 -> 60초로 변경
+    receiveTimeout: const Duration(seconds: 60), // 30초 -> 60초로 변경
   ),
 );
 
-const secureStorage =
-    FlutterSecureStorage(); // 이 파일에서 직접 사용되는 secureStorage 인스턴스 유지
+const secureStorage = FlutterSecureStorage();
 
 final logger = Logger();
 
-// setupInterceptors는 AuthNotifier 인스턴스를 받아 인터셉터를 설정합니다.
 void setupInterceptors(AuthNotifier authNotifier) {
-  dio.interceptors.clear(); // 기존 인터셉터 초기화 (중복 등록 방지)
+  dio.interceptors.clear();
   dio.interceptors.add(
     InterceptorsWrapper(
       onRequest: (options, handler) async {
         final path = options.path;
-        // 인증이 필요 없는 경로 목록
         final publicPaths = [
           '/members/login',
           '/members/register',
@@ -55,7 +51,6 @@ void setupInterceptors(AuthNotifier authNotifier) {
             publicPaths.any((publicPath) => path.endsWith(publicPath));
 
         if (!isPublicPath) {
-          // MemberAuthRepository에 정의된 tokenKey를 사용 (임포트 추가됨)
           final accessToken = await secureStorage.read(key: tokenKey);
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers["Authorization"] = "Bearer $accessToken";
@@ -81,11 +76,8 @@ void setupInterceptors(AuthNotifier authNotifier) {
         if (e.response?.statusCode == 401) {
           logger.w("인증 인터셉터: 401 인증 오류 감지 - 경로: ${e.requestOptions.path}");
 
-          // 토큰 만료에 대한 새로운 기본 메시지.
           String serverMessage = "인증 토큰이 만료되었습니다. 다시 로그인해주세요.";
 
-          // 서버로부터 더 구체적인 메시지를 받을 수 있도록 파싱 로직 유지,
-          // 하지만 기본값은 이제 일반적인 토큰 만료에 관한 것입니다.
           if (e.response?.data != null) {
             dynamic responseData = e.response!.data;
             if (responseData is Map<String, dynamic>) {
@@ -118,8 +110,7 @@ void setupInterceptors(AuthNotifier authNotifier) {
           return handler.reject(
             DioException(
               requestOptions: e.requestOptions,
-              // 수정된 DioException 오류 메시지
-              error: serverMessage, // 단순화됨
+              error: serverMessage,
               type: DioExceptionType.cancel,
             ),
           );

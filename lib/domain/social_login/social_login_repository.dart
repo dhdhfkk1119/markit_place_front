@@ -1,9 +1,12 @@
 // D:/workspace-flutter/markit_place_front/lib/domain/social_login/social_login_repository.dart
 import 'dart:convert';
+import 'dart:typed_data'; // For Uint8List if needed, though List<int> from Dio is fine for base64Encode
+
 import 'package:dio/dio.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
+
 import '../../_core/dtos/api_response_dto.dart';
 import '../../_core/dtos/error_dto.dart';
 import '../../_core/utils/error_utils.dart';
@@ -11,6 +14,7 @@ import '../../_core/utils/my_http.dart';
 import '../members/dtos/login_response.dto.dart';
 import '../members/models/session_user.dart';
 import 'social_login_request_dto.dart';
+import 'social_login_result_dto.dart';
 
 final logger = Logger();
 
@@ -28,44 +32,85 @@ class SocialLoginRepository {
     }
   }
 
+  Future<String?> _fetchImageAsBase64(String imageUrl) async {
+    if (imageUrl.isEmpty) return null;
+    try {
+      final response = await _dio.get<List<int>>(
+        imageUrl,
+        options: Options(responseType: ResponseType.bytes), // Get raw bytes
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return base64Encode(response.data!);
+      }
+      logger.w(
+          "[SocialLoginRepo] Failed to fetch image from $imageUrl. Status: ${response.statusCode}");
+      return null;
+    } catch (e, stackTrace) {
+      logger.e(
+          "[SocialLoginRepo] Error fetching or encoding image from $imageUrl",
+          e,
+          stackTrace);
+      return null;
+    }
+  }
+
   // --- 네이버 소셜 로그인 ---
-  /// 네이버 로그인을 시도하고, 성공 시 서버 로그인 결과 (SessionUser, token)를 반환합니다.
+  /// 네이버 로그인을 시도하고, 성공 시 서버 로그인 결과 및 네이버 프로필 정보를 반환합니다.
   Future<Map<String, dynamic>?> signInWithNaver() async {
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
-      logger.i(
-          "[NaverLogin] SDK Result: Status: ${result.status}, AccountID: ${result.account.id}");
 
       if (result.status == NaverLoginStatus.loggedIn) {
-        final requestDto = SocialLoginRequestDto(
-          provider: "NAVER",
-          providerId: result.account.id,
-          email: result.account.email,
-        );
-        return await _loginToServerWithSocialToken(requestDto);
+        logger.i("[NaverLogin] Naver SDK Login Success!");
+
+        final String? accessToken = result.accessToken?.accessToken;
+
+        if (accessToken == null) {
+          throw Exception("네이버 Access Token을 가져오는데 실패했습니다.");
+        }
+
+        return await _loginToServer(accessToken);
       } else {
         logger.w(
-            "[NaverLogin] Naver login not successful. Status: ${result.status}, Message: ${result.errorMessage}");
-        if (result.errorMessage != null && result.errorMessage!.isNotEmpty) {
-          throw Exception("네이버 로그인 실패: ${result.errorMessage}");
-        }
-        return null; // 사용자 취소 등
+            "[NaverLogin] Naver login failed or cancelled by user. Status: ${result.status}");
+        return null;
       }
     } catch (e) {
       logger.e('[NaverLogin] signInWithNaver Error', e);
-      throw Exception("네이버 로그인 중 오류 발생: ${extractErrorMessage(e)}");
+      throw Exception("네이버 로그인 중 오류가 발생했습니다.");
+    }
+  }
+
+  Future<Map<String, dynamic>?> _loginToServer(String accessToken) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl/naver/login',
+        data: accessToken,
+      );
+
+      if (response.statusCode == 200) {
+        logger.i("[Auth] Server login success! Response: ${response.data}");
+        return response.data;
+      } else {
+        logger.e(
+            "[Auth] Server login failed. Status: ${response.statusCode}, Body: ${response.data}");
+        throw Exception("서버 로그인에 실패했습니다.");
+      }
+    } catch (e) {
+      logger.e('[Auth] _loginToServer Error', e);
+      throw Exception("서버와 통신 중 오류가 발생했습니다.");
     }
   }
 
   // --- 구글 소셜 로그인 ---
-  /// Google 로그인을 시도하고, 성공 시 서버 로그인 결과와 GoogleSignInAccount 객체를 함께 반환합니다.
-  /// 반환 Map 에는 'sessionUser' (SessionUser), 'token' (String), 'googleUserAccount' (GoogleSignInAccount)가 포함됩니다.
-  Future<Map<String, dynamic>?> signInWithGoogleAndGetAccount() async {
+  /// Google 로그인을 시도하고, 성공 시 서버 로그인 결과와 Google 프로필 정보를 반환합니다.
+  Future<SocialLoginResultDto?> signInWithGoogleAndGetAccount() async {
     try {
+      await signOutFromGoogle();
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
         logger.w("[GoogleLogin] Google sign-in cancelled by user.");
-        return null; // 사용자가 로그인 취소
+        return null;
       }
       logger.i(
           "[GoogleLogin] SDK Result: User Email: ${googleUser.email}, ID: ${googleUser.id}, Name: ${googleUser.displayName}, Photo: ${googleUser.photoUrl}");
@@ -80,38 +125,53 @@ class SocialLoginRepository {
           await _loginToServerWithSocialToken(requestDto);
 
       if (serverLoginResult != null) {
-        // 서버 로그인 성공 시, 결과에 GoogleSignInAccount 객체를 추가하여 반환
-        return {
-          'sessionUser': serverLoginResult['sessionUser'] as SessionUser?,
-          'token': serverLoginResult['token'] as String?,
-          'googleUserAccount': googleUser, // GoogleSignInAccount 객체
-        };
+        final String? googleAccountName = googleUser.displayName;
+        final String? googleProfileImageUrl = googleUser.photoUrl;
+        String? googleProfileImageBase64;
+
+        if (googleProfileImageUrl != null && googleProfileImageUrl.isNotEmpty) {
+          googleProfileImageBase64 =
+              await _fetchImageAsBase64(googleProfileImageUrl);
+          if (googleProfileImageBase64 != null) {
+            logger.i(
+                "[GoogleLogin] Successfully converted Google profile image URL to Base64.");
+          } else {
+            logger.w(
+                "[GoogleLogin] Failed to convert Google profile image URL to Base64. URL: $googleProfileImageUrl");
+          }
+        }
+        logger.i(
+            "[GoogleLogin] Extracted Google Profile: Name='$googleAccountName', ImageUrl='$googleProfileImageUrl', HasBase64=${googleProfileImageBase64 != null}");
+
+        return SocialLoginResultDto(
+          sessionUser: serverLoginResult['sessionUser'] as SessionUser?,
+          token: serverLoginResult['token'] as String?,
+          socialAccountName: googleAccountName,
+          socialProfileImageBase64: googleProfileImageBase64,
+        );
       } else {
-        // 서버 로그인 실패 (예: _loginToServerWithSocialToken에서 null 반환 또는 예외 발생 후 catch)
         logger.w("[GoogleLogin] Server login failed after Google SDK success.");
         return null;
       }
-    } catch (e) {
-      logger.e('[GoogleLogin] signInWithGoogleAndGetAccount Error', e);
+    } catch (e, stackTrace) {
+      logger.e(
+          '[GoogleLogin] signInWithGoogleAndGetAccount Error', e, stackTrace);
       throw Exception("구글 로그인 중 오류 발생: ${extractErrorMessage(e)}");
     }
   }
 
-  /// Google 계정에서 로그아웃합니다. (다음 로그인 시 계정 선택 가능하도록)
   Future<void> signOutFromGoogle() async {
     try {
       if (await _googleSignIn.isSignedIn()) {
         await _googleSignIn.signOut();
         logger.i("[GoogleLoginRepo] Signed out from Google.");
       }
-    } catch (e) {
-      logger.e("[GoogleLoginRepo] Error signing out from Google: $e");
+    } catch (e, stackTrace) {
+      logger.e(
+          "[GoogleLoginRepo] Error signing out from Google: $e", e, stackTrace);
     }
   }
 
-  // --- 공통 내부 헬퍼: 소셜 정보로 서버에 로그인 ---
-  /// 소셜 로그인 정보(SocialLoginRequestDto)를 사용하여 서버에 로그인을 요청합니다.
-  /// 성공 시 'sessionUser' (SessionUser)와 'token' (String)을 포함한 Map을 반환합니다.
   Future<Map<String, dynamic>?> _loginToServerWithSocialToken(
       SocialLoginRequestDto requestDto) async {
     try {
@@ -134,7 +194,7 @@ class SocialLoginRepository {
           apiResponse.response != null) {
         final sessionUser = apiResponse.response!.toSessionUser();
         logger.i(
-            "[SocialLoginRepo] Server login success! User: ${sessionUser.loginId}, Provider: ${requestDto.provider}");
+            "[SocialLoginRepo] Server login success! User: ${sessionUser.loginId}, Provider: ${requestDto.provider}, ServerProvider: ${sessionUser.provider}");
         return {
           'sessionUser': sessionUser,
           'token': token.replaceFirst('Bearer ', ''),
@@ -157,16 +217,16 @@ class SocialLoginRepository {
       final errorMessage = _handleDioError(
           e, '[SocialLoginRepo DioException - ${requestDto.provider}]');
       throw Exception(errorMessage);
-    } catch (e) {
+    } catch (e, stackTrace) {
       logger.e(
           "[SocialLoginRepo] _loginToServerWithSocialToken (${requestDto.provider}) Error",
-          e);
+          e,
+          stackTrace);
       throw Exception(
           "${requestDto.provider} 정보로 서버 로그인 중 오류: ${extractErrorMessage(e)}");
     }
   }
 
-  /// DioException 발생 시 에러 메시지를 파싱하고 로깅하는 내부 헬퍼 메소드.
   String _handleDioError(DioException e, String logPrefix) {
     String finalErrorMessage;
     ErrorDto? parsedErrorDto;
@@ -179,8 +239,9 @@ class SocialLoginRepository {
         try {
           parsedErrorDto =
               ErrorDto.fromJson(responseData['error'] as Map<String, dynamic>);
-        } catch (parseError) {
-          logger.e('$logPrefix - Failed to parse ErrorDto', parseError);
+        } catch (parseError, stackTrace) {
+          logger.e(
+              '$logPrefix - Failed to parse ErrorDto', parseError, stackTrace);
         }
       }
     }
