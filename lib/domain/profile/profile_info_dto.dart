@@ -2,19 +2,22 @@
 class ProfileInfoResponseDto {
   final int id;
   final String name;
+  final String nickname;
   final String profileImageBase64;
+  final String profileImageUrl;
 
   ProfileInfoResponseDto({
     required this.id,
     required this.name,
+    required this.nickname,
     required this.profileImageBase64,
+    required this.profileImageUrl,
   });
 
   factory ProfileInfoResponseDto.fromJson(Map<String, dynamic> json) {
     final res = json['response'] ?? {};
-    // profileImageBase64가 없으면 profileImageUrl 또는 빈 문자열로 대체
-    final dynamic img =
-        res['profileImageBase64'] ?? res['profileImageUrl'] ?? '';
+    final dynamic imgBase64 = res['profileImageBase64'] ?? '';
+    final dynamic imgUrl = res['profileImageUrl'] ?? '';
 
     // id를 안전하게 파싱 (int 또는 문자열로 올 수 있음)
     int parseId(dynamic v) {
@@ -27,7 +30,9 @@ class ProfileInfoResponseDto {
     return ProfileInfoResponseDto(
       id: parseId(res['id']),
       name: (res['name'] ?? '').toString(),
-      profileImageBase64: img == null ? '' : img.toString(),
+      nickname: (res['nickname'] ?? '').toString(),
+      profileImageBase64: imgBase64 == null ? '' : imgBase64.toString(),
+      profileImageUrl: imgUrl == null ? '' : imgUrl.toString(),
     );
   }
 }

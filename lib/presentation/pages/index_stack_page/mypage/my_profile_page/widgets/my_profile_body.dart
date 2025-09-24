@@ -1,175 +1,135 @@
 import 'dart:convert';
+import 'dart:typed_data'; // Uint8List 사용을 위해 추가
 
+import 'package:dio/dio.dart'; // Dio (praise)
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
+
 import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../_core/utils/my_http.dart'; // dioProvider (praise)
+import '../../../../../../domain/members/models/session_user.dart'; // SessionUser 사용
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
+import '../../../../../../domain/profile/profile_provider.dart'; // ProfileRepositoryProvider 사용을 위해 추가
 import '../../../../auth/social_login_page/social_login_page.dart';
 import '../review_list_screen.dart';
-import '../../../../../../_core/utils/my_http.dart';
-import 'package:dio/dio.dart';
 
 final praiseButtonStateProvider = StateProvider<bool>((ref) => true);
 
 final _logger = Logger();
 
 class MyProfileBody extends ConsumerStatefulWidget {
-  final user;
+  final SessionUser? user;
   final int userRating;
 
-  const MyProfileBody(
-      {required this.user, required this.userRating, super.key});
+  const MyProfileBody({this.user, required this.userRating, super.key});
 
   @override
   ConsumerState<MyProfileBody> createState() => _MyProfileBodyState();
 }
 
 class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
-  int _currentMannerScore = 50;
-  int _retransactionRate = 0;
-  String? _profileName;
-  String? _profileImageUrl;
-
   @override
   void initState() {
     super.initState();
-    _fetchProfileData();
+    Future.microtask(() {
+      _fetchProfileAndRefreshAuth();
+    });
   }
 
-  Future<void> _fetchProfileData() async {
-    final dio = ref.read(dioProvider);
+  Future<void> _fetchProfileAndRefreshAuth({bool showLoading = true}) async {
+    final authNotifier = ref.read(authNotifierProvider.notifier);
+    final profileRepository = ref.read(ProfileRepositoryProvider);
+
     try {
-      final response = await dio.get('/members/me');
-      if (response.statusCode == 200) {
-        final data = response.data ?? {};
-        // 안전하게 성공 여부 판단 (isSuccess / success 등 서버 차이에 대비)
-        final bool isOk =
-            (data['isSuccess'] == true) || (data['success'] == true);
-        if (isOk) {
-          final result = data['result'] ?? data['response'] ?? data;
-          setState(() {
-            _currentMannerScore = (result['mannerScore'] is int)
-                ? result['mannerScore']
-                : (int.tryParse(result['mannerScore']?.toString() ?? '') ??
-                    _currentMannerScore);
-            _retransactionRate = (result['retransactionRate'] is int)
-                ? result['retransactionRate']
-                : (int.tryParse(
-                        result['retransactionRate']?.toString() ?? '') ??
-                    _retransactionRate);
-            _profileName =
-                (result['name'] ?? result['nickname'] ?? '').toString();
-            // 서버가 profileImageBase64나 profileImageUrl을 내려주지 않을 수 있음
-            String img = (result['profileImageBase64'] ??
-                    result['profileImageUrl'] ??
-                    '')
-                .toString();
-
-            // 로그: 응답에서 온 이미지 raw 값 길이
-            _logger.d('[MyProfileBody] api image raw length: ${img.length}');
-
-            if (img.isEmpty) {
-              // 폴백: authNotifier에 저장된 세션 사용자 이미지 사용
-              final authUser = ref.read(authNotifierProvider);
-              final sessionUser = authUser.user;
-              _logger.d(
-                  '[MyProfileBody] sessionUser present: ${sessionUser != null}');
-              if (sessionUser != null &&
-                  sessionUser.profileImageUrl != null &&
-                  sessionUser.profileImageUrl!.isNotEmpty) {
-                _logger.d(
-                    '[MyProfileBody] using session profileImageUrl length: ${sessionUser.profileImageUrl!.length}');
-                img = sessionUser.profileImageUrl!;
-              }
-            } else {
-              _logger.d('[MyProfileBody] using api image (non-empty)');
-            }
-
-            _logger
-                .d('[MyProfileBody] final image source length: ${img.length}');
-            _profileImageUrl = img;
-          });
-        } else {
-          _logger.w(
-              '프로필 조회: 응답은 왔지만 success flag가 false입니다. data=${response.data}');
-        }
+      final SessionUser? fullUserProfile =
+          await profileRepository.getMyProfile();
+      if (fullUserProfile != null) {
+        await authNotifier.refreshSessionUser(fullUserProfile);
+        _logger.d(
+            "[MyProfileBody] 프로필 정보 조회 및 AuthNotifier 상태 업데이트 성공: ${fullUserProfile.name}");
+      } else {
+        _logger.w("[MyProfileBody] 서버로부터 프로필 정보를 가져오지 못했습니다.");
       }
     } catch (e) {
-      _logger.e('프로필 데이터 로딩 실패', e);
+      _logger.e("[MyProfileBody] 내 프로필 정보 조회 실패: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("프로필 정보를 불러오는데 실패했습니다: $e")),
+        );
+      }
     }
   }
 
-  Future<void> _onRefresh() async {
-    await _fetchProfileData();
+  Future<void> _refreshProfileData() async {
+    await _fetchProfileAndRefreshAuth();
   }
 
   Future<void> _addPraise() async {
     _logger.d('매너 칭찬하기 함수 호출됨');
-
     final bool isEnabled = ref.read(praiseButtonStateProvider);
     if (!isEnabled) {
       _logger.w('버튼이 비활성화 상태입니다. 함수를 종료합니다');
       return;
     }
-
     ref.read(praiseButtonStateProvider.notifier).state = false;
     _logger.d('버튼 상태를 비활성화로 변경함');
 
     final dio = ref.read(dioProvider);
-
-    const url = 'http://10.0.2.2:8080/api/praise';
-
+    final authUser = ref.read(authNotifierProvider).user;
     final requestBody = {
       "praisedMemberId": 1,
-      "praiserId": 2,
+      "praiserId": authUser?.memberId ?? 2,
       "tradeId": 1,
       "isBuyer": true,
       "praiseCategory": [1, 2],
       "customContent": "정말 좋은 거래였습니다!"
     };
-
     bool shouldReactivateButton = true;
 
     try {
       final response = await dio.post(
-        url,
+        '${baseUrl}/praise',
         data: requestBody,
         options: Options(headers: {'Content-Type': 'application/json'}),
       );
-
       _logger.i("서버 응답 상태 코드 : ${response.statusCode}");
       _logger.d("서버 응답 본문 : ${response.data}");
 
       if (response.statusCode == 200) {
         final responseData = response.data;
         if (responseData['success']) {
-          setState(() {
-            _currentMannerScore = responseData['updatedMannerScore'];
-            _retransactionRate = responseData['updatedRetransactionRate'];
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("매너 칭찬이 완료되었습니다. 감사합니다!")),
-          );
+          await _refreshProfileData();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("매너 칭찬이 완료되었습니다. 감사합니다!")),
+            );
+          }
           shouldReactivateButton = false;
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(responseData['message'])),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(responseData['message'] ?? "칭찬에 실패했습니다.")),
+            );
+          }
           if (responseData['message'] == "이미 해당 거래를 칭찬하셨습니다.") {
             shouldReactivateButton = false;
           }
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("매너 칭찬에 실패했습니다. 다시 시도해주세요.")),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("매너 칭찬에 실패했습니다. 다시 시도해주세요.")),
+          );
+        }
       }
     } catch (e) {
       _logger.e('네트워크 오류 발생', e);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("네트워크 오류가 발생했습니다.")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("네트워크 오류가 발생했습니다.")),
+        );
+      }
     } finally {
       if (shouldReactivateButton) {
         ref.read(praiseButtonStateProvider.notifier).state = true;
@@ -187,15 +147,15 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   static const Color secondaryTextColor = Colors.grey;
   static const Color dividerColor = Color(0xFFEDE0E0);
   static const Color mainTextColor = Color(0xFF333333);
-
   static const double horizontalPadding = 20.0;
   static const double verticalSpacing = 24.0;
 
   @override
   Widget build(BuildContext context) {
-    final authUser = ref.watch(authNotifierProvider);
-    final user = authUser.user;
-    if (user == null) {
+    final authState = ref.watch(authNotifierProvider);
+    final SessionUser? displayUser = widget.user ?? authState.user;
+
+    if (displayUser == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           Navigator.pushAndRemoveUntil(
@@ -207,63 +167,117 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
       });
       return const SizedBox.shrink();
     }
-    // 이미지 처리
-    Widget profileImageWidget;
-    // 우선 API에서 가져온 _profileImageUrl 사용, 없으면 세션 user의 profileImageUrl 사용
-    String? imgSource = _profileImageUrl;
-    if (imgSource == null || imgSource.isEmpty) {
-      imgSource = user.profileImageUrl;
-    }
 
-    if (imgSource != null && imgSource.isNotEmpty) {
-      if (imgSource.startsWith('http')) {
-        profileImageWidget = CircleAvatar(
-          radius: 40,
-          backgroundColor: profileAvatarColor,
-          backgroundImage: NetworkImage(imgSource),
-        );
-      } else if (imgSource.startsWith('data:image/')) {
-        // data URL: data:image/png;base64,AAAA...
+    final profileName = displayUser.name ?? '이름 없음';
+    ImageProvider? finalProfileImageProvider;
+
+    String? base64ImageSource = displayUser.profileImageBase64;
+    String? imageUrlSource = displayUser.profileImageUrl;
+
+    // 1. profileImageBase64 필드 우선 처리
+    if (base64ImageSource != null && base64ImageSource.isNotEmpty) {
+      if (base64ImageSource.startsWith('data:image') &&
+          base64ImageSource.contains('https://')) {
+        _logger.w(
+            '[MyProfileBody] profileImageBase64 has combined data URI and URL: $base64ImageSource');
         try {
-          final base64Part = imgSource.split(',').last;
-          final bytes = base64Decode(base64Part);
-          profileImageWidget = CircleAvatar(
-            radius: 40,
-            backgroundColor: profileAvatarColor,
-            backgroundImage: MemoryImage(bytes),
-          );
-        } catch (_) {
-          profileImageWidget = const CircleAvatar(
-            radius: 40,
-            child: Icon(Icons.person, size: 40),
-          );
+          final uriString = base64ImageSource
+              .substring(base64ImageSource.indexOf('https://'));
+          final uri = Uri.parse(uriString);
+          if (uri.isAbsolute) {
+            _logger.d(
+                '[MyProfileBody] Extracted URL from profileImageBase64: $uriString');
+            finalProfileImageProvider = NetworkImage(uriString);
+          } else {
+            _logger.w(
+                '[MyProfileBody] Extracted string from profileImageBase64 is not valid URI: $uriString');
+          }
+        } catch (e) {
+          _logger.e(
+              '[MyProfileBody] Error parsing URL from profileImageBase64: $e');
         }
+      } else if (base64ImageSource.startsWith('http')) {
+        _logger.w(
+            '[MyProfileBody] profileImageBase64 contains a URL: $base64ImageSource. Using as NetworkImage.');
+        finalProfileImageProvider = NetworkImage(base64ImageSource);
       } else {
-        // treat as raw base64
-        try {
-          final bytes = base64Decode(imgSource);
-          profileImageWidget = CircleAvatar(
-            radius: 40,
-            backgroundColor: profileAvatarColor,
-            backgroundImage: MemoryImage(bytes),
-          );
-        } catch (_) {
-          profileImageWidget = const CircleAvatar(
-            radius: 40,
-            child: Icon(Icons.person, size: 40),
-          );
+        String pureBase64String = base64ImageSource;
+        if (base64ImageSource.startsWith('data:image')) {
+          pureBase64String = base64ImageSource.split(',').last;
+        }
+        if (pureBase64String.contains('http')) {
+          _logger.w(
+              '[MyProfileBody] Base64 string (after prefix removal) still contains "http". Invalid format: $pureBase64String');
+        } else {
+          try {
+            final bytes = base64Decode(pureBase64String);
+            finalProfileImageProvider = MemoryImage(bytes);
+            _logger.d(
+                '[MyProfileBody] Using MemoryImage from profileImageBase64.');
+          } catch (e) {
+            _logger.e(
+                '[MyProfileBody] Failed to decode profileImageBase64: $e. Source: $pureBase64String');
+          }
         }
       }
-    } else {
-      profileImageWidget = const CircleAvatar(
-        radius: 40,
-        child: Icon(Icons.person, size: 40),
-      );
     }
-    // 이름 처리
-    final profileName = (_profileName != null && _profileName!.isNotEmpty)
-        ? _profileName!
-        : (user.name ?? '이름 없음');
+
+    // 2. profileImageUrl 필드 처리 (위에서 finalProfileImageProvider가 설정되지 않은 경우)
+    if (finalProfileImageProvider == null &&
+        imageUrlSource != null &&
+        imageUrlSource.isNotEmpty) {
+      _logger.d(
+          '[MyProfileBody] Attempting to use profileImageUrl: $imageUrlSource');
+      if (imageUrlSource.startsWith('data:image') &&
+          imageUrlSource.contains('https://')) {
+        _logger.w(
+            '[MyProfileBody] profileImageUrl has combined data URI and URL: $imageUrlSource');
+        try {
+          final uriString =
+              imageUrlSource.substring(imageUrlSource.indexOf('https://'));
+          final uri = Uri.parse(uriString);
+          if (uri.isAbsolute) {
+            _logger.d(
+                '[MyProfileBody] Extracted URL from profileImageUrl: $uriString');
+            finalProfileImageProvider = NetworkImage(uriString);
+          } else {
+            _logger.w(
+                '[MyProfileBody] Extracted string from profileImageUrl is not valid URI: $uriString');
+          }
+        } catch (e) {
+          _logger.e(
+              '[MyProfileBody] Error parsing URL from profileImageUrl (combined): $e');
+        }
+      } else if (imageUrlSource.startsWith('data:image')) {
+        _logger.w(
+            '[MyProfileBody] profileImageUrl contains a data URI: $imageUrlSource');
+        String base64Part = imageUrlSource.split(',').last;
+        if (base64Part.contains('http')) {
+          _logger.e(
+              '[MyProfileBody] Data URI in profileImageUrl still contains "http". Invalid format: $base64Part');
+        } else {
+          try {
+            final bytes = base64Decode(base64Part);
+            finalProfileImageProvider = MemoryImage(bytes);
+            _logger.d(
+                '[MyProfileBody] Using MemoryImage from profileImageUrl (data URI).');
+          } catch (e) {
+            _logger.e(
+                '[MyProfileBody] Failed to decode data URI from profileImageUrl: $e');
+          }
+        }
+      } else if (imageUrlSource.startsWith('http')) {
+        _logger.d(
+            '[MyProfileBody] Using NetworkImage from profileImageUrl: $imageUrlSource');
+        finalProfileImageProvider = NetworkImage(imageUrlSource);
+      } else {
+        _logger.w(
+            '[MyProfileBody] Invalid profileImageUrl format: $imageUrlSource');
+      }
+    }
+
+    final int currentMannerScore = displayUser.mannerScore ?? 50;
+    final int retransactionRate = displayUser.retransactionRate ?? 0;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -278,10 +292,10 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         ),
         title: CustomWidget.buildTitle("프로필", size: 18),
         centerTitle: true,
-        actions: [],
+        actions: const [],
       ),
       body: RefreshIndicator(
-        onRefresh: _onRefresh,
+        onRefresh: _refreshProfileData,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
@@ -290,7 +304,6 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-                // 프로필 섹션에서 직접 위젯 사용
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
@@ -303,7 +316,15 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                         Stack(
                           alignment: Alignment.bottomRight,
                           children: [
-                            profileImageWidget,
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundColor: profileAvatarColor,
+                              backgroundImage: finalProfileImageProvider,
+                              child: finalProfileImageProvider == null
+                                  ? const Icon(Icons.person,
+                                      size: 40, color: Colors.white70)
+                                  : null,
+                            ),
                             Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
@@ -311,7 +332,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                                 shape: BoxShape.circle,
                                 border: Border.all(color: secondaryTextColor),
                               ),
-                              child: Icon(Icons.camera_alt,
+                              child: const Icon(Icons.edit_outlined,
                                   color: secondaryTextColor, size: 16),
                             ),
                           ],
@@ -322,7 +343,6 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-// ...
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
@@ -330,7 +350,6 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                                       size: 20, weight: FontWeight.w700),
                                 ],
                               ),
-// ...
                               const SizedBox(height: 8),
                               OutlinedButton(
                                 onPressed: (widget.userRating >= 1 &&
@@ -347,7 +366,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                                   backgroundColor: (widget.userRating >= 1 &&
                                           ref.watch(praiseButtonStateProvider))
                                       ? primaryColor
-                                      : Colors.grey,
+                                      : Colors.grey[300],
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8)),
                                   padding: const EdgeInsets.symmetric(
@@ -356,7 +375,11 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                                 ),
                                 child: CustomWidget.buildTitle("매너 칭찬하기",
                                     size: 18,
-                                    color: backgroundColor,
+                                    color: (widget.userRating >= 1 &&
+                                            ref.watch(
+                                                praiseButtonStateProvider))
+                                        ? backgroundColor
+                                        : Colors.white60,
                                     weight: FontWeight.normal),
                               ),
                             ],
@@ -365,18 +388,12 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                       ]),
                 ),
                 const SizedBox(height: verticalSpacing),
-                _buildRateSection(),
+                _buildRateSection(currentMannerScore, retransactionRate),
                 const SizedBox(height: verticalSpacing),
                 _buildListTile(
-                  title: "판매 물품",
-                  subTitle: "판매 중인 물품이 없습니다",
-                  onTap: () {},
-                ),
+                    title: "판매 물품", subTitle: "판매 중인 물품이 없습니다", onTap: () {}),
                 const SizedBox(height: verticalSpacing),
-                _buildListTile(
-                  title: "받은 매너 평가",
-                  onTap: () {},
-                ),
+                _buildListTile(title: "받은 매너 평가", onTap: () {}),
                 const SizedBox(height: 10),
                 _buildMannerSection(),
                 const SizedBox(height: verticalSpacing),
@@ -402,21 +419,42 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
     );
   }
 
+  Widget _buildRateSection(int mannerScore, int retransactionRate) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildRateBox(
+            icon: Icons.favorite,
+            rate: "${mannerScore}%",
+            text: "평균 평점",
+            subText: "9명 중 8명 만족",
+            iconColor: redHeartColor,
+            textColor: primaryColor,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _buildRateBox(
+            icon: Icons.wechat,
+            rate: "${retransactionRate}%",
+            text: "응답률",
+            subText: "보통 30분 이내 응답",
+            iconColor: primaryColor,
+            textColor: primaryColor,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildReviewSection() {
     return Column(
       children: [
         _buildReviewComment(
-          "꼼꼼하게 확인해주시고, 친절하게 답해주셔서 좋은 거래할 수 있었습니다! 감사합니다.",
-          "강아지는야옹",
-        ),
+            "꼼꼼하게 확인해주시고, 친절하게 답해주셔서 좋은 거래할 수 있었습니다! 감사합니다.", "강아지는야옹"),
+        _buildReviewComment("매우 친절하고 쿨거래해주셨어요. 덕분에 좋은 거래 했습니다.", "진순이킬러"),
         _buildReviewComment(
-          "매우 친절하고 쿨거래해주셨어요. 덕분에 좋은 거래 했습니다.",
-          "진순이킬러",
-        ),
-        _buildReviewComment(
-          "시간약속 잘지켜주시고 친절하세요. 믿고 거래할 수 있는 분입니다. 추천드려요!",
-          "대머리도사",
-        ),
+            "시간약속 잘지켜주시고 친절하세요. 믿고 거래할 수 있는 분입니다. 추천드려요!", "대머리도사"),
       ],
     );
   }
@@ -425,16 +463,15 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
         boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(128, 128, 128, 0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
+              color: Color.fromRGBO(128, 128, 128, 0.1),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 3)),
         ],
       ),
       child: Column(
@@ -452,34 +489,6 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildRateSection() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildRateBox(
-            icon: Icons.favorite,
-            rate: "${_currentMannerScore}%",
-            text: "평균 평점",
-            subText: "9명 중 8명 만족",
-            iconColor: redHeartColor,
-            textColor: primaryColor,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildRateBox(
-            icon: Icons.wechat,
-            rate: "${_retransactionRate}%",
-            text: "응답률",
-            subText: "보통 30분 이내 응답",
-            iconColor: primaryColor,
-            textColor: primaryColor,
-          ),
-        ),
-      ],
     );
   }
 
@@ -516,16 +525,15 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.all(Radius.circular(10)),
         boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(128, 128, 128, 0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 3),
-          ),
+              color: Color.fromRGBO(128, 128, 128, 0.1),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 3)),
         ],
       ),
       child: Column(
@@ -572,7 +580,8 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                   color: secondaryTextColor,
                   weight: FontWeight.normal),
             const Spacer(),
-            Icon(Icons.arrow_forward_ios, size: 16, color: secondaryTextColor),
+            const Icon(Icons.arrow_forward_ios,
+                size: 16, color: secondaryTextColor),
           ],
         ),
       ),
@@ -591,16 +600,15 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: backgroundColor,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Color.fromRGBO(128, 128, 128, 0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
+                    color: Color.fromRGBO(128, 128, 128, 0.1),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: Offset(0, 3)),
               ],
             ),
             child: Icon(icon, color: iconColor ?? primaryColor, size: 20),
@@ -611,16 +619,15 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
           const SizedBox(width: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: backgroundColor,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.all(Radius.circular(20)),
               boxShadow: [
                 BoxShadow(
-                  color: Color.fromRGBO(128, 128, 128, 0.1),
-                  spreadRadius: 1,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
+                    color: Color.fromRGBO(128, 128, 128, 0.1),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: Offset(0, 3)),
               ],
             ),
             child: CustomWidget.buildTitle(text,
