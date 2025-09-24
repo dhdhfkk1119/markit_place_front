@@ -110,35 +110,35 @@ class SocialLoginNotifier extends Notifier<void> {
   }
 
   Future<void> signInWithNaver() async {
-    // _authNotifier.setLoading();
-    // try {
-    //   final socialLoginResult = await _socialLoginRepository.signInWithNaver();
-    //   if (socialLoginResult != null) {
-    //     if (socialLoginResult.sessionUser != null &&
-    //         socialLoginResult.token != null &&
-    //         socialLoginResult.token!.isNotEmpty) {
-    //       await _processSocialLoginResult(
-    //         serverUser: socialLoginResult.sessionUser!,
-    //         token: socialLoginResult.token,
-    //         socialAccountName: socialLoginResult.socialAccountName,
-    //         socialProfileImageBase64:
-    //             socialLoginResult.socialProfileImageBase64,
-    //         providerName: "Naver",
-    //       );
-    //     } else {
-    //       throw Exception("네이버 소셜 로그인 처리 중 서버 응답 데이터(유저/토큰)가 누락되었습니다.");
-    //     }
-    //   } else {
-    //     await _authNotifier.updateUserAndAuthStatus(
-    //         null, AuthStatus.unauthenticated, LoginType.none);
-    //     logger.w("[SocialLoginNotifier] 네이버 소셜 로그인이 완료되지 않았습니다 (사용자 취소 등).");
-    //   }
-    // } catch (e, stackTrace) {
-    //   final errorMessage = extractErrorMessage(e);
-    //   _authNotifier.setError("네이버 로그인 실패: $errorMessage");
-    //   logger.e(
-    //       "[SocialLoginNotifier] 네이버 소셜 로그인 실패: $errorMessage", e, stackTrace);
-    // }
+    _authNotifier.setLoading();
+    try {
+      final socialLoginResult = await _socialLoginRepository.signInWithNaver();
+      if (socialLoginResult != null) {
+        if (socialLoginResult.sessionUser != null &&
+            socialLoginResult.token != null &&
+            socialLoginResult.token!.isNotEmpty) {
+          await _processSocialLoginResult(
+            serverUser: socialLoginResult.sessionUser!,
+            token: socialLoginResult.token,
+            socialAccountName: socialLoginResult.socialAccountName,
+            socialProfileImageBase64:
+                socialLoginResult.socialProfileImageBase64,
+            providerName: "Naver",
+          );
+        } else {
+          throw Exception("네이버 소셜 로그인 처리 중 서버 응답 데이터(유저/토큰)가 누락되었습니다.");
+        }
+      } else {
+        await _authNotifier.updateUserAndAuthStatus(
+            null, AuthStatus.unauthenticated, LoginType.none);
+        logger.w("[SocialLoginNotifier] 네이버 소셜 로그인이 완료되지 않았습니다 (사용자 취소 등).");
+      }
+    } catch (e, stackTrace) {
+      final errorMessage = extractErrorMessage(e);
+      _authNotifier.setError("네이버 로그인 실패: $errorMessage");
+      logger.e(
+          "[SocialLoginNotifier] 네이버 소셜 로그인 실패: $errorMessage", e, stackTrace);
+    }
   }
 
   Future<void> signInWithGoogle() async {

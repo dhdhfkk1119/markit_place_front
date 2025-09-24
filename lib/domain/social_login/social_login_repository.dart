@@ -1,6 +1,5 @@
-// D:/workspace-flutter/markit_place_front/lib/domain/social_login/social_login_repository.dart
 import 'dart:convert';
-import 'dart:typed_data'; // For Uint8List if needed, though List<int> from Dio is fine for base64Encode
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
@@ -24,7 +23,6 @@ class SocialLoginRepository {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   SocialLoginRepository() {
-    // Dio 인터셉터 설정 (중복 방지)
     if (!_dio.interceptors
         .any((interceptor) => interceptor is LogInterceptor)) {
       _dio.interceptors
@@ -37,7 +35,7 @@ class SocialLoginRepository {
     try {
       final response = await _dio.get<List<int>>(
         imageUrl,
-        options: Options(responseType: ResponseType.bytes), // Get raw bytes
+        options: Options(responseType: ResponseType.bytes),
       );
       if (response.statusCode == 200 && response.data != null) {
         return base64Encode(response.data!);
@@ -55,55 +53,60 @@ class SocialLoginRepository {
   }
 
   // --- 네이버 소셜 로그인 ---
-  /// 네이버 로그인을 시도하고, 성공 시 서버 로그인 결과 및 네이버 프로필 정보를 반환합니다.
-  Future<Map<String, dynamic>?> signInWithNaver() async {
+  Future<SocialLoginResultDto?> signInWithNaver() async {
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
+      logger.i(
+          "[NaverLogin] SDK Account Info: id=${result.account.id}, email=${result.account.email}, name=${result.account.name}");
 
       if (result.status == NaverLoginStatus.loggedIn) {
-        logger.i("[NaverLogin] Naver SDK Login Success!");
-
         final String? accessToken = result.accessToken?.accessToken;
-
         if (accessToken == null) {
           throw Exception("네이버 Access Token을 가져오는데 실패했습니다.");
         }
 
-        return await _loginToServer(accessToken);
+        final requestDto = SocialLoginRequestDto(
+          provider: "NAVER",
+          providerId: accessToken, // Access Token을 전송
+          email: result.account.email,
+        );
+
+        final Map<String, dynamic>? serverLoginResult =
+            await _loginToServerWithSocialToken(requestDto);
+
+        if (serverLoginResult != null) {
+          final String? naverAccountName =
+              result.account.name ?? result.account.nickname;
+          final String? naverProfileImageUrl = result.account.profileImage;
+          String? naverProfileImageBase64;
+
+          if (naverProfileImageUrl != null && naverProfileImageUrl.isNotEmpty) {
+            naverProfileImageBase64 =
+                await _fetchImageAsBase64(naverProfileImageUrl);
+          }
+
+          return SocialLoginResultDto(
+            sessionUser: serverLoginResult['sessionUser'] as SessionUser?,
+            token: serverLoginResult['token'] as String?,
+            socialAccountName: naverAccountName,
+            socialProfileImageBase64: naverProfileImageBase64,
+          );
+        } else {
+          logger.w("[NaverLogin] Server login failed after Naver SDK success.");
+          return null;
+        }
       } else {
         logger.w(
-            "[NaverLogin] Naver login failed or cancelled by user. Status: ${result.status}");
+            "[NaverLogin] Naver login not successful. Status: ${result.status}, Message: ${result.errorMessage}");
         return null;
       }
-    } catch (e) {
-      logger.e('[NaverLogin] signInWithNaver Error', e);
-      throw Exception("네이버 로그인 중 오류가 발생했습니다.");
-    }
-  }
-
-  Future<Map<String, dynamic>?> _loginToServer(String accessToken) async {
-    try {
-      final response = await dio.post(
-        '$baseUrl/naver/login',
-        data: accessToken,
-      );
-
-      if (response.statusCode == 200) {
-        logger.i("[Auth] Server login success! Response: ${response.data}");
-        return response.data;
-      } else {
-        logger.e(
-            "[Auth] Server login failed. Status: ${response.statusCode}, Body: ${response.data}");
-        throw Exception("서버 로그인에 실패했습니다.");
-      }
-    } catch (e) {
-      logger.e('[Auth] _loginToServer Error', e);
-      throw Exception("서버와 통신 중 오류가 발생했습니다.");
+    } catch (e, stackTrace) {
+      logger.e('[NaverLogin] signInWithNaver Error', e, stackTrace);
+      throw Exception("네이버 로그인 중 오류 발생: ${extractErrorMessage(e)}");
     }
   }
 
   // --- 구글 소셜 로그인 ---
-  /// Google 로그인을 시도하고, 성공 시 서버 로그인 결과와 Google 프로필 정보를 반환합니다.
   Future<SocialLoginResultDto?> signInWithGoogleAndGetAccount() async {
     try {
       await signOutFromGoogle();
@@ -112,12 +115,14 @@ class SocialLoginRepository {
         logger.w("[GoogleLogin] Google sign-in cancelled by user.");
         return null;
       }
+
+      // ID 토큰을 가져오는 로직 제거 및 googleUser.id 사용
       logger.i(
-          "[GoogleLogin] SDK Result: User Email: ${googleUser.email}, ID: ${googleUser.id}, Name: ${googleUser.displayName}, Photo: ${googleUser.photoUrl}");
+          "[GoogleLogin] SDK Result: User Email: ${googleUser.email}, ID: ${googleUser.id}, Name: ${googleUser.displayName}");
 
       final requestDto = SocialLoginRequestDto(
         provider: "GOOGLE",
-        providerId: googleUser.id,
+        providerId: googleUser.id, // ID 토큰 대신 googleUser.id를 전송
         email: googleUser.email,
       );
 
@@ -132,16 +137,7 @@ class SocialLoginRepository {
         if (googleProfileImageUrl != null && googleProfileImageUrl.isNotEmpty) {
           googleProfileImageBase64 =
               await _fetchImageAsBase64(googleProfileImageUrl);
-          if (googleProfileImageBase64 != null) {
-            logger.i(
-                "[GoogleLogin] Successfully converted Google profile image URL to Base64.");
-          } else {
-            logger.w(
-                "[GoogleLogin] Failed to convert Google profile image URL to Base64. URL: $googleProfileImageUrl");
-          }
         }
-        logger.i(
-            "[GoogleLogin] Extracted Google Profile: Name='$googleAccountName', ImageUrl='$googleProfileImageUrl', HasBase64=${googleProfileImageBase64 != null}");
 
         return SocialLoginResultDto(
           sessionUser: serverLoginResult['sessionUser'] as SessionUser?,
@@ -194,7 +190,7 @@ class SocialLoginRepository {
           apiResponse.response != null) {
         final sessionUser = apiResponse.response!.toSessionUser();
         logger.i(
-            "[SocialLoginRepo] Server login success! User: ${sessionUser.loginId}, Provider: ${requestDto.provider}, ServerProvider: ${sessionUser.provider}");
+            "[SocialLoginRepo] Server login success! User: ${sessionUser.loginId}, Provider: ${requestDto.provider}");
         return {
           'sessionUser': sessionUser,
           'token': token.replaceFirst('Bearer ', ''),
