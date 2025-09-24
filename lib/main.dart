@@ -10,6 +10,7 @@ import 'presentation/pages/auth/terms_page/terms_page.dart';
 import 'presentation/pages/index_stack_page/main_screen.dart';
 import 'presentation/pages/index_stack_page/product/list_page/product_list_page.dart';
 import '_core/utils/notification_util.dart';
+import 'presentation/widgets/snackbar_util.dart';
 
 // AuthNotifier import 추가
 import 'domain/members/providers/member_auth_provider.dart';
@@ -25,6 +26,8 @@ void main() async {
       clientId: clientId,
       onAuthFailed: (ex) {
         print("Naver Map Auth Failed: $ex");
+        SnackBarUtil.showErrorGlobally(
+            "네이버 지도 클라이언트 ID 인증에 실패했습니다. 관리자에게 문의해주세요.");
       },
     );
   });
