@@ -5,13 +5,13 @@ class CommunityListDTO {
   final String title;
   final String topic;
   final String location;
-  final String preview;
-  final String thumbnail;
+  final String? preview;
+  final String? thumbnail;
   final int? likeCount;
   final int? viewCount;
   final String createdAt;
   final int? commentCount;
-  final bool isLiked; // isLiked 필드 추가
+  final bool? isLiked; // isLiked 필드 추가
 
   CommunityListDTO({
     required this.id,
@@ -27,7 +27,7 @@ class CommunityListDTO {
     this.isLiked = false, // 생성자 기본값 false
   });
 
-  factory CommunityListDTO.fromModel(CommunityList model) {
+  factory CommunityListDTO.fromJson(CommunityList model) {
     return CommunityListDTO(
       id: model.id,
       title: model.title,

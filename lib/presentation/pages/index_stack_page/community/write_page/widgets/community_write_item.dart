@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,9 +9,9 @@ import '../../../../../../_core/constants/custom_widget.dart';
 class CommunityWriteItem extends StatelessWidget {
   final TextEditingController titleController;
   final TextEditingController descriptionController;
-  final List<String> imageList;
+  final List<dynamic> imageList;
   final String selectedCategoryName;
-  final ValueChanged<List<String?>> onUpdateImages;
+  final ValueChanged<List<dynamic>> onUpdateImages;
   final void Function(String, int) onUpdateCategory;
 
   const CommunityWriteItem({
@@ -32,9 +33,23 @@ class CommunityWriteItem extends StatelessWidget {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      final updatedList = List<String?>.from(imageList)..add(pickedFile.path);
+      final updatedList = List<dynamic>.from(imageList)..add(pickedFile);
       onUpdateImages(updatedList);
     }
+  }
+
+  void _removeImage(int index) {
+    final updatedList = List<dynamic>.from(imageList)..removeAt(index);
+    onUpdateImages(updatedList);
+  }
+
+  Widget _buildImage(dynamic image) {
+    if (image is String) {
+      return Image.memory(base64Decode(image), fit: BoxFit.cover);
+    } else if (image is XFile) {
+      return Image.file(File(image.path), fit: BoxFit.cover);
+    }
+    return Container();
   }
 
   @override
@@ -54,7 +69,7 @@ class CommunityWriteItem extends StatelessWidget {
         color: Colors.deepPurpleAccent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
-      margin: EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: SizedBox(
@@ -62,9 +77,9 @@ class CommunityWriteItem extends StatelessWidget {
           child: RichText(
             text: TextSpan(
               children: [
-                WidgetSpan(
+                const WidgetSpan(
                   child: Padding(
-                    padding: const EdgeInsets.only(right: 4.0),
+                    padding: EdgeInsets.only(right: 4.0),
                     child: Icon(
                       CupertinoIcons.staroflife_fill,
                       size: 14,
@@ -83,7 +98,7 @@ class CommunityWriteItem extends StatelessWidget {
                 ),
                 TextSpan(
                   text:
-                      "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
+                  "중고거래 관련 명예훼손, 광고/홍보 목적의 글은 올리실수 없습니다 !추후 제제를 당할 수 있습니다!",
                   style: TextStyle(
                     fontSize: 14,
                     fontFamily: Assets.Fonts.cookieRun,
@@ -117,14 +132,14 @@ class CommunityWriteItem extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
+                    const Icon(
                       CupertinoIcons.camera_fill,
                       size: 24,
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
                       "${imageList.length}/$_maxImageUpload",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
                         color: Colors.black,
@@ -134,22 +149,46 @@ class CommunityWriteItem extends StatelessWidget {
                 ),
               ),
             ),
-          const SizedBox(
-            width: 15,
-          ),
-          ...imageList.map((imagePath) {
+          const SizedBox(width: 15),
+          ...imageList.asMap().entries.map((entry) {
+            final index = entry.key;
+            final dynamic imageFile = entry.value;
+
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  image: DecorationImage(
-                    image: FileImage(File(imagePath)),
-                    fit: BoxFit.cover,
+              child: Stack(
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: _buildImage(imageFile),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: InkWell(
+                      onTap: () {
+                        _removeImage(index);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                            color: Colors.black54, shape: BoxShape.circle),
+                        child: const Icon(
+                          Icons.close,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
               ),
             );
           }).toList(),
@@ -195,7 +234,7 @@ class CommunityWriteItem extends StatelessWidget {
                   context: context,
                   shape: const RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(16)),
+                    BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   builder: (context) {
                     return _buildAppUpdatePop(context, "카테고리를 선택해주시기바랍니다");
@@ -206,10 +245,10 @@ class CommunityWriteItem extends StatelessWidget {
                 children: [
                   CustomWidget.buildTitle("$selectedCategoryName",
                       size: 16, weight: FontWeight.w500),
-                  SizedBox(
+                  const SizedBox(
                     width: 8,
                   ),
-                  Icon(
+                  const Icon(
                     CupertinoIcons.chevron_down,
                     size: 20,
                   )
@@ -253,8 +292,8 @@ class CommunityWriteItem extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 32.0),
             child: Row(
               children: [
-                Icon(Icons.title, size: 24, color: Colors.deepPurpleAccent),
-                CustomWidget.buildTitle("$title", size: 18),
+                const Icon(Icons.title, size: 24, color: Colors.deepPurpleAccent),
+                CustomWidget.buildTitle(title ?? "카테고리 선택", size: 18),
               ],
             ),
           ),
@@ -272,7 +311,7 @@ class CommunityWriteItem extends StatelessWidget {
               padding: EdgeInsets.zero,
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.close,
                     color: Colors.grey,
                     weight: 20,
@@ -326,7 +365,7 @@ class CommunityWriteItem extends StatelessWidget {
           size: 14),
       style: TextButton.styleFrom(
         backgroundColor: isSelected ? Colors.black : Colors.white,
-        padding: EdgeInsets.only(top: 8, bottom: 8, left: 12, right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),

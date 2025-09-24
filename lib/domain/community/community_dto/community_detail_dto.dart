@@ -6,7 +6,9 @@ class CommunityDetailDto {
   final String title;
   final String content;
   final String writerName; // 작성자 이름
+  final int? writerMemberId;
   final String topic;
+  final int? topicId;
   final int? likeCount;
   final int? viewCount;
   final String createdAt;
@@ -21,7 +23,9 @@ class CommunityDetailDto {
     required this.title,
     required this.content,
     required this.writerName,
+    required this.writerMemberId,
     required this.topic,
+    required this.topicId,
     this.likeCount,
     this.viewCount,
     required this.createdAt,
@@ -38,7 +42,9 @@ class CommunityDetailDto {
       title: model.title,
       content: model.content,
       writerName: model.writerName,
+      writerMemberId: model.writerMemberId,
       topic: model.topic,
+      topicId: model.topicId,
       createdAt: model.createdAt,
       location: model.location,
       likeCount: model.likeCount ?? 0,
@@ -55,7 +61,9 @@ class CommunityDetailDto {
     String? title,
     String? content,
     String? writerName,
+    int? writerMemberId,
     String? topic,
+    int? topicId,
     int? likeCount,
     int? viewCount,
     String? createdAt,
@@ -70,7 +78,9 @@ class CommunityDetailDto {
       title: title ?? this.title,
       content: content ?? this.content,
       writerName: writerName ?? this.writerName,
+      writerMemberId: writerMemberId ?? this.writerMemberId,
       topic: topic ?? this.topic,
+      topicId: topicId ?? this.topicId,
       likeCount: likeCount ?? this.likeCount,
       viewCount: viewCount ?? this.viewCount,
       createdAt: createdAt ?? this.createdAt,
