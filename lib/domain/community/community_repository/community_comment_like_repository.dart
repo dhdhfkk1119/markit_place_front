@@ -1,28 +1,28 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../_core/utils/my_http.dart';
 import '../community_dto/community_comment_like_dot.dart';
 
-// baseUrl 정의 (팀장 주소로 임시 설계)
-const baseUrl = "http://192.168.0.128:8080/api";
-final dio = Dio();
 const storage = FlutterSecureStorage();
 
 class CommunityCommentLikeRepository {
+  final Dio _dio = dio;
   // 좋아요 상태를 토글하는 메서드
   Future<CommunityCommentLikeDTO> toggleLike(int commentId) async {
     final token = await storage.read(key: "accessToken");
     try {
-      final response = await dio.post(
-        "$baseUrl/community/comment-likes/$commentId",
+      final response = await _dio.post(
+        "/community/comments/$commentId/like",
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
       );
 
       if (response.statusCode == 200) {
-        return CommunityCommentLikeDTO.fromJson(response.data['data']);
+        return CommunityCommentLikeDTO.fromJson(response.data['response']);
       } else {
-        throw Exception("Failed to toggle like. Status code: ${response.statusCode}");
+        throw Exception(
+            "Failed to toggle like. Status code: ${response.statusCode}");
       }
     } catch (e) {
       throw Exception("Failed to toggle like: $e");
@@ -33,17 +33,18 @@ class CommunityCommentLikeRepository {
   Future<CommunityCommentLikeDTO> getLikeStatus(int commentId) async {
     final token = await storage.read(key: "accessToken");
     try {
-      final response = await dio.get(
-        "$baseUrl/community/comment-likes/$commentId",
+      final response = await _dio.get(
+        "/community/comments/${commentId}/like/count",
         options: Options(
           headers: {"Authorization": "Bearer $token"},
         ),
       );
 
       if (response.statusCode == 200) {
-        return CommunityCommentLikeDTO.fromJson(response.data['data']);
+        return CommunityCommentLikeDTO.fromJson(response.data['response']);
       } else {
-        throw Exception("Failed to get like status. Status code: ${response.statusCode}");
+        throw Exception(
+            "Failed to get like status. Status code: ${response.statusCode}");
       }
     } catch (e) {
       throw Exception("Failed to get like status: $e");

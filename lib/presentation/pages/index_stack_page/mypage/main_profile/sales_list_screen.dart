@@ -4,6 +4,7 @@ import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
 import '../../../../../domain/sales/model/sales_model.dart';
 import '../../../../../domain/sales/providers/sales_list_provider.dart';
+import '../../product/detail_page/detail_page.dart';
 
 class SalesListScreen extends ConsumerStatefulWidget {
   const SalesListScreen({super.key});
@@ -36,55 +37,78 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(salesListProvider);
 
-    return state.when(
-      data: (salesState) {
-        final List<SalesModel> sales = salesState.items;
-
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: CustomWidget.buildIcon(
-              const Icon(Icons.arrow_back_ios, color: Colors.black),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            title: CustomWidget.buildTitle('판매 내역'),
-            centerTitle: true,
+    return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: CustomWidget.buildIcon(
+            const Icon(Icons.arrow_back_ios, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
           ),
-          body: RefreshIndicator(
-              onRefresh: () async {
+          title: CustomWidget.buildTitle('판매 내역'),
+          centerTitle: true,
+          actions: [
+            CustomWidget.buildIcon(
+              const Icon(Icons.refresh, color: Colors.black),
+              onPressed: () async {
                 await ref.read(salesListProvider.notifier).refresh();
               },
-              child: ListView.builder(
-                itemCount: sales.length,
-                itemBuilder: (context, index) {
-                  final item = sales[index];
-                  return _buildSaleItem(
-                    title: item.title,
-                    status: item.statusLabel,
-                    price: '${item.price} 원',
-                    date: item.createdAt,
-                    thumbnailUrl: item.thumbnailUrl,
-                  );
+            ),
+          ],
+        ),
+        body: state.when(
+          data: (salesState) {
+            if (salesState.items.isEmpty) {
+              return const Center(
+                child: Text(
+                  '판매 내역이 없습니다',
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              );
+            }
+
+            return RefreshIndicator(
+                onRefresh: () async {
+                  await ref.read(salesListProvider.notifier).refresh();
                 },
-              )),
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('에러 발생: $err')),
-    );
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: salesState.items.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DetailPage(
+                                      productId: salesState.items[index].id),
+                                ),
+                              );
+                            },
+                            child: _buildSaleItem(
+                              model: salesState.items[index],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ));
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, stack) => Center(child: Text('에러 발생: $err')),
+        ));
   }
 
-  Widget _buildSaleItem({
-    required String title,
-    required String status,
-    required String price,
-    required String date,
-    String? thumbnailUrl,
-  }) {
-    final imageBytes = base64ToBytes(thumbnailUrl);
+  Widget _buildSaleItem({required SalesModel model}) {
+    final imageBytes = base64ToBytes(model.thumbnailUrl);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -116,26 +140,26 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomWidget.buildTitle(
-                  title,
+                  model.title,
                   size: 16,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  price,
+                  "${model.price}",
                   size: 14,
                   weight: FontWeight.w600,
                   color: Colors.black,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  status,
+                  "${model.status == '판매중' ? '판매중' : '판매완료'}",
                   size: 12,
-                  color: status == '판매중' ? Colors.green : Colors.red,
+                  color: model.status == '판매중' ? Colors.green : Colors.red,
                   weight: FontWeight.w500,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  date,
+                  "${model.createdAt}",
                   size: 12,
                   color: Colors.grey,
                 ),

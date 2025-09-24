@@ -28,12 +28,15 @@ class ProductDetailRepository {
       if (response.statusCode == 200) {
         print("상품에 대한 상세 정보 : ${response.data}");
 
-        return ProductDetail.fromJson(response.data['data']);
+        return ProductDetail.fromJson(response.data);
       } else {
         throw Exception('Failed to load products: ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      throw Exception(
+          'Failed to connect to the server. Dio Error: [${e.type}] ${e.message}');
     } catch (e) {
-      throw Exception('Failed to connect to the server: $e');
+      throw Exception('Failed to connect to the server. General Error: $e');
     }
   }
 
@@ -57,8 +60,11 @@ class ProductDetailRepository {
       } else {
         throw Exception('Failed to load products: ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      throw Exception(
+          'Failed to connect to the server. Dio Error: [${e.type}] ${e.message}');
     } catch (e) {
-      throw Exception('Failed to connect to the server: $e');
+      throw Exception('Failed to connect to the server. General Error: $e');
     }
   }
 }

@@ -19,19 +19,18 @@ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _init();
-  setupInterceptors(AuthNotifier());
-  runApp(const ProviderScope(child: MyApp()));
-}
 
-void _init() async {
   await FlutterNaverMap().init(
-      clientId: await NaverMapRepository().fetchClientId(),
-      onAuthFailed: (ex) {
-        print("인증 실패: $ex");
-      });
+    clientId: await NaverMapRepository().fetchClientId(),
+    onAuthFailed: (ex) {
+      print("Naver Map Auth Failed: $ex");
+    },
+  );
 
   await NotificationUtil.init();
+
+  setupInterceptors(AuthNotifier());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

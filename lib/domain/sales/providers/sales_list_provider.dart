@@ -7,26 +7,22 @@ class SalesListState {
   final List<SalesModel> items;
   final int page;
   final bool hasNext;
-  final bool isLoading;
 
   SalesListState({
     required this.items,
     required this.page,
     required this.hasNext,
-    required this.isLoading,
   });
 
   SalesListState copyWith({
     List<SalesModel>? items,
     int? page,
     bool? hasNext,
-    bool? isLoading,
   }) {
     return SalesListState(
       items: items ?? this.items,
       page: page ?? this.page,
       hasNext: hasNext ?? this.hasNext,
-      isLoading: isLoading ?? this.isLoading,
     );
   }
 }
@@ -55,7 +51,6 @@ class SalesListProvider extends AsyncNotifier<SalesListState> {
       items: allItems,
       page: page,
       hasNext: hasNext,
-      isLoading: false,
     );
 
     state = AsyncValue.data(newState);
@@ -70,15 +65,17 @@ class SalesListProvider extends AsyncNotifier<SalesListState> {
 
   Future<void> loadNextPage() async {
     final currentState = state.value;
-    if (currentState == null ||
-        currentState.isLoading ||
-        !currentState.hasNext) {
+    if (currentState == null || !currentState.hasNext) {
       return;
     }
 
-    state = AsyncValue.data(currentState.copyWith(isLoading: true));
+    if (state is AsyncLoading) {
+      return;
+    }
 
-    await loadPage(currentState.page + 1);
+    state = await AsyncValue.guard(() async {
+      return await loadPage(currentState.page + 1);
+    });
   }
 }
 

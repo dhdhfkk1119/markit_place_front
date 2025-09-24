@@ -34,6 +34,7 @@ class _NearPageState extends ConsumerState<NearPage> {
           mapType: NMapType.basic,
         ),
         onMapReady: (controller) {
+          if (!mounted) return;
           ref.read(naverMapProvider.notifier).setMapController(controller);
           ref.read(naverMapProvider.notifier).cycleTrackingMode();
         },
