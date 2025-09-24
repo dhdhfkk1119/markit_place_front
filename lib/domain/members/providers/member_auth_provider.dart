@@ -290,9 +290,17 @@ class AuthNotifier extends Notifier<AuthState> {
       final String? token = loginResult['token'] as String?;
 
       if (serverUser != null && token != null && token.isNotEmpty) {
+        print("[AuthNotifier login] 서버 로그인 성공. 새 세션 저장 준비 중.");
+
+        // !!! 방어책: 새 세션 정보를 저장하기 전에 기존 세션 정보 완전 삭제 !!!
+        await _memberAuthRepository.clearSessionData();
+        print("[AuthNotifier login] 기존 세션 정보 삭제 완료 (SecureStorage).");
+
+        // 이제 깨끗한 상태에서 새 세션 정보 저장
         await updateUserAndAuthStatus(
             serverUser, AuthStatus.authenticated, LoginType.account,
             newToken: token);
+
         if (state.status == AuthStatus.authenticated) {
           print(
               "[AuthNotifier] Account login successful. User: ${state.user?.name}. Fetching profile...");
@@ -302,9 +310,10 @@ class AuthNotifier extends Notifier<AuthState> {
           if (fullUserProfile != null) {
             await refreshSessionUser(fullUserProfile);
             print(
-                "[AuthNotifier login] Profile fetched and session refreshed.");
+                "[AuthNotifier login] Profile fetched and session refreshed with new token.");
           } else {
-            print("[AuthNotifier login] Failed to fetch profile after login.");
+            print(
+                "[AuthNotifier login] Failed to fetch profile after login with new token.");
           }
         }
         resetLoginForm();

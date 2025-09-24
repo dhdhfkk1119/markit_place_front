@@ -4,9 +4,12 @@ import 'dart:typed_data'; // Uint8List 사용을 위해 추가
 import 'package:dio/dio.dart'; // Dio (praise)
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // <<< SVG 사용을 위해 추가
 import 'package:logger/logger.dart';
 
+import '../../../../../../_core/constants/assets.dart'; // <<< Assets 경로 사용을 위해 추가
 import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../_core/utils/error_utils.dart'; // <<< extractErrorMessage 사용을 위해 추가
 import '../../../../../../_core/utils/my_http.dart'; // dioProvider (praise)
 import '../../../../../../domain/members/models/session_user.dart'; // SessionUser 사용
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
@@ -52,10 +55,11 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         _logger.w("[MyProfileBody] 서버로부터 프로필 정보를 가져오지 못했습니다.");
       }
     } catch (e) {
-      _logger.e("[MyProfileBody] 내 프로필 정보 조회 실패: $e");
+      _logger.e("[MyProfileBody] 내 프로필 정보 조회 실패: $e", e, StackTrace.current);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("프로필 정보를 불러오는데 실패했습니다: $e")),
+          SnackBar(
+              content: Text("프로필 정보를 불러오는데 실패했습니다: ${extractErrorMessage(e)}")),
         );
       }
     }
@@ -124,7 +128,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         }
       }
     } catch (e) {
-      _logger.e('네트워크 오류 발생', e);
+      _logger.e('네트워크 오류 발생', e, StackTrace.current);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("네트워크 오류가 발생했습니다.")),
@@ -142,7 +146,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
 
   static const Color primaryColor = Color(0xFFF96666);
   static const Color backgroundColor = Color(0xFFFFFFFF);
-  static const Color profileAvatarColor = Color(0xFFF5E6E6);
+  static const Color profileAvatarColor = Color(0xFFF5E6E6); // 기존 배경색 유지
   static const Color redHeartColor = Colors.red;
   static const Color secondaryTextColor = Colors.grey;
   static const Color dividerColor = Color(0xFFEDE0E0);
@@ -169,115 +173,116 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
     }
 
     final profileName = displayUser.name ?? '이름 없음';
-    ImageProvider? finalProfileImageProvider;
+    final String? provider = displayUser.provider?.toUpperCase();
 
-    String? base64ImageSource = displayUser.profileImageBase64;
-    String? imageUrlSource = displayUser.profileImageUrl;
+    Widget profileImageWidget;
 
-    // 1. profileImageBase64 필드 우선 처리
-    if (base64ImageSource != null && base64ImageSource.isNotEmpty) {
-      if (base64ImageSource.startsWith('data:image') &&
-          base64ImageSource.contains('https://')) {
-        _logger.w(
-            '[MyProfileBody] profileImageBase64 has combined data URI and URL: $base64ImageSource');
-        try {
-          final uriString = base64ImageSource
-              .substring(base64ImageSource.indexOf('https://'));
-          final uri = Uri.parse(uriString);
-          if (uri.isAbsolute) {
-            _logger.d(
-                '[MyProfileBody] Extracted URL from profileImageBase64: $uriString');
-            finalProfileImageProvider = NetworkImage(uriString);
-          } else {
-            _logger.w(
-                '[MyProfileBody] Extracted string from profileImageBase64 is not valid URI: $uriString');
-          }
-        } catch (e) {
-          _logger.e(
-              '[MyProfileBody] Error parsing URL from profileImageBase64: $e');
-        }
-      } else if (base64ImageSource.startsWith('http')) {
-        _logger.w(
-            '[MyProfileBody] profileImageBase64 contains a URL: $base64ImageSource. Using as NetworkImage.');
-        finalProfileImageProvider = NetworkImage(base64ImageSource);
+    if (provider == "GOOGLE" || provider == "NAVER") {
+      if (displayUser.profileImageUrl != null &&
+          displayUser.profileImageUrl!.isNotEmpty &&
+          displayUser.profileImageUrl!.startsWith('http')) {
+        profileImageWidget = ClipOval(
+          child: Image.network(
+            displayUser.profileImageUrl!,
+            width: 80, // CircleAvatar radius * 2
+            height: 80, // CircleAvatar radius * 2
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              _logger.w(
+                  "Error loading social profile image ($provider): ${displayUser.profileImageUrl}, Error: $error");
+              if (provider == "GOOGLE") {
+                return SvgPicture.asset(Assets.Svgs.google,
+                    fit: BoxFit.contain, width: 50, height: 50);
+              } else if (provider == "NAVER") {
+                return SvgPicture.asset(Assets.Svgs.naver,
+                    fit: BoxFit.contain, width: 50, height: 50);
+              }
+              return const Icon(Icons.person,
+                  size: 40, color: Colors.white70); // 기본 폴백
+            },
+            loadingBuilder: (BuildContext context, Widget child,
+                ImageChunkEvent? loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                ),
+              );
+            },
+          ),
+        );
       } else {
-        String pureBase64String = base64ImageSource;
-        if (base64ImageSource.startsWith('data:image')) {
-          pureBase64String = base64ImageSource.split(',').last;
-        }
-        if (pureBase64String.contains('http')) {
-          _logger.w(
-              '[MyProfileBody] Base64 string (after prefix removal) still contains "http". Invalid format: $pureBase64String');
-        } else {
-          try {
-            final bytes = base64Decode(pureBase64String);
-            finalProfileImageProvider = MemoryImage(bytes);
-            _logger.d(
-                '[MyProfileBody] Using MemoryImage from profileImageBase64.');
-          } catch (e) {
-            _logger.e(
-                '[MyProfileBody] Failed to decode profileImageBase64: $e. Source: $pureBase64String');
-          }
-        }
-      }
-    }
-
-    // 2. profileImageUrl 필드 처리 (위에서 finalProfileImageProvider가 설정되지 않은 경우)
-    if (finalProfileImageProvider == null &&
-        imageUrlSource != null &&
-        imageUrlSource.isNotEmpty) {
-      _logger.d(
-          '[MyProfileBody] Attempting to use profileImageUrl: $imageUrlSource');
-      if (imageUrlSource.startsWith('data:image') &&
-          imageUrlSource.contains('https://')) {
-        _logger.w(
-            '[MyProfileBody] profileImageUrl has combined data URI and URL: $imageUrlSource');
-        try {
-          final uriString =
-              imageUrlSource.substring(imageUrlSource.indexOf('https://'));
-          final uri = Uri.parse(uriString);
-          if (uri.isAbsolute) {
-            _logger.d(
-                '[MyProfileBody] Extracted URL from profileImageUrl: $uriString');
-            finalProfileImageProvider = NetworkImage(uriString);
-          } else {
-            _logger.w(
-                '[MyProfileBody] Extracted string from profileImageUrl is not valid URI: $uriString');
-          }
-        } catch (e) {
-          _logger.e(
-              '[MyProfileBody] Error parsing URL from profileImageUrl (combined): $e');
-        }
-      } else if (imageUrlSource.startsWith('data:image')) {
-        _logger.w(
-            '[MyProfileBody] profileImageUrl contains a data URI: $imageUrlSource');
-        String base64Part = imageUrlSource.split(',').last;
-        if (base64Part.contains('http')) {
-          _logger.e(
-              '[MyProfileBody] Data URI in profileImageUrl still contains "http". Invalid format: $base64Part');
-        } else {
-          try {
-            final bytes = base64Decode(base64Part);
-            finalProfileImageProvider = MemoryImage(bytes);
-            _logger.d(
-                '[MyProfileBody] Using MemoryImage from profileImageUrl (data URI).');
-          } catch (e) {
-            _logger.e(
-                '[MyProfileBody] Failed to decode data URI from profileImageUrl: $e');
-          }
-        }
-      } else if (imageUrlSource.startsWith('http')) {
         _logger.d(
-            '[MyProfileBody] Using NetworkImage from profileImageUrl: $imageUrlSource');
-        finalProfileImageProvider = NetworkImage(imageUrlSource);
-      } else {
-        _logger.w(
-            '[MyProfileBody] Invalid profileImageUrl format: $imageUrlSource');
+            "Social profile image URL is null or invalid for $provider. Displaying SVG.");
+        if (provider == "GOOGLE") {
+          profileImageWidget = CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.white,
+              child: SvgPicture.asset(Assets.Svgs.google,
+                  fit: BoxFit.contain, width: 50, height: 50));
+        } else {
+          // NAVER
+          profileImageWidget = CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.white,
+              child: SvgPicture.asset(Assets.Svgs.naver,
+                  fit: BoxFit.contain, width: 50, height: 50));
+        }
       }
+    } else {
+      // 일반 로그인 사용자 (MARKIT 또는 기타)
+      ImageProvider? generalUserImageProvider;
+      String? base64ImageSource = displayUser.profileImageBase64;
+      String? imageUrlSource = displayUser.profileImageUrl;
+
+      if (base64ImageSource != null && base64ImageSource.isNotEmpty) {
+        if (base64ImageSource.startsWith('data:image') &&
+            base64ImageSource.contains('https://')) {
+          base64ImageSource = '';
+        } else if (base64ImageSource.startsWith('http')) {
+          generalUserImageProvider = NetworkImage(base64ImageSource);
+        } else {
+          String pureBase64String = base64ImageSource;
+          if (base64ImageSource.startsWith('data:image')) {
+            pureBase64String = base64ImageSource.split(',').last;
+          }
+          if (!pureBase64String.contains('http')) {
+            try {
+              final bytes = base64Decode(pureBase64String);
+              generalUserImageProvider = MemoryImage(bytes);
+            } catch (e) {
+              _logger.e(
+                  '[MyProfileBody] Failed to decode profileImageBase64: $e',
+                  e,
+                  StackTrace.current);
+            }
+          }
+        }
+      }
+
+      if (generalUserImageProvider == null &&
+          imageUrlSource != null &&
+          imageUrlSource.isNotEmpty &&
+          imageUrlSource.startsWith('http')) {
+        generalUserImageProvider = NetworkImage(imageUrlSource);
+      }
+
+      profileImageWidget = CircleAvatar(
+        radius: 40,
+        backgroundColor: profileAvatarColor,
+        backgroundImage: generalUserImageProvider,
+        child: generalUserImageProvider == null
+            ? const Icon(Icons.person, size: 40, color: Colors.white70)
+            : null,
+      );
     }
 
     final int currentMannerScore = displayUser.mannerScore ?? 50;
     final int retransactionRate = displayUser.retransactionRate ?? 0;
+    bool isSocialUser = provider == "GOOGLE" || provider == "NAVER";
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -316,25 +321,35 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                         Stack(
                           alignment: Alignment.bottomRight,
                           children: [
-                            CircleAvatar(
-                              radius: 40,
-                              backgroundColor: profileAvatarColor,
-                              backgroundImage: finalProfileImageProvider,
-                              child: finalProfileImageProvider == null
-                                  ? const Icon(Icons.person,
-                                      size: 40, color: Colors.white70)
-                                  : null,
-                            ),
                             Container(
-                              padding: const EdgeInsets.all(4),
+                              width: 80,
+                              height: 80,
                               decoration: BoxDecoration(
-                                color: backgroundColor,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: secondaryTextColor),
+                                color:
+                                    profileAvatarColor, // Fallback background
                               ),
-                              child: const Icon(Icons.edit_outlined,
-                                  color: secondaryTextColor, size: 16),
+                              child: profileImageWidget,
                             ),
+                            if (!isSocialUser) // 소셜 유저가 아닐 때만 수정 아이콘 표시
+                              GestureDetector(
+                                onTap: () {
+                                  // TODO: 프로필 수정 페이지로 이동 또는 기능 구현
+                                  _logger.i("Edit profile icon tapped");
+                                  // Navigator.push(context, MaterialPageRoute(builder: (context) => MyProfileEditPage()));
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: backgroundColor,
+                                    shape: BoxShape.circle,
+                                    border:
+                                        Border.all(color: secondaryTextColor),
+                                  ),
+                                  child: const Icon(Icons.edit_outlined,
+                                      color: secondaryTextColor, size: 16),
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(width: 16),
@@ -351,37 +366,45 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              OutlinedButton(
-                                onPressed: (widget.userRating >= 1 &&
-                                        ref.watch(praiseButtonStateProvider))
-                                    ? _addPraise
-                                    : null,
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
+                              // "매너 칭찬하기" 버튼은 위젯의 user (다른 사람 프로필)에게만 해당될 수 있음.
+                              // 현재 로직은 widget.user 가 null이면 authState.user (자기 자신)을 사용하므로,
+                              // 자기 자신에게 칭찬하기 버튼이 보일 수 있음. 이 부분은 기획에 따라 조정 필요.
+                              if (widget.user != null &&
+                                  widget.user?.memberId !=
+                                      authState
+                                          .user?.memberId) // 다른 사람 프로필 볼 때만
+                                OutlinedButton(
+                                  onPressed: (widget.userRating >= 1 &&
+                                          ref.watch(praiseButtonStateProvider))
+                                      ? _addPraise
+                                      : null,
+                                  style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                        color: (widget.userRating >= 1 &&
+                                                ref.watch(
+                                                    praiseButtonStateProvider))
+                                            ? primaryColor
+                                            : Colors.grey),
+                                    backgroundColor: (widget.userRating >= 1 &&
+                                            ref.watch(
+                                                praiseButtonStateProvider))
+                                        ? primaryColor
+                                        : Colors.grey[300],
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 18, vertical: 10),
+                                    minimumSize: Size.zero,
+                                  ),
+                                  child: CustomWidget.buildTitle("매너 칭찬하기",
+                                      size: 18,
                                       color: (widget.userRating >= 1 &&
                                               ref.watch(
                                                   praiseButtonStateProvider))
-                                          ? primaryColor
-                                          : Colors.grey),
-                                  backgroundColor: (widget.userRating >= 1 &&
-                                          ref.watch(praiseButtonStateProvider))
-                                      ? primaryColor
-                                      : Colors.grey[300],
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8)),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 18, vertical: 10),
-                                  minimumSize: Size.zero,
+                                          ? backgroundColor
+                                          : Colors.white60,
+                                      weight: FontWeight.normal),
                                 ),
-                                child: CustomWidget.buildTitle("매너 칭찬하기",
-                                    size: 18,
-                                    color: (widget.userRating >= 1 &&
-                                            ref.watch(
-                                                praiseButtonStateProvider))
-                                        ? backgroundColor
-                                        : Colors.white60,
-                                    weight: FontWeight.normal),
-                              ),
                             ],
                           ),
                         )
@@ -399,7 +422,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                 const SizedBox(height: verticalSpacing),
                 _buildListTile(
                   title: "받은 거래 후기",
-                  subTitle: "32",
+                  subTitle: "32", // 이 값은 동적으로 변경 필요
                   onTap: () {
                     Navigator.push(
                       context,
@@ -425,9 +448,9 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         Expanded(
           child: _buildRateBox(
             icon: Icons.favorite,
-            rate: "${mannerScore}%",
+            rate: "${mannerScore}%", // API 응답이 백분율이 아니라면 캘리브레이션 필요
             text: "평균 평점",
-            subText: "9명 중 8명 만족",
+            subText: "9명 중 8명 만족", // 이 값은 동적으로 변경 필요
             iconColor: redHeartColor,
             textColor: primaryColor,
           ),
@@ -438,7 +461,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
             icon: Icons.wechat,
             rate: "${retransactionRate}%",
             text: "응답률",
-            subText: "보통 30분 이내 응답",
+            subText: "보통 30분 이내 응답", // 이 값은 동적으로 변경 필요
             iconColor: primaryColor,
             textColor: primaryColor,
           ),
@@ -448,6 +471,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   }
 
   Widget _buildReviewSection() {
+    // TODO: 실제 리뷰 데이터로 교체
     return Column(
       children: [
         _buildReviewComment(
@@ -493,6 +517,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
   }
 
   Widget _buildMannerSection() {
+    // TODO: 실제 매너 평가 데이터로 교체
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

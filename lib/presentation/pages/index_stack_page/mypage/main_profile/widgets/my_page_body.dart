@@ -3,14 +3,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // <<< SVG 사용을 위해 추가
 import 'package:logger/logger.dart';
 
+import '../../../../../../_core/constants/assets.dart'; // <<< Assets 경로 사용을 위해 추가
 import '../../../../../../_core/constants/custom_widget.dart';
-import '../../../../../../domain/members/models/session_user.dart'; // SessionUser
+import '../../../../../../domain/members/models/session_user.dart';
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../auth/social_login_page/social_login_page.dart';
-// import '../../../../../../domain/profile/profile_info_dto.dart'; // SessionUser로 대체 고려
-// import '../../../../../../domain/profile/profile_provider.dart'; // profileInfoFutureProvider 사용 중단 고려
 
 import '../../../report/list_page/report_list_page.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
@@ -23,18 +23,15 @@ import '../sales_list_screen.dart';
 final _logger = Logger();
 
 class MyPageBody extends ConsumerWidget {
-  // ConsumerStatefulWidget -> ConsumerWidget
   const MyPageBody({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // WidgetRef ref 추가
     final authState = ref.watch(authNotifierProvider);
     final SessionUser? currentUser = authState.user;
 
     if (currentUser == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // ConsumerWidget에서는 mounted를 직접 사용할 수 없으므로 Navigator.of(context).mounted 사용
         if (Navigator.of(context).mounted) {
           Navigator.pushAndRemoveUntil(
             context,
@@ -46,96 +43,115 @@ class MyPageBody extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    // 이름 결정: SessionUser의 name 필드 사용
     final String profileName = currentUser.name ?? '이름 없음';
+    final String? provider = currentUser.provider?.toUpperCase(); // 비교를 위해 대문자로
 
-    // 이미지 결정 (Base64 우선, 다음 URL)
-    ImageProvider? finalProfileImageProvider;
+    // 프로필 아바타 위젯 결정 로직
+    Widget profileAvatarWidget;
 
-    if (currentUser.profileImageBase64 != null &&
-        currentUser.profileImageBase64!.isNotEmpty) {
-      String base64String = currentUser.profileImageBase64!;
-      // 데이터 URI 스킴과 실제 URL이 섞여있는 경우를 방지 (e.g., data:image/png;base64,https://...)
-      if (base64String.startsWith('data:image') &&
-          base64String.contains('https://')) {
-        _logger.w(
-            '[MyPageBody] Invalid Base64 string detected (contains https): $base64String');
-        // 이 경우 profileImageUrl을 사용하도록 유도 (아래 else if 블록에서 처리)
-        base64String = ''; // 유효하지 않으므로 비움
-      }
-
-      if (base64String.isNotEmpty) {
-        try {
-          if (base64String.startsWith('data:image')) {
-            base64String = base64String.split(',').last;
-          }
-          final bytes = base64Decode(base64String);
-          finalProfileImageProvider = MemoryImage(bytes);
-          _logger.d(
-              '[MyPageBody] Using MemoryImage from SessionUser.profileImageBase64');
-        } catch (e) {
-          _logger.w(
-              '[MyPageBody] Failed to decode SessionUser.profileImageBase64 (cleaned): $e');
-          // 디코딩 실패 시 다음 단계 (URL)로 넘어감
+    if (provider == "GOOGLE" || provider == "NAVER") {
+      // 소셜 로그인 사용자
+      if (currentUser.profileImageUrl != null &&
+          currentUser.profileImageUrl!.isNotEmpty &&
+          currentUser.profileImageUrl!.startsWith('http')) {
+        // CircleAvatar의 backgroundImage는 errorBuilder를 직접 지원하지 않으므로,
+        // Image.network를 child로 사용하고 errorBuilder를 구성하는 방식으로 변경
+        profileAvatarWidget = ClipOval(
+          child: Image.network(
+            currentUser.profileImageUrl!,
+            width: 100, // CircleAvatar radius * 2
+            height: 100, // CircleAvatar radius * 2
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              _logger.w(
+                  "Error loading social profile image ($provider): ${currentUser.profileImageUrl}, Error: $error");
+              if (provider == "GOOGLE") {
+                return SvgPicture.asset(Assets.Svgs.google,
+                    fit: BoxFit.contain, width: 60, height: 60);
+              } else if (provider == "NAVER") {
+                return SvgPicture.asset(Assets.Svgs.naver,
+                    fit: BoxFit.contain, width: 60, height: 60);
+              }
+              return const Icon(Icons.person,
+                  size: 60, color: Colors.white70); // 기본 폴백
+            },
+            loadingBuilder: (BuildContext context, Widget child,
+                ImageChunkEvent? loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Center(
+                child: CircularProgressIndicator(
+                  value: loadingProgress.expectedTotalBytes != null
+                      ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                      : null,
+                ),
+              );
+            },
+          ),
+        );
+      } else {
+        // 소셜 프로필 URL이 없거나 유효하지 않은 경우 바로 SVG 표시
+        _logger.d(
+            "Social profile image URL is null or invalid for $provider. Displaying SVG.");
+        if (provider == "GOOGLE") {
+          profileAvatarWidget = CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.white,
+              child: SvgPicture.asset(Assets.Svgs.google,
+                  fit: BoxFit.contain, width: 70, height: 70));
+        } else {
+          // NAVER
+          profileAvatarWidget = CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.white,
+              child: SvgPicture.asset(Assets.Svgs.naver,
+                  fit: BoxFit.contain, width: 70, height: 70));
         }
       }
-    }
-
-    if (finalProfileImageProvider == null &&
-        currentUser.profileImageUrl != null &&
-        currentUser.profileImageUrl!.isNotEmpty) {
-      String imageUrl = currentUser.profileImageUrl!;
-      // URL 필드에 실수로 데이터 URI가 들어간 경우 처리
-      if (imageUrl.startsWith('data:image')) {
-        _logger.w('[MyPageBody] profileImageUrl contains data URI: $imageUrl');
-        if (imageUrl.contains('https://')) {
-          // 데이터 URI 내부에 URL이 있는 잘못된 경우
-          _logger.w(
-              '[MyPageBody] Invalid data URI in profileImageUrl (contains https), attempting to extract URL');
+    } else {
+      // 일반 로그인 사용자 (MARKIT 또는 기타)
+      ImageProvider? generalUserImageProvider;
+      if (currentUser.profileImageBase64 != null &&
+          currentUser.profileImageBase64!.isNotEmpty) {
+        // Base64 이미지 처리 (기존 로직과 유사하게)
+        String base64String = currentUser.profileImageBase64!;
+        if (base64String.startsWith('data:image') &&
+            base64String.contains('https://')) {
+          base64String = ''; // 잘못된 형식 처리
+        }
+        if (base64String.isNotEmpty) {
           try {
-            Uri uri =
-                Uri.parse(imageUrl.substring(imageUrl.indexOf('https://')));
-            if (uri.isAbsolute) {
-              imageUrl = uri.toString();
-              _logger.d('[MyPageBody] Extracted URL from data URI: $imageUrl');
-            } else {
-              imageUrl = ''; // 유효한 URL 추출 실패
+            if (base64String.startsWith('data:image')) {
+              base64String = base64String.split(',').last;
             }
+            final bytes = base64Decode(base64String);
+            generalUserImageProvider = MemoryImage(bytes);
           } catch (e) {
-            _logger.e('[MyPageBody] Error parsing URL from data URI: $e');
-            imageUrl = '';
-          }
-        } else {
-          // 순수 데이터 URI인 경우 (URL 필드에 있으면 안됨)
-          try {
-            String base64Part = imageUrl.split(',').last;
-            final bytes = base64Decode(base64Part);
-            finalProfileImageProvider = MemoryImage(bytes);
-            _logger.d(
-                '[MyPageBody] Using MemoryImage from profileImageUrl (data URI)');
-            imageUrl = ''; // MemoryImage를 사용했으므로 URL은 비움
-          } catch (e) {
-            _logger.w(
-                '[MyPageBody] Failed to decode data URI in profileImageUrl: $e');
-            imageUrl = '';
+            _logger
+                .w('[MyPageBody] Failed to decode Base64 for general user: $e');
           }
         }
       }
 
-      if (imageUrl.isNotEmpty) {
-        if (imageUrl.startsWith('http')) {
-          finalProfileImageProvider = NetworkImage(imageUrl);
-          _logger.d(
-              '[MyPageBody] Using NetworkImage from SessionUser.profileImageUrl: $imageUrl');
-        } else {
-          _logger.w(
-              '[MyPageBody] Invalid profileImageUrl (not http/https): $imageUrl');
-        }
+      if (generalUserImageProvider == null &&
+          currentUser.profileImageUrl != null &&
+          currentUser.profileImageUrl!.isNotEmpty &&
+          currentUser.profileImageUrl!.startsWith('http')) {
+        generalUserImageProvider = NetworkImage(currentUser.profileImageUrl!);
       }
+
+      profileAvatarWidget = CircleAvatar(
+        radius: 50,
+        backgroundColor: const Color(0xFFF5E6E6), // profileAvatarColor
+        backgroundImage: generalUserImageProvider,
+        child: generalUserImageProvider == null
+            ? const Icon(Icons.person, size: 60, color: Colors.white70)
+            : null,
+      );
     }
 
     const Color primaryColor = Color(0xFFF96666);
-    const Color profileAvatarColor = Color(0xFFF5E6E6);
+    // const Color profileAvatarColor = Color(0xFFF5E6E6); // 위에서 직접 사용
     const Color accentColor = Color(0xFFFFF7F7);
     const Color lightGrey = Color(0xFFFFFFFF);
     const Color secondaryTextColor = Color(0xFFB5A1A1);
@@ -157,24 +173,27 @@ class MyPageBody extends ConsumerWidget {
                     children: [
                       Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: profileAvatarColor,
-                            backgroundImage: finalProfileImageProvider,
-                            child: finalProfileImageProvider == null
-                                ? const Icon(Icons.person,
-                                    size: 60, color: Colors.white70)
-                                : null,
-                          ),
+                          // 수정된 프로필 아바타 위젯 사용
+                          Container(
+                            // ClipOval을 CircleAvatar처럼 보이게 하기 위한 컨테이너
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color:
+                                  const Color(0xFFF5E6E6), // 배경색 (이미지가 없을 때 등)
+                            ),
+                            child: profileAvatarWidget,
+                          )
                         ],
                       ),
                       const SizedBox(height: 10),
                       Text(profileName,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 5),
                       CustomWidget.buildTitle(
-                        "동네 정보 없음",
+                        "동네 정보 없음", // 이 부분은 추후 수정 필요
                         size: 14,
                         color: secondaryTextColor,
                         weight: FontWeight.w200,
@@ -182,13 +201,13 @@ class MyPageBody extends ConsumerWidget {
                       const SizedBox(height: 16),
                       InkWell(
                         onTap: () {
-                          int tempUserRating = currentUser.mannerScore ?? 3;
+                          // MyProfileBody로 이동 시 provider 정보도 활용 가능
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => MyProfileBody(
-                                user: currentUser,
-                                userRating: tempUserRating,
+                                user: currentUser, // SessionUser 전달
+                                userRating: currentUser.mannerScore ?? 3,
                               ),
                             ),
                           );
@@ -201,7 +220,7 @@ class MyPageBody extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(10.0),
                             boxShadow: [
                               BoxShadow(
-                                color: Color.fromRGBO(0, 0, 0, 0.05),
+                                color: const Color.fromRGBO(0, 0, 0, 0.05),
                                 spreadRadius: 1,
                                 blurRadius: 5,
                                 offset: const Offset(0, 3),
@@ -218,13 +237,14 @@ class MyPageBody extends ConsumerWidget {
                   ),
                 ),
               ),
+              // ... (이하 코드 동일)
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10.0),
                   boxShadow: [
                     BoxShadow(
-                      color: Color.fromRGBO(0, 0, 0, 0.05),
+                      color: const Color.fromRGBO(0, 0, 0, 0.05),
                       spreadRadius: 1,
                       blurRadius: 5,
                       offset: const Offset(0, 3),
@@ -237,7 +257,8 @@ class MyPageBody extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      Icon(Icons.paid_outlined, size: 32, color: primaryColor),
+                      const Icon(Icons.paid_outlined,
+                          size: 32, color: primaryColor),
                       const SizedBox(width: 16),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,7 +406,7 @@ class MyPageBody extends ConsumerWidget {
         borderRadius: BorderRadius.circular(10.0),
         boxShadow: [
           BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.05),
+              color: const Color.fromRGBO(0, 0, 0, 0.05),
               spreadRadius: 1,
               blurRadius: 5,
               offset: const Offset(0, 3)),
