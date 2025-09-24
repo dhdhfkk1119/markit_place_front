@@ -58,7 +58,11 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
     required int receiverId,
     required String message,
     required int itemId,
+    String? messageType,
+    List<String>? images,
   }) async {
+    final type = messageType ?? 'TEXT';
+
     if (myId == 0) {
       print(
           "[ChatNotifier] sendMessage skipped: Invalid user ID (myId is $myId).");
@@ -72,6 +76,8 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
       receiverId: receiverId,
       message: message,
       itemId: itemId,
+      messageType: type,
+      images: images,
     );
     print(
         "[ChatNotifier] sendMessage: newRoomId received from repository: $newRoomId");

@@ -13,6 +13,7 @@ class ProductDetailDto {
   final int itemCategoryId;
   final bool liked;
   final List<String> tags; // Added tags field
+  final String? status;
 
   ProductDetailDto({
     required this.productList,
@@ -25,6 +26,7 @@ class ProductDetailDto {
     required this.itemCategoryId,
     required this.liked,
     required this.tags,
+    this.status,
   });
 
   // copyWith 메서드도 tags를 포함하도록 업데이트
@@ -39,6 +41,7 @@ class ProductDetailDto {
     int? itemCategoryId,
     bool? liked,
     List<String>? tags,
+    String? status,
   }) {
     return ProductDetailDto(
       productList: productList ?? this.productList,
@@ -51,6 +54,7 @@ class ProductDetailDto {
       itemCategoryId: itemCategoryId ?? this.itemCategoryId,
       liked: liked ?? this.liked,
       tags: tags ?? this.tags,
+      status: status ?? this.status,
     );
   }
 
@@ -80,6 +84,7 @@ class ProductDetailDto {
       itemCategoryId: model.itemCategoryId,
       liked: model.liked,
       tags: model.tags,
+      status: model.status,
     );
   }
 }

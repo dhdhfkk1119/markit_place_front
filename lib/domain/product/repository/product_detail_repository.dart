@@ -6,23 +6,23 @@ import '../../../_core/utils/my_http.dart';
 import '../models/product_detail.dart';
 import '../models/product_favorites.dart';
 
-const String Url = baseUrl;
 const FlutterSecureStorage _storage = FlutterSecureStorage();
 
 class ProductDetailRepository {
   // 상품 상세 정보
   Future<ProductDetail> productDetail({required int itemId}) async {
     final token = await _storage.read(key: "accessToken");
-    if (token == null) {
-      throw Exception('토큰 정보가 존재하지 않습니다');
-    }
+    // 토큰 정보가 있을 때만 검사
+    final options = Options(
+      headers: {
+        // 토큰이 null이 아닐 때만 "Authorization" 헤더를 추가합니다.
+        if (token != null) "Authorization": "Bearer $token",
+      },
+    );
 
     try {
       final response = await dio.get(
-        baseUrl + '/items/${itemId}',
-        options: Options(
-          headers: {"Authorization": "Bearer $token"},
-        ),
+        '/items/${itemId}',
       );
 
       if (response.statusCode == 200) {
