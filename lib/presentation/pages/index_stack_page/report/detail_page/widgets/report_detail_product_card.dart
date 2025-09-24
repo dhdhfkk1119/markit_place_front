@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
 
 class ReportDetailProductCard extends StatelessWidget {
-  const ReportDetailProductCard({super.key});
+  const ReportDetailProductCard({
+    super.key,
+    required this.itemId,
+    this.onTap,
+    this.title,
+    this.priceLabel,
+    this.locationLabel,
+    this.thumbnailUrl,
+  });
+
+  final int itemId;
+  final VoidCallback? onTap;
+  final String? title;
+  final String? priceLabel;
+  final String? locationLabel;
+  final String? thumbnailUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -28,18 +43,21 @@ class ReportDetailProductCard extends StatelessWidget {
                 size: 34, color: Color(0xFFBDBDBD)),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('핸드백',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                SizedBox(height: 6),
-                Text('₩50,000',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                Text('범일동', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                Text(title ?? '상품 ID: $itemId',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                if (priceLabel != null)
+                  Text(priceLabel!,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.w600)),
+                if (locationLabel != null)
+                  Text('범일동',
+                      style: TextStyle(color: Colors.grey, fontSize: 14)),
               ],
             ),
           )
