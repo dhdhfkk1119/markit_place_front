@@ -11,6 +11,7 @@ import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/members/models/session_user.dart';
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../auth/social_login_page/social_login_page.dart';
+import '../../../community_report/list_page/community_report_list_page.dart'; // 추가된 import
 
 import '../../../report/list_page/report_list_page.dart';
 import '../../my_profile_page/widgets/my_profile_body.dart';
@@ -328,6 +329,21 @@ class MyPageBody extends ConsumerWidget {
                             const ReportListPage())),
                 child: _buildMenuTile(
                     icon: Icons.check_circle_outline, text: "신고 내역"),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) =>
+                          const CommunityReportListPage(),
+                    ),
+                  );
+                },
+                child: _buildMenuTile(
+                  icon: Icons.check_circle_outline,
+                  text: "커뮤니티 신고 내역",
+                ),
               ),
               _buildMenuTile(icon: Icons.search_outlined, text: "키워드 등록"),
               const Divider(height: 30),
