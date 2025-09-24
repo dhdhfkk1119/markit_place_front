@@ -12,6 +12,9 @@ import '../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../../domain/members/providers/profile_provider.dart';
 import '../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../domain/product/providers/product_detail_notifier.dart';
+import '../../../../../domain/sales/providers/sales_list_provider.dart';
+import '../../../../../domain/trade/provider/trade_buy_provider.dart';
+import '../../../../../domain/trade/provider/trade_provider.dart';
 import 'widgets/detail_bottom_sheet.dart';
 
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
@@ -105,7 +108,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                 showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return buildAppBar(context, "결제하기", '방나가기');
+                    return buildAppBar(context, "결제하기", '방나가기', itemAsync);
                   },
                 );
               },
@@ -172,6 +175,44 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   }
 
   Widget _buildOtherMessage(BuildContext context, ChatMessageDto message) {
+    final Widget messageContent;
+
+    if (message.type == 'IMAGE') {
+      // 이미지 타입일 경우
+      // 이미지 URL 리스트 중 첫 번째 이미지를 가져와 표시
+      final String? imageUrl =
+          message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
+
+      if (imageUrl != null) {
+        messageContent = ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            imageUrl,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.broken_image, color: Colors.grey);
+            },
+            fit: BoxFit.cover,
+          ),
+        );
+      } else {
+        messageContent = const Text("이미지 없음");
+      }
+    } else {
+      // 텍스트 타입일 경우
+      messageContent = Text(message.content);
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Row(
@@ -217,6 +258,42 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   }
 
   Widget _buildMyMessage(BuildContext context, ChatMessageDto message) {
+    final Widget messageContent;
+
+    if (message.type == 'IMAGE') {
+      // 이미지 타입일 경우
+      final String? imageUrl =
+          message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
+
+      if (imageUrl != null) {
+        messageContent = ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            imageUrl,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.broken_image, color: Colors.grey);
+            },
+            fit: BoxFit.cover,
+          ),
+        );
+      } else {
+        messageContent = const Text("이미지 없음");
+      }
+    } else {
+      // 텍스트 타입일 경우
+      messageContent = Text(message.content);
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Row(
@@ -258,7 +335,6 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     return itemAsync.when(
       data: (item) {
         final Uint8List? imageBytes = base64ToBytes(item.productList.thumbnail);
-
         return Container(
           height: 100,
           width: double.infinity,
@@ -314,8 +390,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     );
   }
 
-  // 팝업 방나기 및 결제하기
-  Widget buildAppBar(BuildContext context, String? title, String? title2) {
+  Widget buildAppBar(BuildContext context, String? title, String? title2,
+      AsyncValue<ProductDetailDto> itemAsync) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -354,37 +430,75 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
             );
           },
         ),
-        ListTile(
-          leading: const Icon(Icons.payment, color: Colors.deepPurpleAccent),
-          title: CustomWidget.buildTitle("$title", weight: FontWeight.w200),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: const Text('결제 확인'),
-                  content: const Text('정말로 결제하시겠습니까?'),
-                  actions: <Widget>[
-                    TextButton(
-                      child: const Text('취소'),
-                      onPressed: () {
-                        Navigator.of(context).pop(); // 다이얼로그 닫기
-                      },
-                    ),
-                    TextButton(
-                      child: const Text('결제'),
-                      onPressed: () {
-                        // TODO: 여기에 결제 로직 추가
-                        // 결제 하는 상품의 정보를 -> DB에다가 보내주기
-                        Navigator.of(context).pop(); // 다이얼로그 닫기
-                        Navigator.of(context).pop(); // 바텀시트 닫기
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
+        itemAsync.when(
+          data: (item) {
+            if (item.productList.status != "SOLD") {
+              return ListTile(
+                leading:
+                    const Icon(Icons.payment, color: Colors.deepPurpleAccent),
+                title:
+                    CustomWidget.buildTitle("$title", weight: FontWeight.w200),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('결제 확인'),
+                        content: const Text('정말로 결제하시겠습니까?'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('취소'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('결제'),
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              final notifier =
+                                  ref.read(buyItemProvider.notifier);
+                              try {
+                                await notifier.buyItem(widget.room.itemId);
+                                await ref
+                                    .read(tradeProvider.notifier)
+                                    .refresh();
+
+                                await ref
+                                    .read(chatProvider(widget.room.roomId)
+                                        .notifier)
+                                    .sendMessage(
+                                      receiverId: widget.room.otherUserId,
+                                      message:
+                                          "${widget.room.itemId}상품을 구매했습니다",
+                                      itemId: widget.room.itemId,
+                                    );
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("결제 성공")),
+                                );
+                                Navigator.of(context).pop();
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text("결제 실패: ${e.toString()}")),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            // 상품이 판매 완료 상태일 경우 아무것도 표시하지 않음
+            return const SizedBox.shrink();
           },
+          // 로딩 중이거나 에러 발생 시에도 아무것도 표시하지 않음
+          loading: () => const SizedBox.shrink(),
+          error: (err, stack) => const SizedBox.shrink(),
         ),
         ListTile(
           leading: const Icon(Icons.close, color: Colors.grey),

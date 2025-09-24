@@ -19,7 +19,6 @@ class ProductFilterList extends ConsumerStatefulWidget {
 }
 
 class _ProductFiterListState extends ConsumerState<ProductFilterList> {
-  String _sortBy = 'latest';
   final TextEditingController _minPriceController = TextEditingController();
   final TextEditingController _maxPriceController = TextEditingController();
 
@@ -46,9 +45,9 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
                 onReset: () {
                   ref.read(selectedCategoryIdProvider.notifier).state = null;
                   setState(() {
-                    _sortBy = 'latest';
+                    productListNotifier.refreshProductList();
+                    ref.read(sortOptionProvider.notifier).state = 'latest';
                   });
-                  productListNotifier.refreshProductList();
                 },
               ),
               _buildSortButtons(),
@@ -62,7 +61,7 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
                     if (newValue) {
                       ref.read(selectedCategoryIdProvider.notifier).state =
                           category.id;
-                      productListNotifier.searchProducts(
+                      productListNotifier.updateSearch(
                         ProductSearchDTO(itemCategoryId: category.id),
                       );
                     } else {
@@ -99,7 +98,7 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
             TextButton(
               onPressed: () {
                 ref.read(sortOptionProvider.notifier).state = 'latest';
-                productListNotifier.searchProducts(
+                productListNotifier.updateSearch(
                   ProductSearchDTO(sortBy: 'latest'),
                 );
               },
@@ -123,7 +122,7 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
             TextButton(
               onPressed: () {
                 ref.read(sortOptionProvider.notifier).state = 'popular';
-                productListNotifier.searchProducts(
+                productListNotifier.updateSearch(
                   ProductSearchDTO(sortBy: 'popular'),
                 );
               },
@@ -206,7 +205,7 @@ class _ProductFiterListState extends ConsumerState<ProductFilterList> {
         final maxPrice = ref.read(maxPriceProvider);
         final sortBy = ref.read(sortOptionProvider);
 
-        ref.read(productListProvider.notifier).searchProducts(
+        ref.read(productListProvider.notifier).updateSearch(
               ProductSearchDTO(
                 minPrice: minPrice,
                 maxPrice: maxPrice,

@@ -13,6 +13,7 @@ class ProductListDto {
   final int viewCount;
   final int itemCategoryId;
   final List<String> tags;
+  final String? status;
 
   ProductListDto({
     required this.id,
@@ -26,6 +27,7 @@ class ProductListDto {
     required this.viewCount,
     required this.itemCategoryId,
     required this.tags,
+    this.status,
   });
 
   factory ProductListDto.fromModel(ProductList model) {
@@ -41,6 +43,7 @@ class ProductListDto {
       viewCount: model.viewCount,
       itemCategoryId: model.itemCategoryId,
       tags: model.tags,
+      status: model.status,
     );
   }
 
@@ -56,6 +59,7 @@ class ProductListDto {
     int? viewCount,
     int? itemCategoryId,
     List<String>? tags,
+    String? status,
   }) {
     return ProductListDto(
       id: id ?? this.id,
@@ -69,6 +73,7 @@ class ProductListDto {
       viewCount: viewCount ?? this.viewCount,
       itemCategoryId: itemCategoryId ?? this.itemCategoryId,
       tags: tags ?? this.tags,
+      status: status ?? this.status,
     );
   }
 }

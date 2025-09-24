@@ -31,7 +31,6 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
     final item = ref.read(productDetailProvider(widget.itemId));
 
     ProductDetailDto dto = item.value!;
-    if (auth.user?.memberId == dto.sellerId) {}
 
     return SafeArea(
       child: Container(
@@ -78,18 +77,23 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
             Expanded(
               child: CustomTextFormField(
                 controller: _controller,
-                enabled: auth.user?.memberId != dto.sellerId,
+                enabled:
+                    dto.status != "SOLD" && auth.user?.memberId != dto.sellerId,
                 decoration: InputDecoration(
-                  hintText: auth.user?.memberId == dto.sellerId
-                      ? "자신의 상품에는 메세지를 보낼수없습니다"
-                      : "메세지를 입력하세요",
+                  hintText: dto.status == "SOLD"
+                      ? "이미 판매된 상품입니다"
+                      : auth.user?.memberId == dto.sellerId
+                          ? "자신의 상품에는 메세지를 보낼수없습니다"
+                          : "메세지를 입력하세요",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16.0),
                     borderSide: BorderSide.none,
                   ),
-                  fillColor: auth.user?.memberId == dto.sellerId
+                  fillColor: dto.status == "SOLD"
                       ? Colors.grey[300]
-                      : Colors.grey[200],
+                      : auth.user?.memberId == dto.sellerId
+                          ? Colors.grey[300]
+                          : Colors.grey[200],
                   filled: true,
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: 10.0,
@@ -100,10 +104,12 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
             ),
             const SizedBox(width: 8),
             IconButton(
-              icon: auth.user?.memberId != dto.sellerId
-                  ? const Icon(Icons.send, color: Colors.deepPurpleAccent)
-                  : const Icon(Icons.cancel_schedule_send,
-                      color: Colors.deepPurpleAccent),
+              icon: dto.status == "SOLD"
+                  ? Icon(Icons.cancel_schedule_send)
+                  : auth.user?.memberId != dto.sellerId
+                      ? const Icon(Icons.send, color: Colors.deepPurpleAccent)
+                      : const Icon(Icons.cancel_schedule_send,
+                          color: Colors.deepPurpleAccent),
               onPressed: auth.user?.memberId == dto.sellerId
                   ? null
                   : () async {
@@ -114,11 +120,9 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
                         return;
                       }
 
-                      // receiverId는 widget.receiverId로 올바르게 전달받고 있습니다.
                       final receiverId = widget.receiverId;
                       final itemId = widget.itemId;
 
-                      // sendMessage 호출 (새로운 방이 생성될 경우 roomId를 반환받음)
                       final chatNotifier = ref.read(chatProvider(null)
                           .notifier); // roomId가 없을 수도 있으므로 null 전달
                       await chatNotifier.sendMessage(
@@ -126,9 +130,6 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
                         message: message,
                         itemId: itemId,
                       );
-
-                      // 메시지 전송 후, ChatRoomNotifier를 통해 채팅방 목록을 새로고침합니다.
-                      // 이렇게 하면 새로운 방이 생성되었을 때 리스트가 업데이트됩니다.
                       await ref
                           .read(chatRoomNotifierProvider)
                           .fetchMyChatRooms();

@@ -7,9 +7,7 @@ import '../repository/product_list_repository.dart';
 class ProductListNotifier extends AsyncNotifier<List<ProductListDto>> {
   final ProductListRepository _repository = ProductListRepository();
 
-  // 검색 및 페이지네이션 상태를 통합 관리하는 DTO
-  int _currentPage = 0;
-  bool _isLastPage = false;
+  ProductSearchDTO _currentSearchDto = const ProductSearchDTO();
 
   @override
   Future<List<ProductListDto>> build() async {
@@ -17,17 +15,16 @@ class ProductListNotifier extends AsyncNotifier<List<ProductListDto>> {
     return _fetchProducts(page: 0);
   }
 
-  Future<List<ProductListDto>> _fetchProducts(
-      {required int page, String? keyword}) async {
-    // Repository에 상품 목록 요청
-    final searchDto = ProductSearchDTO(page: page, keyword: keyword);
-    final pageData = await _repository.getProducts(searchDto);
+  Future<List<ProductListDto>> _fetchProducts({required int page}) async {
+    // DTO의 페이지 정보만 업데이트
+    _currentSearchDto = _currentSearchDto.copyWith(page: page);
 
-    // Notifier의 페이지 상태 업데이트
-    _currentPage = page;
-    _isLastPage = pageData.isLastPage;
+    final pageData = await _repository.getProducts(_currentSearchDto);
 
-    // Model -> DTO 변환
+    _currentSearchDto = _currentSearchDto.copyWith(
+      hasNext: !pageData.isLastPage,
+    );
+
     final dtoList = pageData.productList
         .map((model) => ProductListDto.fromModel(model))
         .toList();
@@ -35,30 +32,36 @@ class ProductListNotifier extends AsyncNotifier<List<ProductListDto>> {
     return dtoList;
   }
 
-  // 새로운 검색어/조건으로 검색
-  Future<void> searchProducts(ProductSearchDTO? product) async {
+  Future<void> updateSearch(ProductSearchDTO newConditions) async {
     state = const AsyncValue.loading();
-    // guard는 try-catch를 자동으로 해줘서 편리해
-    state = await AsyncValue.guard(
-        () => _fetchProducts(page: 0, keyword: product!.keyword));
+
+    _currentSearchDto = _currentSearchDto.copyWith(
+      keyword: newConditions.keyword,
+      sortBy: newConditions.sortBy,
+      tags: newConditions.tags,
+      sortOrder: newConditions.sortOrder,
+      minPrice: newConditions.minPrice,
+      maxPrice: newConditions.maxPrice,
+      itemCategoryId: newConditions.itemCategoryId,
+    );
+
+    // 첫 페이지부터 다시 검색
+    state = await AsyncValue.guard(() => _fetchProducts(page: 0));
   }
 
-  // 다음 페이지 불러오기 (페이지네이션)
   Future<void> fetchNextPage() async {
-    // 3. 로딩 중이거나 마지막 페이지이면 더 이상 호출하지 않음
-    if (state.isLoading || _isLastPage) return;
+    if (state.isLoading || !(_currentSearchDto.hasNext ?? true)) return;
 
-    // 현재 데이터를 유지하면서 로딩 상태 표시 (화면 깜빡임 방지)
-    state = AsyncValue.loading();
+    final currentItems = state.value ?? [];
+    final nextPage = (_currentSearchDto.page ?? 0) + 1;
 
     try {
-      final nextPage = _currentPage + 1;
       final nextItems = await _fetchProducts(page: nextPage);
 
-      state = AsyncValue.data([
-        ...(state.value ?? []), // 기존 리스트
-        ...nextItems, // 새로 불러온 리스트 추가
-      ]);
+      // 페이지 갱신
+      _currentSearchDto = _currentSearchDto.copyWith(page: nextPage);
+
+      state = AsyncValue.data([...currentItems, ...nextItems]);
     } catch (e, st) {
       state = AsyncError(e, st);
     }
@@ -66,8 +69,9 @@ class ProductListNotifier extends AsyncNotifier<List<ProductListDto>> {
 
   // 목록 새로고침
   Future<void> refreshProductList() async {
+    _currentSearchDto = const ProductSearchDTO(); // 필터 초기화
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => build());
+    state = await AsyncValue.guard(() => _fetchProducts(page: 0));
   }
 
   void updateItemFavoriteStatus(int itemId, int newFavoriteCount) {

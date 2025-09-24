@@ -20,12 +20,11 @@ class DetailBody extends ConsumerWidget {
 
     return productDetailState.when(
       data: (productDetail) {
-        final imagePaths = productDetail.imageUrls ?? [];
         return SingleChildScrollView(
           controller: scrollController,
           child: Column(
             children: [
-              DetailItemImage(imagePaths: imagePaths),
+              DetailItemImage(productDetail: productDetail),
               DetailItem(productId: productId),
             ],
           ),

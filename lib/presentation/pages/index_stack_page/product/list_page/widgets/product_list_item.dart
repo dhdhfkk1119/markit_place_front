@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../_core/constants/assets.dart';
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_popup.dart';
 
 import '../../../../../../domain/product/dtos/product_list_dtos.dart';
@@ -20,7 +21,6 @@ class ProductListItem extends ConsumerWidget {
       onTap: () {
         Navigator.push(
           context,
-          // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
             builder: (context) => DetailPage(
                 productId: product.id), // DetailPage()는 상세 페이지 위젯입니다.
@@ -31,7 +31,7 @@ class ProductListItem extends ConsumerWidget {
         height: 100,
         child: Row(
           children: [
-            _buildProductImage(product.thumbnail),
+            _buildProductImage(product),
             const SizedBox(width: 16),
             Expanded(child: _buildProductInfo(product)),
             const SizedBox(width: 8),
@@ -42,9 +42,8 @@ class ProductListItem extends ConsumerWidget {
     );
   }
 
-  Widget _buildProductImage(String? thumbnailUrl) {
-    if (thumbnailUrl == null || thumbnailUrl.isEmpty) {
-      // Added isEmpty check
+  Widget _buildProductImage(ProductListDto product) {
+    if (product.thumbnail == null || product.thumbnail!.isEmpty) {
       return Container(
         width: 100,
         height: 100,
@@ -53,58 +52,66 @@ class ProductListItem extends ConsumerWidget {
       );
     }
 
-    // --- MODIFICATION START ---
-    String actualBase64String = thumbnailUrl;
-    // Check if the string contains the prefix and remove it
-    if (thumbnailUrl.startsWith('data:image') && thumbnailUrl.contains(',')) {
-      actualBase64String = thumbnailUrl.split(',').last;
-    }
-    // --- MODIFICATION END ---
-    try {
-      // Added try-catch for robust decoding
-      final bytes = base64.decode(actualBase64String);
+    final bytes = base64ToBytes(product.thumbnail);
 
-      // 4. Image.memory 위젯으로 이미지 표시
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.memory(
-          bytes,
-          width: 100,
-          height: 100,
-          fit: BoxFit.cover,
-          // Add errorBuilder for better error handling during Image.memory rendering
-          errorBuilder: (context, error, stackTrace) {
-            print("Error rendering image: $error");
-            return Container(
-              width: 100,
-              height: 100,
-              color: Colors.grey[300],
-              child: const Icon(
-                Icons.broken_image,
-                size: 50,
-                color: Colors.black54,
-              ),
-            );
-          },
-        ),
-      );
-    } catch (e) {
-      print("Error decoding base64 string: $e");
+    if (bytes == null) {
       return Container(
-        // Return an error placeholder if decoding fails
         width: 100,
         height: 100,
         color: Colors.grey[200],
-        child: const Icon(
-          Icons.error_outline,
-          size: 50,
-          color: Colors.red,
-        ),
+        child: const Icon(Icons.error_outline, size: 50, color: Colors.red),
       );
     }
+
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.memory(
+            bytes,
+            width: 100,
+            height: 100,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 100,
+                height: 100,
+                color: Colors.grey[300],
+                child: const Icon(
+                  Icons.broken_image,
+                  size: 50,
+                  color: Colors.black54,
+                ),
+              );
+            },
+          ),
+        ),
+        if (product.status == "SOLD")
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.black.withOpacity(0.4),
+              ),
+              child: Center(
+                child: Transform.rotate(
+                  angle: -0.4,
+                  child: const Text(
+                    "SOLD",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
-  // 조건부에 따라 오른쪽 (list-button,bottom Icon) 위치 조정
   Widget _buildConditionalActions(BuildContext context, WidgetRef ref) {
     if (_isFilterVisible) {
       return const SizedBox.shrink();

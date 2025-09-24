@@ -51,12 +51,16 @@ class ChatRoomNotifier extends ChangeNotifier {
     required int receiverId,
     required String message,
     required int itemId,
+    String? messageType,
+    List<String>? images,
   }) async {
     await _chatRepository.sendMessage(
       roomId: roomId,
       receiverId: receiverId,
       message: message,
       itemId: itemId,
+      messageType: messageType,
+      images: images,
     );
 
     await fetchMyChatRooms();

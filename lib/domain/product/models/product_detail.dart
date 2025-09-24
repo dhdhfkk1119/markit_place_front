@@ -18,6 +18,7 @@ class ProductDetail {
   final int viewCount;
   final bool liked;
   final List<String> tags; // Added tags field
+  final String? status;
 
   ProductDetail({
     required this.id,
@@ -36,6 +37,7 @@ class ProductDetail {
     required this.viewCount,
     required this.liked,
     required this.tags,
+    this.status,
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
@@ -60,6 +62,7 @@ class ProductDetail {
       viewCount: (json['viewCount'] as num).toInt(),
       liked: json['liked'] as bool,
       tags: List<String>.from(json['tags'] ?? []),
+      status: json['status'] as String?,
     );
   }
 }
