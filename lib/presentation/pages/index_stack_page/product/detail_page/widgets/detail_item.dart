@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_base64_bytes.dart';
+import '../../../../../../domain/models/naver_map/geocoding_model.dart';
 import '../../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../../domain/product/providers/product_detail_notifier.dart';
-import 'detail_item_image.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../domain/providers/geocoding_provider.dart';
 
 class DetailItem extends ConsumerWidget {
   final int productId;
@@ -18,42 +18,39 @@ class DetailItem extends ConsumerWidget {
 
     return productState.when(
       data: (product) {
-        print("상품 상세 페이지 유저의 정보들 : ${product.retransactionRate}");
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProfile(product, context),
-                    _buildDivider(),
-                    CustomWidget.buildTitle(
-                      "${product.productList.title}",
-                      size: 20,
-                    ),
-                    CustomWidget.buildTitle(
-                      "${product.productList.price}",
-                      size: 20,
-                    ),
-                    CustomWidget.buildTitle(
-                      "${product.productList.itemCategoryName}",
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "${product.productList.content}",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 200),
-                  ],
-                ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfile(product, context, ref),
+                  _buildDivider(),
+                  CustomWidget.buildTitle(
+                    "${product.productList.title}",
+                    size: 20,
+                  ),
+                  CustomWidget.buildTitle(
+                    "${product.productList.price}",
+                    size: 20,
+                  ),
+                  CustomWidget.buildTitle(
+                    "${product.productList.itemCategoryName}",
+                    size: 16,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "${product.productList.content}",
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 200),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -61,14 +58,21 @@ class DetailItem extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfile(ProductDetailDto dto, BuildContext context) {
+  Widget _buildProfile(
+      ProductDetailDto dto, BuildContext context, WidgetRef ref) {
+    final location = dto.productList.tradeLocation;
+
+    final addressAsyncValue = location != null
+        ? ref.watch(reverseGeocodedAddressProvider(Coordinates(
+            latitude: location.latitude, longitude: location.longitude)))
+        : null;
+
     return InkWell(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              // 프로필 이미지를 위한 전용 함수 호출
               _buildProfileImage(dto.sellerProfileUrl),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
@@ -77,8 +81,35 @@ class DetailItem extends ConsumerWidget {
                   children: [
                     CustomWidget.buildTitle("${dto.sellerName}",
                         size: 16, weight: FontWeight.w500),
-                    CustomWidget.buildTitle("${dto.sellerAddress}",
-                        size: 12, color: Colors.grey, weight: FontWeight.w200),
+                    if (addressAsyncValue != null)
+                      addressAsyncValue.when(
+                        data: (address) {
+                          final isError = address.contains("실패") ||
+                              address.contains("오류") ||
+                              address.contains("찾을 수 없습니다");
+                          return CustomWidget.buildTitle(
+                            address,
+                            size: 12,
+                            // 에러 메시지인 경우 빨간색으로 표시
+                            color: isError ? Colors.red : Colors.grey,
+                            weight: FontWeight.w200,
+                          );
+                        },
+                        loading: () => const SizedBox(
+                            width: 15,
+                            height: 15,
+                            child: CircularProgressIndicator(strokeWidth: 2)),
+                        error: (err, stack) => CustomWidget.buildTitle(
+                            "주소 로딩 실패",
+                            size: 12,
+                            color: Colors.red,
+                            weight: FontWeight.w200),
+                      )
+                    else
+                      CustomWidget.buildTitle("${dto.sellerAddress}",
+                          size: 12,
+                          color: Colors.grey,
+                          weight: FontWeight.w200),
                   ],
                 ),
               ),
@@ -127,7 +158,6 @@ class DetailItem extends ConsumerWidget {
   }
 
   Widget _buildBottomPopUp(BuildContext context) {
-    // ... 기존 코드와 동일
     return SizedBox(
       width: double.infinity,
       child: Padding(
@@ -190,7 +220,6 @@ class DetailItem extends ConsumerWidget {
     }
   }
 
-  // 기본 프로필 이미지를 반환하는 헬퍼 함수
   Widget _buildDefaultProfileImage() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),

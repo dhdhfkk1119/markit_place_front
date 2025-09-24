@@ -81,6 +81,11 @@ class ChatRoomNotifier extends ChangeNotifier {
       fetchMyChatRooms();
     }
   }
+
+  Future<void> deleteRoom(int roomId) async {
+    await _chatRoomRepository.deleteRoom(roomId);
+    await fetchMyChatRooms();
+  }
 }
 
 final chatRoomNotifierProvider = ChangeNotifierProvider((ref) {

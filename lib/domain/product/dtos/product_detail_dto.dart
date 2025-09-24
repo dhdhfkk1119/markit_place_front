@@ -62,7 +62,7 @@ class ProductDetailDto {
         content: model.content,
         price: model.price,
         itemCategoryName: "",
-        tradeLocation: null,
+        tradeLocation: model.tradeLocation,
         thumbnail: (model.imageUrls != null && model.imageUrls!.isNotEmpty)
             ? model.imageUrls!.first
             : null,

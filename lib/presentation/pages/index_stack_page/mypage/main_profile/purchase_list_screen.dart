@@ -1,11 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../domain/trade/model/trade_model.dart';
+import '../../../../../domain/trade/provider/trade_provider.dart';
+import '../../product/detail_page/detail_page.dart';
 
-class PurchaseListScreen extends StatelessWidget {
+class PurchaseListScreen extends ConsumerStatefulWidget {
   const PurchaseListScreen({super.key});
 
   @override
+  ConsumerState<PurchaseListScreen> createState() => _PurchaseListScreenState();
+}
+
+class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
+  ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 100) {
+        ref.read(tradeProvider.notifier).loadNextPage();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final state = ref.watch(tradeProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -18,29 +49,71 @@ class PurchaseListScreen extends StatelessWidget {
         ),
         title: CustomWidget.buildTitle('구매 내역'),
         centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: List.generate(
-            10,
-                (index) => _buildPurchaseItem(
-              title: '구매 상품 ${index + 1}',
-              status: index % 2 == 0 ? '구매완료' : '거래확정',
-              price: '${(index + 1) * 2000} 원',
-              date: '2025.08.${20 + index}',
-            ),
+        actions: [
+          CustomWidget.buildIcon(
+            const Icon(Icons.refresh, color: Colors.black),
+            onPressed: () async {
+              await ref.read(tradeProvider.notifier).refresh();
+            },
           ),
-        ),
+        ],
+      ),
+      body: state.when(
+        data: (tradeList) {
+          final List<TradeListModel> trade = tradeList.items;
+
+          if (trade.isEmpty) {
+            return const Center(
+              child: Text(
+                '구매 내역이 없습니다',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              await ref.read(tradeProvider.notifier).refresh();
+            },
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: trade.length,
+              itemBuilder: (context, index) {
+                final item = trade[index];
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailPage(
+                                  productId: tradeList.items[index].id),
+                            ),
+                          );
+                        },
+                        child: _buildPurchaseItem(
+                          model: item,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('에러 발생: $err')),
       ),
     );
   }
 
-  Widget _buildPurchaseItem({
-    required String title,
-    required String status,
-    required String price,
-    required String date,
-  }) {
+  Widget _buildPurchaseItem({required TradeListModel model}) {
+    final imageBytes = base64ToBytes(model?.thumbnailUrl);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -52,38 +125,46 @@ class PurchaseListScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 상품 이미지
-          Container(
-            width: 80,
-            height: 80,
-            color: Colors.grey[200],
-            child: const Center(child: Icon(Icons.photo, color: Colors.grey)),
-          ),
+          if (imageBytes != null)
+            Image.memory(
+              imageBytes,
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+            )
+          else
+            Container(
+              width: 80,
+              height: 80,
+              color: Colors.grey[200],
+              child: const Center(child: Icon(Icons.photo, color: Colors.grey)),
+            ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CustomWidget.buildTitle(
-                  title,
+                  model.title,
                   size: 16,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  price,
+                  "${model.price}",
                   size: 14,
                   weight: FontWeight.w600,
                   color: Colors.black,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  status,
+                  model.status,
                   size: 12,
-                  color: status == '구매완료' ? Colors.blue : Colors.purple,
+                  color: model.status == '구매완료' ? Colors.blue : Colors.purple,
                   weight: FontWeight.w500,
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  date,
+                  model.completedAt ?? '----/--/--',
                   size: 12,
                   color: Colors.grey,
                 ),

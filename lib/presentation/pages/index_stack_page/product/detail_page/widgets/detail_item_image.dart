@@ -25,10 +25,6 @@ class _DetailItemImageState extends State<DetailItemImage> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.imagePaths.isEmpty) {
-      return _buildDefaultImage();
-    }
-
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.5,
       child: Stack(
@@ -82,28 +78,47 @@ class _DetailItemImageState extends State<DetailItemImage> {
 
   // Base64 또는 네트워크 이미지를 처리하는 함수
   Widget _buildImage(String imageUrl) {
-    // Base64 문자열을 저장할 변수
-
-    final imageBytes = base64ToBytes(imageUrl);
-
-    if (imageBytes == null) {
-      return _buildDefaultImage();
-    }
-
-    try {
-      return Image.memory(
-        imageBytes,
+    if (imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
         fit: BoxFit.cover,
         width: double.infinity,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+        errorBuilder: (context, error, stackTrace) {
+          print('Network image load failed: $error');
+          return _buildDefaultImage();
+        },
       );
-    } catch (e) {
-      print('Base64 이미지 디코딩 실패: $e');
-      return _buildDefaultImage();
+    } else {
+      // Handle Base64 image
+      final imageBytes = base64ToBytes(imageUrl);
+
+      if (imageBytes == null) {
+        return _buildDefaultImage();
+      }
+
+      try {
+        return Image.memory(
+          imageBytes,
+          fit: BoxFit.cover,
+          width: double.infinity,
+        );
+      } catch (e) {
+        print('Base64 이미지 디코딩 실패: $e');
+        return _buildDefaultImage();
+      }
     }
   }
 
   // 기본 이미지를 만드는 헬퍼 함수
   Widget _buildDefaultImage() {
-    return const Center(child: CircularProgressIndicator());
+    return Image.asset(
+      Assets.Images.logo,
+      fit: BoxFit.cover,
+      width: double.infinity,
+    );
   }
 }

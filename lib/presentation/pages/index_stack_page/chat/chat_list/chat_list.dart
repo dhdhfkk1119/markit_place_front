@@ -43,9 +43,6 @@ class _ChatListState extends ConsumerState<ChatList> {
       return Center(child: Text('에러 발생: ${chatRoomNotifier.errorMessage}'));
     }
 
-    if (chatRoomNotifier.chatRooms.isEmpty) {
-      return const Center(child: Text('채팅방이 없습니다.'));
-    }
     final filteredRooms = chatRoomNotifier.selectedButtonId == 4
         ? chatRoomNotifier.chatRooms
             .where((room) => room.unreadMessageCount! > 0)
@@ -134,76 +131,83 @@ class _ChatListState extends ConsumerState<ChatList> {
                   ),
                 )
               : Container(),
-          Expanded(
-            child: ListView.separated(
-                separatorBuilder: (context, index) {
-                  return const Divider(height: 0.5, thickness: 0.5);
-                },
-                itemCount: filteredRooms.length,
-                itemBuilder: (context, index) {
-                  final room = filteredRooms[index];
-                  return Consumer(
-                    builder: (context, ref, _) {
-                      final profileState =
-                          ref.watch(userProfileProvider(room.otherUserId));
+          if (chatRoomNotifier.chatRooms.isEmpty)
+            Expanded(
+                child: Center(
+              child: const Text('채팅방이 없습니다.'),
+            ))
+          else
+            Expanded(
+              child: ListView.separated(
+                  separatorBuilder: (context, index) {
+                    return const Divider(height: 0.5, thickness: 0.5);
+                  },
+                  itemCount: filteredRooms.length,
+                  itemBuilder: (context, index) {
+                    final room = filteredRooms[index];
+                    return Consumer(
+                      builder: (context, ref, _) {
+                        final profileState =
+                            ref.watch(userProfileProvider(room.otherUserId));
 
-                      return ListTile(
-                        leading: SizedBox(
-                          width: 30,
-                          height: 30,
-                          child: ClipOval(
-                            child: profileState.when(
-                              data: (user) {
-                                if (user?.profileImageBase64 != null) {
-                                  final bytes =
-                                      base64Decode(user!.profileImageBase64!);
-                                  return Image.memory(bytes, fit: BoxFit.cover);
-                                } else {
-                                  return Image.asset(
-                                    Assets.Images.logo,
-                                    fit: BoxFit.cover,
-                                  );
-                                }
-                              },
-                              loading: () => const CircularProgressIndicator(
-                                  strokeWidth: 2),
-                              error: (e, _) => Image.asset(
-                                Assets.Images.logo,
-                                fit: BoxFit.cover,
+                        return ListTile(
+                          leading: SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: ClipOval(
+                              child: profileState.when(
+                                data: (user) {
+                                  if (user?.profileImageBase64 != null) {
+                                    final bytes =
+                                        base64Decode(user!.profileImageBase64!);
+                                    return Image.memory(bytes,
+                                        fit: BoxFit.cover);
+                                  } else {
+                                    return Image.asset(
+                                      Assets.Images.logo,
+                                      fit: BoxFit.cover,
+                                    );
+                                  }
+                                },
+                                loading: () => const CircularProgressIndicator(
+                                    strokeWidth: 2),
+                                error: (e, _) => Image.asset(
+                                  Assets.Images.logo,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        title: Text(
-                          room.otherUserName,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          room.lastMessage,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        trailing: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(30),
-                            color: room.unreadMessageCount == 0
-                                ? Colors.white
-                                : Colors.purple,
+                          title: Text(
+                            room.otherUserName,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ChatDetail(room: room)),
-                          );
-                        },
-                      );
-                    },
-                  );
-                }),
-          )
+                          subtitle: Text(
+                            room.lastMessage,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          trailing: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30),
+                              color: room.unreadMessageCount == 0
+                                  ? Colors.white
+                                  : Colors.purple,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => ChatDetail(room: room)),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  }),
+            )
         ],
       ),
     );
