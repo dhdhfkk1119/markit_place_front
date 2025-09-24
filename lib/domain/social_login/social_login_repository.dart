@@ -56,64 +56,49 @@ class SocialLoginRepository {
 
   // --- 네이버 소셜 로그인 ---
   /// 네이버 로그인을 시도하고, 성공 시 서버 로그인 결과 및 네이버 프로필 정보를 반환합니다.
-  Future<SocialLoginResultDto?> signInWithNaver() async {
+  Future<Map<String, dynamic>?> signInWithNaver() async {
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
-      logger.i(
-          "[NaverLogin] SDK Account Info: id=${result.account.id}, email=${result.account.email}, name=${result.account.name}, nickname=${result.account.nickname}, profileImage=${result.account.profileImage}, birthday=${result.account.birthday}, birthyear=${result.account.birthyear}, gender=${result.account.gender}, age=${result.account.age}, mobile=${result.account.mobile}");
 
       if (result.status == NaverLoginStatus.loggedIn) {
-        final requestDto = SocialLoginRequestDto(
-          provider: "NAVER",
-          providerId: result.account.id,
-          email: result.account.email,
-        );
+        logger.i("[NaverLogin] Naver SDK Login Success!");
 
-        final Map<String, dynamic>? serverLoginResult =
-            await _loginToServerWithSocialToken(requestDto);
+        final String? accessToken = result.accessToken?.accessToken;
 
-        if (serverLoginResult != null) {
-          final String? naverAccountName =
-              result.account.name ?? result.account.nickname;
-          final String? naverProfileImageUrl = result.account.profileImage;
-          String? naverProfileImageBase64;
-
-          if (naverProfileImageUrl != null && naverProfileImageUrl.isNotEmpty) {
-            naverProfileImageBase64 =
-                await _fetchImageAsBase64(naverProfileImageUrl);
-            if (naverProfileImageBase64 != null) {
-              logger.i(
-                  "[NaverLogin] Successfully converted Naver profile image URL to Base64.");
-            } else {
-              logger.w(
-                  "[NaverLogin] Failed to convert Naver profile image URL to Base64. URL: $naverProfileImageUrl");
-            }
-          }
-
-          logger.i(
-              "[NaverLogin] Extracted Naver Profile: Name='$naverAccountName', ImageUrl='$naverProfileImageUrl', HasBase64=${naverProfileImageBase64 != null}");
-
-          return SocialLoginResultDto(
-            sessionUser: serverLoginResult['sessionUser'] as SessionUser?,
-            token: serverLoginResult['token'] as String?,
-            socialAccountName: naverAccountName,
-            socialProfileImageBase64: naverProfileImageBase64,
-          );
-        } else {
-          logger.w("[NaverLogin] Server login failed after Naver SDK success.");
-          return null;
+        if (accessToken == null) {
+          throw Exception("네이버 Access Token을 가져오는데 실패했습니다.");
         }
+
+        return await _loginToServer(accessToken);
       } else {
         logger.w(
-            "[NaverLogin] Naver login not successful. Status: ${result.status}, Message: ${result.errorMessage}");
-        if (result.errorMessage != null && result.errorMessage!.isNotEmpty) {
-          throw Exception("네이버 로그인 실패: ${result.errorMessage}");
-        }
-        return null; // 사용자 취소 등
+            "[NaverLogin] Naver login failed or cancelled by user. Status: ${result.status}");
+        return null;
       }
-    } catch (e, stackTrace) {
-      logger.e('[NaverLogin] signInWithNaver Error', e, stackTrace);
-      throw Exception("네이버 로그인 중 오류 발생: ${extractErrorMessage(e)}");
+    } catch (e) {
+      logger.e('[NaverLogin] signInWithNaver Error', e);
+      throw Exception("네이버 로그인 중 오류가 발생했습니다.");
+    }
+  }
+
+  Future<Map<String, dynamic>?> _loginToServer(String accessToken) async {
+    try {
+      final response = await dio.post(
+        '$baseUrl/naver/login',
+        data: accessToken,
+      );
+
+      if (response.statusCode == 200) {
+        logger.i("[Auth] Server login success! Response: ${response.data}");
+        return response.data;
+      } else {
+        logger.e(
+            "[Auth] Server login failed. Status: ${response.statusCode}, Body: ${response.data}");
+        throw Exception("서버 로그인에 실패했습니다.");
+      }
+    } catch (e) {
+      logger.e('[Auth] _loginToServer Error', e);
+      throw Exception("서버와 통신 중 오류가 발생했습니다.");
     }
   }
 
