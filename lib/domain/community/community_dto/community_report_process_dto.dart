@@ -1,4 +1,4 @@
-import 'community_report_dto.dart';
+import '../../community_report/report_dto/community_report_dto.dart';
 
 class CommunityReportProcessDTO {
   final int? processId;
@@ -24,7 +24,6 @@ class CommunityReportProcessDTO {
     this.reason,
   });
 
-
   factory CommunityReportProcessDTO.fromJson(Map<String, dynamic> json) {
     return CommunityReportProcessDTO(
       processId: json['processId'] as int?,
@@ -32,8 +31,8 @@ class CommunityReportProcessDTO {
       postId: json['postId'] as int?,
       postTitle: json['postTitle'] as String,
       status: CommunityReportStatus.values.firstWhere(
-              (element) =>
-          element.toString() == 'CommunityReportStatus.${json['status']}',
+          (element) =>
+              element.toString() == 'CommunityReportStatus.${json['status']}',
           orElse: () => CommunityReportStatus.PENDING),
       createdAt: json['createdAt'] as String,
       postContent: json['postContent'] as String,
