@@ -20,10 +20,12 @@ class TradeReview {
   // JSON 직렬화를 위한 fromJson 팩토리 메서드
   factory TradeReview.fromJson(Map<String, dynamic> json) {
     return TradeReview(
-      id: json['id'],
+      id: (json['id'] is int) ? json['id'] : (json['id'] as num).toInt(),
       content: json['content'],
       shortContent: json['shortContent'],
-      rating: json['rating'],
+      rating: (json['rating'] is int)
+          ? json['rating']
+          : (json['rating'] as num).toInt(),
       reviewerLoginId: json['reviewerLoginId'],
       createdAt: json['createdAt'],
     );

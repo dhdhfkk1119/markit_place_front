@@ -2,37 +2,31 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
-import '../../_core/dtos/api_response_dto.dart';
 import '../../_core/utils/my_http.dart';
 import 'trade_review.dart';
 import 'trade_review_dto.dart';
 
-final logger = Logger();
-
 class TradeReviewRepository {
-  final Dio _dio = dio;
+  final Dio _dio = dio; // 중앙에서 관리되는 Dio 인스턴스 사용
+  final logger = Logger();
 
   // 리뷰 작성
   Future<TradeReview> createReview(TradeReviewRequestDto requestDto) async {
     try {
+      // URL에서 중복된 /api/ 접두사 제거
       final response = await _dio.post(
-        '/api/v1/trade-reviews',
+        '/v1/trade-reviews',
         data: requestDto.toJson(),
       );
 
-      final apiResponse = ApiResponseDto.fromJson(
-        response.data,
-        fromJsonT: (json) => TradeReview.fromJson(json),
-      );
+      logger.d('리뷰 생성 응답:', response.data);
 
-      if (apiResponse.success && apiResponse.response != null) {
-        return apiResponse.response!;
-      } else {
-        throw Exception(apiResponse.error?.message ?? '리뷰 작성에 실패했습니다.');
-      }
+      // 인터셉터가 success:false를 걸러주므로, 여기서는 항상 성공 응답이라고 가정합니다.
+      // 실제 리뷰 데이터는 'response' 필드에 있습니다.
+      return TradeReview.fromJson(response.data['response']);
     } catch (e) {
-      logger.e('리뷰 작성 중 오류 발생: $e');
-      rethrow;
+      logger.e('리뷰 작성 중 오류 발생:', e);
+      rethrow; // 오류를 상위로 전파
     }
   }
 
@@ -40,23 +34,14 @@ class TradeReviewRepository {
   Future<TradeReview> updateReview(
       int reviewId, TradeReviewRequestDto requestDto) async {
     try {
+      // URL에서 중복된 /api/ 접두사 제거
       final response = await _dio.put(
-        '/api/v1/trade-reviews/$reviewId',
+        '/v1/trade-reviews/$reviewId',
         data: requestDto.toJson(),
       );
-
-      final apiResponse = ApiResponseDto.fromJson(
-        response.data,
-        fromJsonT: (json) => TradeReview.fromJson(json),
-      );
-
-      if (apiResponse.success && apiResponse.response != null) {
-        return apiResponse.response!;
-      } else {
-        throw Exception(apiResponse.error?.message ?? '리뷰 수정에 실패했습니다.');
-      }
+      return TradeReview.fromJson(response.data['response']);
     } catch (e) {
-      logger.e('리뷰 $reviewId 수정 중 오류 발생: $e');
+      logger.e('리뷰 수정 중 오류 발생:', e);
       rethrow;
     }
   }
@@ -64,16 +49,11 @@ class TradeReviewRepository {
   // 리뷰 삭제
   Future<void> deleteReview(int reviewId) async {
     try {
-      final response = await _dio.delete('/api/v1/trade-reviews/$reviewId');
-
-      // 삭제는 반환 데이터가 없으므로 fromJsonT를 전달하지 않습니다.
-      final apiResponse = ApiResponseDto.fromJson(response.data);
-
-      if (!apiResponse.success) {
-        throw Exception(apiResponse.error?.message ?? '리뷰 삭제에 실패했습니다.');
-      }
+      // URL에서 중복된 /api/ 접두사 제거
+      await _dio.delete('/v1/trade-reviews/$reviewId');
+      // 반환값이 없는 경우, 성공적으로 완료된 것으로 간주합니다.
     } catch (e) {
-      logger.e('리뷰 $reviewId 삭제 중 오류 발생: $e');
+      logger.e('리뷰 삭제 중 오류 발생:', e);
       rethrow;
     }
   }
@@ -81,20 +61,11 @@ class TradeReviewRepository {
   // 리뷰 단일 조회
   Future<TradeReview> getReview(int reviewId) async {
     try {
-      final response = await _dio.get('/api/v1/trade-reviews/$reviewId');
-
-      final apiResponse = ApiResponseDto.fromJson(
-        response.data,
-        fromJsonT: (json) => TradeReview.fromJson(json),
-      );
-
-      if (apiResponse.success && apiResponse.response != null) {
-        return apiResponse.response!;
-      } else {
-        throw Exception(apiResponse.error?.message ?? '리뷰 조회에 실패했습니다.');
-      }
+      // URL에서 중복된 /api/ 접두사 제거
+      final response = await _dio.get('/v1/trade-reviews/$reviewId');
+      return TradeReview.fromJson(response.data['response']);
     } catch (e) {
-      logger.e('리뷰 $reviewId 조회 중 오류 발생: $e');
+      logger.e('리뷰 조회 중 오류 발생:', e);
       rethrow;
     }
   }
