@@ -69,4 +69,47 @@ class TradeReviewRepository {
       rethrow;
     }
   }
+
+  // 판매자의 전체 리뷰 조회
+  Future<List<TradeReview>> getSellerReviews(int sellerId) async {
+    try {
+      final response = await _dio.get('/v1/trade-reviews/sellers/$sellerId');
+
+      // 응답 데이터 로깅
+      logger.d('판매자 리뷰 조회 응답:', response.data);
+
+      if (response.data['success'] && response.data['response'] != null) {
+        final List<dynamic> reviewsJson = response.data['response'];
+        return reviewsJson.map((json) => TradeReview.fromJson(json)).toList();
+      } else {
+        logger.w('판매자 리뷰 응답이 비어있거나 success가 false입니다.');
+        return [];
+      }
+    } catch (e) {
+      logger.e('판매자 리뷰 조회 중 오류 발생:', e);
+      rethrow;
+    }
+  }
+
+  // 판매자의 최근 리뷰 3개 조회
+  Future<List<TradeReview>> getRecentSellerReviews(int sellerId) async {
+    try {
+      final response =
+          await _dio.get('/v1/trade-reviews/sellers/$sellerId/recent');
+
+      // 응답 데이터 로깅
+      logger.d('판매자 최근 리뷰 조회 응답:', response.data);
+
+      if (response.data['success'] && response.data['response'] != null) {
+        final List<dynamic> reviewsJson = response.data['response'];
+        return reviewsJson.map((json) => TradeReview.fromJson(json)).toList();
+      } else {
+        logger.w('판매자 최근 리뷰 응답이 비어있거나 success가 false입니다.');
+        return [];
+      }
+    } catch (e) {
+      logger.e('판매자 최근 리뷰 조회 중 오류 발생:', e);
+      rethrow;
+    }
+  }
 }

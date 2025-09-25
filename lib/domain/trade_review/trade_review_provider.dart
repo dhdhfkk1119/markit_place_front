@@ -13,11 +13,96 @@ final tradeReviewRepositoryProvider = Provider<TradeReviewRepository>((ref) {
   return TradeReviewRepository();
 });
 
-// Notifier Provider
+// 단일 리뷰 Notifier Provider
 final tradeReviewProvider =
     NotifierProvider<TradeReviewNotifier, AsyncValue<TradeReview?>>(() {
   return TradeReviewNotifier();
 });
+
+// 리뷰 목록 상태를 위한 클래스
+class ReviewListState {
+  final List<TradeReview> reviews;
+  final bool isLoading;
+  final String? error;
+
+  ReviewListState({
+    required this.reviews,
+    required this.isLoading,
+    this.error,
+  });
+
+  ReviewListState copyWith({
+    List<TradeReview>? reviews,
+    bool? isLoading,
+    String? error,
+  }) {
+    return ReviewListState(
+      reviews: reviews ?? this.reviews,
+      isLoading: isLoading ?? this.isLoading,
+      error: error != null ? error : null, // null이 명시적으로 전달되면 error를 null로 설정
+    );
+  }
+
+  static ReviewListState initial() {
+    return ReviewListState(reviews: [], isLoading: false);
+  }
+}
+
+// 판매자 리뷰 목록 Provider
+final sellerReviewsProvider =
+    StateNotifierProvider<SellerReviewsNotifier, ReviewListState>((ref) {
+  return SellerReviewsNotifier(ref.watch(tradeReviewRepositoryProvider));
+});
+
+// 판매자 최근 리뷰 Provider
+final recentReviewsProvider =
+    StateNotifierProvider<RecentReviewsNotifier, ReviewListState>((ref) {
+  return RecentReviewsNotifier(ref.watch(tradeReviewRepositoryProvider));
+});
+
+// 판매자 리뷰 목록 Notifier
+class SellerReviewsNotifier extends StateNotifier<ReviewListState> {
+  final TradeReviewRepository _repository;
+
+  SellerReviewsNotifier(this._repository) : super(ReviewListState.initial());
+
+  Future<void> loadSellerReviews(int sellerId) async {
+    if (state.isLoading) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final reviews = await _repository.getSellerReviews(sellerId);
+      state = state.copyWith(reviews: reviews, isLoading: false);
+      logger.i('판매자 리뷰 ${reviews.length}개 로드 성공');
+    } catch (e) {
+      logger.e('판매자 리뷰 로드 실패', e);
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+}
+
+// 판매자 최근 리뷰 Notifier
+class RecentReviewsNotifier extends StateNotifier<ReviewListState> {
+  final TradeReviewRepository _repository;
+
+  RecentReviewsNotifier(this._repository) : super(ReviewListState.initial());
+
+  Future<void> loadRecentReviews(int sellerId) async {
+    if (state.isLoading) return;
+
+    state = state.copyWith(isLoading: true, error: null);
+
+    try {
+      final reviews = await _repository.getRecentSellerReviews(sellerId);
+      state = state.copyWith(reviews: reviews, isLoading: false);
+      logger.i('최근 리뷰 ${reviews.length}개 로드 성공');
+    } catch (e) {
+      logger.e('최근 리뷰 로드 실패', e);
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+}
 
 // Notifier
 class TradeReviewNotifier extends Notifier<AsyncValue<TradeReview?>> {
