@@ -14,7 +14,7 @@ class PurchaseListScreen extends ConsumerStatefulWidget {
 }
 
 class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -82,23 +82,19 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
                 final item = trade[index];
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailPage(
-                                  productId: tradeList.items[index].id),
-                            ),
-                          );
-                        },
-                        child: _buildPurchaseItem(
-                          model: item,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DetailPage(productId: tradeList.items[index].id),
                         ),
-                      ),
-                    ],
+                      );
+                    },
+                    child: _buildPurchaseItem(
+                      model: item,
+                    ),
                   ),
                 );
               },
@@ -112,65 +108,113 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
   }
 
   Widget _buildPurchaseItem({required TradeListModel model}) {
-    final imageBytes = base64ToBytes(model?.thumbnailUrl);
+    final imageBytes = base64ToBytes(model.thumbnailUrl);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.withOpacity(0.3)),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 상품 이미지
-          if (imageBytes != null)
-            Image.memory(
-              imageBytes,
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
-            )
-          else
-            Container(
-              width: 80,
-              height: 80,
-              color: Colors.grey[200],
-              child: const Center(child: Icon(Icons.photo, color: Colors.grey)),
-            ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomWidget.buildTitle(
-                  model.title,
-                  size: 16,
-                ),
-                const SizedBox(height: 4),
-                CustomWidget.buildTitle(
-                  "${model.price}",
-                  size: 14,
-                  weight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-                const SizedBox(height: 4),
-                CustomWidget.buildTitle(
-                  model.status,
-                  size: 12,
-                  color: model.status == '구매완료' ? Colors.blue : Colors.purple,
-                  weight: FontWeight.w500,
-                ),
-                const SizedBox(height: 4),
-                CustomWidget.buildTitle(
-                  model.completedAt ?? '----/--/--',
-                  size: 12,
-                  color: Colors.grey,
-                ),
-              ],
-            ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
           ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 상품 이미지
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: imageBytes != null
+                    ? Image.memory(
+                        imageBytes,
+                        width: 80,
+                        height: 80,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey[200],
+                        child: const Center(
+                            child: Icon(Icons.photo, color: Colors.grey)),
+                      ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomWidget.buildTitle(
+                      model.title,
+                      size: 16,
+                    ),
+                    const SizedBox(height: 4),
+                    CustomWidget.buildTitle(
+                      "${model.price}",
+                      size: 14,
+                      weight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                    const SizedBox(height: 4),
+                    CustomWidget.buildTitle(
+                      model.status,
+                      size: 12,
+                      color:
+                          model.status == '구매완료' ? Colors.blue : Colors.purple,
+                      weight: FontWeight.w500,
+                    ),
+                    const SizedBox(height: 4),
+                    CustomWidget.buildTitle(
+                      model.completedAt ?? '----/--/--',
+                      size: 12,
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 20),
+          // 리뷰 섹션
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton(
+                onPressed: () {
+                  // TODO: 리뷰 작성 페이지로 이동 또는 다이얼로그 표시
+                  print('리뷰작성 버튼 클릭: ${model.id}');
+                },
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.grey[100],
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                child: const Text(
+                  '리뷰작성',
+                  style: TextStyle(color: Colors.black, fontSize: 12),
+                ),
+              ),
+              const Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(left: 16.0),
+                  child: Text(
+                    '아직 작성된 리뷰가 없습니다.', // 리뷰 첫 문장 (플레이스홀더)
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ),
+              ),
+            ],
+          )
         ],
       ),
     );
