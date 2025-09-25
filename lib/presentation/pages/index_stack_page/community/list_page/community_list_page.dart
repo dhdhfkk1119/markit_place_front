@@ -1,31 +1,34 @@
 import 'package:flutter/material.dart';
-import '../../../../../_core/constants/custom_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../../domain/community/community_provider/community_list_notifier.dart';
+import '../write_page/community_write_page.dart';
 import 'widgets/community_list_app_bar.dart';
 import 'widgets/community_list_body.dart';
-import '../write_page/community_write_page.dart';
 
-class CommunityListPage extends StatefulWidget {
+final searchVisibleProvider = StateProvider<bool>((ref) => false);
+final searchControllerProvider = Provider<TextEditingController>((ref) {
+  final controller = TextEditingController();
+  ref.onDispose(() => controller.dispose());
+  return controller;
+});
+
+class CommunityListPage extends ConsumerStatefulWidget {
   const CommunityListPage({super.key});
 
   @override
-  State<CommunityListPage> createState() => _CommunityListPageState();
+  ConsumerState<CommunityListPage> createState() => _CommunityListPageState();
 }
 
-class _CommunityListPageState extends State<CommunityListPage> {
+class _CommunityListPageState extends ConsumerState<CommunityListPage> {
   bool _isFilterVisible = false;
   String _currentTitle = "부전제2동";
-  bool isSearchVisible = false; // 검색창 표시 여부
-  final TextEditingController searchController = TextEditingController();
-
-  void toggleSearch() {
-    setState(() {
-      isSearchVisible = !isSearchVisible;
-      if (!isSearchVisible) searchController.clear();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final isSearchVisible = ref.watch(searchVisibleProvider);
+    final searchController = ref.watch(searchControllerProvider);
+
     return Scaffold(
       appBar: CommunityListAppBar(
         currentTitle: _currentTitle,
@@ -39,7 +42,12 @@ class _CommunityListPageState extends State<CommunityListPage> {
             _isFilterVisible = !_isFilterVisible;
           });
         },
-        onSearchToggle: toggleSearch,
+        onSearchToggle: () {
+          ref.read(searchVisibleProvider.notifier).state = !isSearchVisible;
+          if (!isSearchVisible) {
+            searchController.clear();
+          }
+        },
       ),
       body: CommunityListBody(
         isFilterVisible: _isFilterVisible,
@@ -49,7 +57,9 @@ class _CommunityListPageState extends State<CommunityListPage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const CommunityWritePage()),
-          );
+          ).then((_) {
+            ref.read(communityListProvider.notifier).getCommunityList();
+          });
         },
       ),
     );

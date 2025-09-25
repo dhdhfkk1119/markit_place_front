@@ -73,6 +73,7 @@ flutter:
     - assets/social/
     - .env
 
+
   fonts:
     - family: CookieRun
       fonts:

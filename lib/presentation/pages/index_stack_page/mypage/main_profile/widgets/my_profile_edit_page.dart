@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data'; // Uint8List 사용을 위해 추가
 
@@ -8,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../../../_core/constants/assets.dart';
-import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../_core/utils/error_utils.dart'; // extractErrorMessage
 import '../../../../../../domain/members/models/session_user.dart';
@@ -141,8 +141,17 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
             imageSource.contains('https://')) {
           // 잘못된 형식, 기본 아이콘으로
         } else {
-          final Uint8List? imageBytes =
-              base64ToBytes(imageSource); // Prefix 제거 포함
+          Uint8List? imageBytes;
+          try {
+            String toDecode = imageSource;
+            if (imageSource.contains(',')) {
+              toDecode = imageSource.split(',').last;
+            }
+            imageBytes = base64Decode(toDecode);
+          } catch (e) {
+            _logger.e('Failed to decode base64 string: $e');
+            imageBytes = null;
+          }
           if (imageBytes != null) {
             newImageProvider = MemoryImage(imageBytes);
           }
@@ -283,7 +292,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     if (_selectedImageFile != null) {
       try {
         final bytes = await _selectedImageFile!.readAsBytes();
-        base64ImageForServer = bytesToBase64(bytes); // Prefix 없는 순수 Base64
+        base64ImageForServer = base64Encode(bytes); // Prefix 없는 순수 Base64
       } catch (e) {
         _logger.e("Error reading/encoding file for Base64: $e");
         if (mounted) {
