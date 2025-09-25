@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CommunityReportDetailAppBar extends StatelessWidget
+import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../domain/community_report/report_notifier/community_report_detail_notifier.dart';
+import '../../../../../../domain/community_report/report_notifier/community_report_list_notifier.dart';
+import '../../../../../../domain/community_report/report_notifier/community_report_notifier.dart';
+
+class CommunityReportDetailAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
   final VoidCallback? onBack;
   const CommunityReportDetailAppBar({super.key, this.onBack});
@@ -9,11 +15,10 @@ class CommunityReportDetailAppBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      centerTitle: false,
       leading: IconButton(
         onPressed: onBack ?? () => Navigator.of(context).maybePop(),
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
@@ -23,6 +28,15 @@ class CommunityReportDetailAppBar extends StatelessWidget
         style: TextStyle(
             fontSize: 22, fontWeight: FontWeight.w800, color: Colors.black),
       ),
+      centerTitle: true,
+      actions: [
+        CustomWidget.buildIcon(
+          const Icon(Icons.refresh, color: Colors.black),
+          onPressed: () async {
+            ref.invalidate(communityReportDetailProvider);
+          },
+        ),
+      ],
     );
   }
 }

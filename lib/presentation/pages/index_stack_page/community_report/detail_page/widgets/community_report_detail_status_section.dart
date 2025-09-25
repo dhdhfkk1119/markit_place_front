@@ -17,6 +17,11 @@ class CommunityReportDetailStatusSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 18),
       child: Row(
         children: [
+          const Text(
+            '신고 상태',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+          const Spacer(),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -31,11 +36,6 @@ class CommunityReportDetailStatusSection extends StatelessWidget {
                 fontSize: 14,
               ),
             ),
-          ),
-          const Spacer(),
-          const Text(
-            '신고 상태',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
         ],
       ),

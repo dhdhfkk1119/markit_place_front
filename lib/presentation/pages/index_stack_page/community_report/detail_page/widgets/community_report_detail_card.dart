@@ -1,7 +1,57 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
+import '../../../../../../_core/constants/custom_base64_bytes.dart';
+import '../../../../../../domain/community/community_dto/community_detail_dto.dart';
+
 class CommunityReportDetailCard extends StatelessWidget {
-  const CommunityReportDetailCard({super.key});
+  final CommunityDetailDto post;
+
+  const CommunityReportDetailCard({super.key, required this.post});
+
+  String truncateString(String text, int length) {
+    return (text.length <= length) ? text : '${text.substring(0, length)}...';
+  }
+
+  Widget _buildImage(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return _buildDefaultImage();
+    }
+
+    final imageBytes = base64ToBytes(imageUrl);
+
+    if (imageBytes == null) {
+      return _buildDefaultImage();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: Image.memory(
+        imageBytes,
+        fit: BoxFit.cover,
+        width: 72,
+        height: 72,
+      ),
+    );
+  }
+
+  // 기본 아이콘 이미지
+  Widget _buildDefaultImage() {
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: const Icon(
+        Icons.article_outlined,
+        size: 34,
+        color: Color(0xFFBDBDBD),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,29 +67,43 @@ class CommunityReportDetailCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.report_problem,
-                size: 34, color: Color(0xFFBDBDBD)),
+          _buildImage(
+            post.images != null && post.images!.isNotEmpty
+                ? post.images!.first
+                : null,
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('우리상품 홍보!',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                SizedBox(height: 6),
-                Text('신상품이 출시 되었습니다.',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                Text('범일동', style: TextStyle(color: Colors.grey, fontSize: 14)),
+                Text(
+                  post.title.isNotEmpty ? post.title : '제목 없음',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  post.content.isNotEmpty
+                      ? truncateString(post.content, 50)
+                      : '내용 없음',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (post.location.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      post.location,
+                      style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
               ],
             ),
           )
