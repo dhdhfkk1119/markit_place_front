@@ -53,7 +53,8 @@ class CommunityDetailBody extends ConsumerWidget {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: comments.length,
               itemBuilder: (context, index) {
-                return CommunityDetailReply(comment: comments[index]);
+                return CommunityDetailReply(
+                    comment: comments[index], postId: postId);
               },
             )
           else if (!isLoadingDetail)
