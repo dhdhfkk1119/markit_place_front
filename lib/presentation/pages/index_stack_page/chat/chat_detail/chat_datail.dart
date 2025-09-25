@@ -455,16 +455,26 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                           TextButton(
                             child: const Text('결제'),
                             onPressed: () async {
-                              Navigator.of(context).pop();
-                              final notifier =
-                                  ref.read(buyItemProvider.notifier);
                               try {
-                                await notifier.buyItem(widget.room.itemId);
                                 await ref
-                                    .read(tradeProvider.notifier)
-                                    .refresh();
+                                    .read(buyItemProvider.notifier)
+                                    .buyItem(widget.room.itemId);
 
-                                await ref
+                                // 위젯이 여전히 화면에 있는지 확인
+                                if (!mounted) return;
+
+                                // 성공 시 UI 업데이트
+                                Navigator.of(context).pop(); // AlertDialog 닫기
+                                Navigator.of(context)
+                                    .pop(); // ModalBottomSheet 닫기
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("결제 성공")),
+                                );
+
+                                // 백그라운드에서 데이터 새로고침
+                                ref.read(tradeProvider.notifier).refresh();
+                                ref
                                     .read(chatProvider(widget.room.roomId)
                                         .notifier)
                                     .sendMessage(
@@ -473,12 +483,12 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                                           "${widget.room.itemId}상품을 구매했습니다",
                                       itemId: widget.room.itemId,
                                     );
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("결제 성공")),
-                                );
-                                Navigator.of(context).pop();
                               } catch (e) {
+                                // 위젯이 여전히 화면에 있는지 확인
+                                if (!mounted) return;
+
+                                // 실패 시 UI 업데이트
+                                Navigator.of(context).pop(); // AlertDialog 닫기
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                       content: Text("결제 실패: ${e.toString()}")),

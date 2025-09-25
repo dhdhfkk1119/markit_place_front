@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
 import '../../../../../domain/trade/model/trade_model.dart';
 import '../../../../../domain/trade/provider/trade_provider.dart';
+import '../../../../../domain/trade_review/trade_review_dto.dart';
+import '../../../../../domain/trade_review/trade_review_provider.dart';
 import '../../product/detail_page/detail_page.dart';
 
 class PurchaseListScreen extends ConsumerStatefulWidget {
@@ -36,6 +39,19 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(tradeProvider);
+
+    ref.listen<AsyncValue>(tradeReviewProvider, (previous, next) {
+      if (next.hasError && !next.isLoading) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('리뷰 작성 실패: ${next.error}')),
+        );
+      } else if (next.hasValue && next.value != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('리뷰가 성공적으로 작성되었습니다!')),
+        );
+        ref.read(tradeProvider.notifier).refresh();
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
@@ -84,11 +100,12 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: InkWell(
                     onTap: () {
+                      // API 명세에 따라 상품 ID는 itemId를 사용합니다.
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              DetailPage(productId: tradeList.items[index].id),
+                              DetailPage(productId: item.itemId),
                         ),
                       );
                     },
@@ -108,7 +125,8 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
   }
 
   Widget _buildPurchaseItem({required TradeListModel model}) {
-    final imageBytes = base64ToBytes(model.thumbnailUrl);
+    // API 명세에 따라 itemThumbnail 필드를 사용합니다.
+    final imageBytes = base64ToBytes(model.itemThumbnail);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -129,7 +147,6 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 상품 이미지
               ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
                 child: imageBytes != null
@@ -152,71 +169,178 @@ class _PurchaseListScreenState extends ConsumerState<PurchaseListScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomWidget.buildTitle(
-                      model.title,
-                      size: 16,
-                    ),
+                    // API 명세에 따라 필드 이름들을 수정합니다.
+                    CustomWidget.buildTitle(model.itemTitle, size: 16),
                     const SizedBox(height: 4),
-                    CustomWidget.buildTitle(
-                      "${model.price}",
-                      size: 14,
-                      weight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
+                    CustomWidget.buildTitle("${model.price}",
+                        size: 14, weight: FontWeight.w600, color: Colors.black),
                     const SizedBox(height: 4),
-                    CustomWidget.buildTitle(
-                      model.status,
-                      size: 12,
-                      color:
-                          model.status == '구매완료' ? Colors.blue : Colors.purple,
-                      weight: FontWeight.w500,
-                    ),
+                    CustomWidget.buildTitle(model.tradeStatus,
+                        size: 12,
+                        color: model.tradeStatus == 'COMPLETED'
+                            ? Colors.blue
+                            : Colors.purple,
+                        weight: FontWeight.w500),
                     const SizedBox(height: 4),
-                    CustomWidget.buildTitle(
-                      model.completedAt ?? '----/--/--',
-                      size: 12,
-                      color: Colors.grey,
-                    ),
+                    CustomWidget.buildTitle(model.tradedAt,
+                        size: 12, color: Colors.grey),
                   ],
                 ),
               ),
             ],
           ),
           const Divider(height: 20),
-          // 리뷰 섹션
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton(
-                onPressed: () {
-                  // TODO: 리뷰 작성 페이지로 이동 또는 다이얼로그 표시
-                  print('리뷰작성 버튼 클릭: ${model.id}');
-                },
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.grey[100],
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                child: const Text(
-                  '리뷰작성',
-                  style: TextStyle(color: Colors.black, fontSize: 12),
-                ),
-              ),
-              const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(left: 16.0),
-                  child: Text(
-                    '아직 작성된 리뷰가 없습니다.', // 리뷰 첫 문장 (플레이스홀더)
-                    textAlign: TextAlign.right,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                ),
-              ),
-            ],
-          )
+          _buildReviewSection(model),
         ],
       ),
+    );
+  }
+
+  Widget _buildReviewSection(TradeListModel model) {
+    // API 명세에 따라 isReviewed 필드를 사용하여 리뷰 작성 여부를 판단합니다.
+    final bool hasReview = model.isReviewed;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        TextButton(
+          onPressed: hasReview
+              ? null
+              : () {
+                  // API 명세에 따라 tradeId를 넘겨줍니다.
+                  showDialog(
+                    context: context,
+                    builder: (context) =>
+                        _ReviewFormDialog(tradeId: model.tradeId),
+                  );
+                },
+          style: TextButton.styleFrom(
+            backgroundColor: hasReview ? Colors.grey[300] : Colors.grey[100],
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          child: Text(hasReview ? '작성완료' : '리뷰작성',
+              style: TextStyle(
+                  color: hasReview ? Colors.grey[600] : Colors.black,
+                  fontSize: 12)),
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16.0),
+            child: Text(
+              hasReview ? '작성된 리뷰가 있습니다.' : '아직 작성된 리뷰가 없습니다.',
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReviewFormDialog extends ConsumerStatefulWidget {
+  final int tradeId;
+
+  const _ReviewFormDialog({required this.tradeId});
+
+  @override
+  ConsumerState<_ReviewFormDialog> createState() => _ReviewFormDialogState();
+}
+
+class _ReviewFormDialogState extends ConsumerState<_ReviewFormDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _contentController = TextEditingController();
+  int _rating = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSubmitting = ref.watch(tradeReviewProvider).isLoading;
+
+    return AlertDialog(
+      title: const Text('리뷰 작성'),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _rating = index + 1;
+                      });
+                    },
+                    icon: Icon(
+                      index < _rating ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _contentController,
+                maxLength: 100,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: '리뷰 내용을 입력해주세요.',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '내용을 입력해주세요.';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: isSubmitting ? null : () => Navigator.of(context).pop(),
+          child: const Text('취소'),
+        ),
+        ElevatedButton(
+          onPressed: isSubmitting
+              ? null
+              : () {
+                  if (_rating == 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('별점을 선택해주세요.')),
+                    );
+                    return;
+                  }
+                  if (_formKey.currentState!.validate()) {
+                    final reviewDto = TradeReviewRequestDto(
+                      tradeId: widget.tradeId,
+                      content: _contentController.text,
+                      rating: _rating,
+                    );
+                    ref
+                        .read(tradeReviewProvider.notifier)
+                        .createReview(reviewDto)
+                        .then((_) {
+                      if (mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    });
+                  }
+                },
+          child: isSubmitting
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('등록'),
+        ),
+      ],
     );
   }
 }

@@ -1,3 +1,89 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
+
+import 'trade_review.dart';
+import 'trade_review_dto.dart';
+import 'trade_review_repository.dart';
+
+final logger = Logger();
+
+// Repository Provider
+final tradeReviewRepositoryProvider = Provider<TradeReviewRepository>((ref) {
+  return TradeReviewRepository();
+});
+
+// Notifier Provider
+// 단일 리뷰의 상태를 관리합니다 (생성/수정/조회 결과 또는 null).
+final tradeReviewProvider =
+    NotifierProvider<TradeReviewNotifier, AsyncValue<TradeReview?>>(() {
+  return TradeReviewNotifier();
+});
+
+// Notifier
+class TradeReviewNotifier extends Notifier<AsyncValue<TradeReview?>> {
+  late final TradeReviewRepository _repository;
+
+  @override
+  AsyncValue<TradeReview?> build() {
+    _repository = ref.watch(tradeReviewRepositoryProvider);
+    // 초기 상태는 데이터가 없는 성공 상태입니다.
+    return const AsyncData(null);
+  }
+
+  // 리뷰 생성
+  Future<void> createReview(TradeReviewRequestDto requestDto) async {
+    state = const AsyncLoading();
+    try {
+      final review = await _repository.createReview(requestDto);
+      state = AsyncData(review);
+      logger.i('리뷰 생성 성공: ${review.id}');
+    } catch (e, stackTrace) {
+      logger.e('리뷰 생성 실패', e, stackTrace);
+      state = AsyncError(e, stackTrace);
+    }
+  }
+
+  // 리뷰 수정
+  Future<void> updateReview(
+      int reviewId, TradeReviewRequestDto requestDto) async {
+    state = const AsyncLoading();
+    try {
+      final review = await _repository.updateReview(reviewId, requestDto);
+      state = AsyncData(review);
+      logger.i('리뷰 수정 성공: ${review.id}');
+    } catch (e, stackTrace) {
+      logger.e('리뷰 수정 실패', e, stackTrace);
+      state = AsyncError(e, stackTrace);
+    }
+  }
+
+  // 리뷰 삭제
+  Future<void> deleteReview(int reviewId) async {
+    state = const AsyncLoading();
+    try {
+      await _repository.deleteReview(reviewId);
+      state = const AsyncData(null); // 삭제 성공 후 상태를 초기화합니다.
+      logger.i('리뷰 삭제 성공: $reviewId');
+    } catch (e, stackTrace) {
+      logger.e('리뷰 삭제 실패', e, stackTrace);
+      state = AsyncError(e, stackTrace);
+    }
+  }
+
+  // 리뷰 단일 조회
+  Future<void> getReview(int reviewId) async {
+    state = const AsyncLoading();
+    try {
+      final review = await _repository.getReview(reviewId);
+      state = AsyncData(review);
+      logger.i('리뷰 조회 성공: ${review.id}');
+    } catch (e, stackTrace) {
+      logger.e('리뷰 조회 실패', e, stackTrace);
+      state = AsyncError(e, stackTrace);
+    }
+  }
+}
+
 ///==============================================================================
 ///
 ///                  거래 리뷰(TradeReview) 기능 사용 가이드 (for UI 개발자)
@@ -113,89 +199,3 @@
    ```
  - **결과:** 호출 즉시 `AsyncLoading`으로 변경되고, 성공 시 `AsyncData(null)` 상태가 되어 UI가 초기 상태로 돌아갑니다.
 */
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
-
-import 'trade_review.dart';
-import 'trade_review_dto.dart';
-import 'trade_review_repository.dart';
-
-final logger = Logger();
-
-// Repository Provider
-final tradeReviewRepositoryProvider = Provider<TradeReviewRepository>((ref) {
-  return TradeReviewRepository();
-});
-
-// Notifier Provider
-// 단일 리뷰의 상태를 관리합니다 (생성/수정/조회 결과 또는 null).
-final tradeReviewProvider =
-    NotifierProvider<TradeReviewNotifier, AsyncValue<TradeReview?>>(() {
-  return TradeReviewNotifier();
-});
-
-// Notifier
-class TradeReviewNotifier extends Notifier<AsyncValue<TradeReview?>> {
-  late final TradeReviewRepository _repository;
-
-  @override
-  AsyncValue<TradeReview?> build() {
-    _repository = ref.watch(tradeReviewRepositoryProvider);
-    // 초기 상태는 데이터가 없는 성공 상태입니다.
-    return const AsyncData(null);
-  }
-
-  // 리뷰 생성
-  Future<void> createReview(TradeReviewRequestDto requestDto) async {
-    state = const AsyncLoading();
-    try {
-      final review = await _repository.createReview(requestDto);
-      state = AsyncData(review);
-      logger.i('리뷰 생성 성공: ${review.id}');
-    } catch (e, stackTrace) {
-      logger.e('리뷰 생성 실패', e, stackTrace);
-      state = AsyncError(e, stackTrace);
-    }
-  }
-
-  // 리뷰 수정
-  Future<void> updateReview(
-      int reviewId, TradeReviewRequestDto requestDto) async {
-    state = const AsyncLoading();
-    try {
-      final review = await _repository.updateReview(reviewId, requestDto);
-      state = AsyncData(review);
-      logger.i('리뷰 수정 성공: ${review.id}');
-    } catch (e, stackTrace) {
-      logger.e('리뷰 수정 실패', e, stackTrace);
-      state = AsyncError(e, stackTrace);
-    }
-  }
-
-  // 리뷰 삭제
-  Future<void> deleteReview(int reviewId) async {
-    state = const AsyncLoading();
-    try {
-      await _repository.deleteReview(reviewId);
-      state = const AsyncData(null); // 삭제 성공 후 상태를 초기화합니다.
-      logger.i('리뷰 삭제 성공: $reviewId');
-    } catch (e, stackTrace) {
-      logger.e('리뷰 삭제 실패', e, stackTrace);
-      state = AsyncError(e, stackTrace);
-    }
-  }
-
-  // 리뷰 단일 조회
-  Future<void> getReview(int reviewId) async {
-    state = const AsyncLoading();
-    try {
-      final review = await _repository.getReview(reviewId);
-      state = AsyncData(review);
-      logger.i('리뷰 조회 성공: ${review.id}');
-    } catch (e, stackTrace) {
-      logger.e('리뷰 조회 실패', e, stackTrace);
-      state = AsyncError(e, stackTrace);
-    }
-  }
-}

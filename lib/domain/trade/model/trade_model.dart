@@ -1,39 +1,37 @@
 class TradeListModel {
-  final int id;
+  final int tradeId;
   final int itemId;
-  final String title;
+  final String itemTitle;
+  final String? itemThumbnail;
   final int price;
-  final String thumbnailUrl;
-  final String completedAt;
-  final String statusLabel;
-  final String status;
-  final int counterPartyId;
-  final String counterPartyName;
+  final String tradeStatus;
+  final String sellerNickname;
+  final bool isReviewed;
+  final String tradedAt;
 
-  TradeListModel(
-      {required this.id,
-      required this.itemId,
-      required this.title,
-      required this.price,
-      required this.thumbnailUrl,
-      required this.completedAt,
-      required this.statusLabel,
-      required this.status,
-      required this.counterPartyId,
-      required this.counterPartyName});
+  TradeListModel({
+    required this.tradeId,
+    required this.itemId,
+    required this.itemTitle,
+    this.itemThumbnail,
+    required this.price,
+    required this.tradeStatus,
+    required this.sellerNickname,
+    required this.isReviewed,
+    required this.tradedAt,
+  });
 
   factory TradeListModel.fromJson(Map<String, dynamic> json) {
     return TradeListModel(
-      id: json['id'],
+      tradeId: json['tradeId'],
       itemId: json['itemId'],
-      title: json['title'],
+      itemTitle: json['itemTitle'],
+      itemThumbnail: json['itemThumbnail'],
       price: json['price'],
-      thumbnailUrl: json['thumbnailUrl'],
-      completedAt: json['completedAt'],
-      statusLabel: json['statusLabel'],
-      status: json['status'],
-      counterPartyId: json['counterPartyId'],
-      counterPartyName: json['counterPartyName'],
+      tradeStatus: json['tradeStatus'],
+      sellerNickname: json['sellerNickname'],
+      isReviewed: json['isReviewed'],
+      tradedAt: json['tradedAt'],
     );
   }
 }
