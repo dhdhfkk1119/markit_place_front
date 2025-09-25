@@ -19,6 +19,7 @@ import 'widgets/detail_bottom_sheet.dart';
 
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
 import '../../../../widgets/snackbar_util.dart';
+import 'widgets/purchase/toss_purchase.dart';
 
 class ChatDetail extends ConsumerStatefulWidget {
   final ChatRoomDTO room;
@@ -51,7 +52,9 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
     final itemAsync = ref.watch(productDetailProvider(widget.room.itemId));
     ref.read(chatRoomNotifierProvider.notifier).fetchMyChatRooms();
-    // 유저의 정보를 찾아옴
+
+    final authState = ref.read(authNotifierProvider);
+    final userName = authState.user?.name ?? "";
 
     if (chatDetailNotifier.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -108,7 +111,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                 showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return buildAppBar(context, "결제하기", '방나가기', itemAsync);
+                    return buildAppBar(
+                        context, "결제하기", '방나가기', itemAsync, userName);
                   },
                 );
               },
@@ -391,7 +395,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   }
 
   Widget buildAppBar(BuildContext context, String? title, String? title2,
-      AsyncValue<ProductDetailDto> itemAsync) {
+      AsyncValue<ProductDetailDto> itemAsync, String userName) {
+    final productDetailDto = itemAsync.value!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -453,39 +458,15 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                             },
                           ),
                           TextButton(
-                            child: const Text('결제'),
-                            onPressed: () async {
-                              Navigator.of(context).pop();
-                              final notifier =
-                                  ref.read(buyItemProvider.notifier);
-                              try {
-                                await notifier.buyItem(widget.room.itemId);
-                                await ref
-                                    .read(tradeProvider.notifier)
-                                    .refresh();
-
-                                await ref
-                                    .read(chatProvider(widget.room.roomId)
-                                        .notifier)
-                                    .sendMessage(
-                                      receiverId: widget.room.otherUserId,
-                                      message:
-                                          "${widget.room.itemId}상품을 구매했습니다",
-                                      itemId: widget.room.itemId,
-                                    );
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text("결제 성공")),
-                                );
+                              child: const Text('결제'),
+                              onPressed: () {
                                 Navigator.of(context).pop();
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text("결제 실패: ${e.toString()}")),
-                                );
-                              }
-                            },
-                          ),
+
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                        builder: (context) => TossPurchase(
+                                            productDetailDto, userName)));
+                              }),
                         ],
                       );
                     },
