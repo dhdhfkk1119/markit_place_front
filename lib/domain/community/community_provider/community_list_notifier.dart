@@ -1,77 +1,133 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import '../community_dto/community_list_dto.dart';
 import '../community_model/community_list.dart';
 import '../community_repository/community_list_repository.dart';
+import '../community_state/community_list_state.dart';
 
-class CommunityListNotifier extends ChangeNotifier {
-  final CommunityListRepository _communityListRepository =
-  CommunityListRepository();
+class CommunityListNotifier extends StateNotifier<CommunityListState> {
+  final CommunityListRepository _repository;
 
-  List<CommunityListDTO> _communityList = [];
+  CommunityListNotifier(this._repository) : super(CommunityListState());
 
-  bool _isLoading = false;
-  String? _errorMessage;
+  Future<void> getCommunityList({bool isRefresh = false}) async {
+    if (state.isLoading) return;
 
-  List<CommunityListDTO> get communityList => _communityList;
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-
-  Future<void> getCommunityList() async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+    state = state.copyWith(isLoading: true, errorMessage: null, keyword: "");
 
     try {
-      final response = await _communityListRepository.communityList();
-      final List<dynamic> list = response['response'];
-
-      _communityList = list
-          .map((json) => CommunityList.fromMap(json))
-          .map((model) => CommunityListDTO.fromJson(model))
-          .toList();
-      _isLoading = false;
-
-      if (kDebugMode) {
-        print("CommunityListNotifier: Repository에서 받은 최종 데이터");
-        print("데이터 개수: ${_communityList.length}");
-      }
+      final dtoList = await _repository.fetchCommunityList(page: 0);
+      final modelList = dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
+      state = state.copyWith(
+        communityList: modelList,
+        isLoading: false,
+        currentPage: 0,
+        isLastPage: modelList.isEmpty,
+      );
     } catch (e) {
-      _errorMessage = e.toString();
-      _isLoading = false;
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
       if (kDebugMode) {
         print("CommunityListNotifier: Error fetching list - $e");
       }
-    } finally {
-      notifyListeners();
     }
   }
 
-  // 좋아요 상태 및 개수 업데이트 메소드
+  Future<void> searchPosts(String keyword) async {
+    if (state.isLoading) return;
+
+    if (keyword.isEmpty) {
+      await getCommunityList();
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, errorMessage: null, keyword: keyword);
+
+    try {
+      final dtoList = await _repository.searchPosts(keyword, page: 0);
+      final modelList = dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
+
+      state = state.copyWith(
+        communityList: modelList,
+        isLoading: false,
+        currentPage: 0,
+        isLastPage: modelList.isEmpty,
+      );
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      if (kDebugMode) {
+        print("CommunityListNotifier: Error searching posts - $e");
+      }
+    }
+  }
+
+  Future<void> loadNextPage() async {
+    if (state.isLoading || state.isLastPage) return;
+
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final nextPage = state.currentPage + 1;
+      final dtoList = state.keyword.isNotEmpty
+          ? await _repository.searchPosts(state.keyword, page: nextPage)
+          : await _repository.fetchCommunityList(page: nextPage);
+      final modelList = dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
+
+      state = state.copyWith(
+        communityList: [...state.communityList, ...modelList],
+        isLoading: false,
+        currentPage: nextPage,
+        isLastPage: modelList.isEmpty || modelList.length < 10,
+      );
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString(), isLoading: false);
+      if (kDebugMode) {
+        print("CommunityListNotifier: Error loading next page - $e");
+      }
+    }
+  }
+
   void updatePostLikeStatus(int postId, bool newIsLiked, int newLikeCount) {
-    final index = _communityList.indexWhere((post) => post.id == postId);
+    final index = state.communityList.indexWhere((post) => post.id == postId);
     if (index != -1) {
-      _communityList[index] = _communityList[index].copyWith(
+      final updatedList = List<CommunityList>.from(state.communityList);
+      updatedList[index] = updatedList[index].copyWith(
         isLiked: newIsLiked,
         likeCount: newLikeCount,
       );
-      notifyListeners();
+      state = state.copyWith(communityList: updatedList);
     }
   }
 
-  // 조회수 업데이트 메소드
   void updatePostViewCount(int postId, int newViewCount) {
-    final index = _communityList.indexWhere((post) => post.id == postId);
+    final index = state.communityList.indexWhere((post) => post.id == postId);
     if (index != -1) {
-      _communityList[index] = _communityList[index].copyWith(
+      final updatedList = List<CommunityList>.from(state.communityList);
+      updatedList[index] = updatedList[index].copyWith(
         viewCount: newViewCount,
       );
-      notifyListeners();
+      state = state.copyWith(communityList: updatedList);
     }
+  }
+
+  void updatePostInList(CommunityListDTO updatedPostDTO) {
+    final updatedPostModel = CommunityList.fromModel(updatedPostDTO);
+    final index = state.communityList.indexWhere((post) => post.id == updatedPostModel.id);
+    if (index != -1) {
+      final updatedList = List<CommunityList>.from(state.communityList);
+      updatedList[index] = updatedPostModel;
+      state = state.copyWith(communityList: updatedList);
+    }
+  }
+
+  void removePostFromList(int postId) {
+    state = state.copyWith(
+      communityList: state.communityList.where((post) => post.id != postId).toList(),
+    );
   }
 }
 
-final communityListProvider = ChangeNotifierProvider<CommunityListNotifier>(
-        (ref) => CommunityListNotifier());
+final communityListProvider = StateNotifierProvider<CommunityListNotifier, CommunityListState>(
+        (ref) {
+      final repository = ref.read(communityListRepositoryProvider);
+      return CommunityListNotifier(repository);
+    });

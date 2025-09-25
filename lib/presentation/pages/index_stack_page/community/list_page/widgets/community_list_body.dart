@@ -24,17 +24,40 @@ class CommunityListBody extends ConsumerStatefulWidget {
 }
 
 class _CommunityListBodyState extends ConsumerState<CommunityListBody> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(communityListProvider.notifier).getCommunityList();
     });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+        ref.read(communityListProvider.notifier).loadNextPage();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    final notifier = ref.read(communityListProvider.notifier);
+    if (notifier.state.keyword.isNotEmpty) {
+      await notifier.searchPosts(notifier.state.keyword);
+    } else {
+      await notifier.getCommunityList();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.watch(communityListProvider);
+    final state = ref.watch(communityListProvider);
 
     return SafeArea(
       child: Stack(
@@ -47,32 +70,40 @@ class _CommunityListBodyState extends ConsumerState<CommunityListBody> {
                   duration: const Duration(milliseconds: 300),
                   child: widget.isFilterVisible
                       ? const SizedBox(
-                          key: ValueKey(true),
-                          width: 155,
-                          child: CommunityFilterList(),
-                        )
+                    key: ValueKey(true),
+                    width: 155,
+                    child: CommunityFilterList(),
+                  )
                       : const SizedBox.shrink(key: ValueKey(false)),
                 ),
                 Expanded(
-                  child: notifier.isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : notifier.errorMessage != null
-                          ? Center(child: Text('에러: ${notifier.errorMessage}'))
-                          : ListView.separated(
-                              itemCount: notifier.communityList.length,
-                              itemBuilder: (context, index) => Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: CommunityListItem(
-                                  notifier.communityList[index],
-                                  widget.isFilterVisible,
-                                ),
-                              ),
-                              separatorBuilder: (_, __) => const Divider(
-                                height: 32,
-                                thickness: 1,
-                                color: Colors.grey,
-                              ),
+                  child: state.errorMessage != null
+                      ? Center(child: Text('에러: ${state.errorMessage}'))
+                      : RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    child: ListView.separated(
+                      controller: _scrollController,
+                      itemCount: state.communityList.length + (state.isLoading && state.communityList.isNotEmpty ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index < state.communityList.length) {
+                          return Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: CommunityListItem(
+                              state.communityList[index],
+                              widget.isFilterVisible,
                             ),
+                          );
+                        } else {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                      },
+                      separatorBuilder: (_, __) => const Divider(
+                        height: 32,
+                        thickness: 1,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -95,10 +126,7 @@ class _CommunityListBodyState extends ConsumerState<CommunityListBody> {
                     ),
                   ),
                   onSubmitted: (value) {
-                    ref
-                        .read(communityListProvider.notifier)
-                        .getCommunityList(); // 검색 실행
-                    print("검색: $value");
+                    ref.read(communityListProvider.notifier).searchPosts(value);
                   },
                 ),
               ),

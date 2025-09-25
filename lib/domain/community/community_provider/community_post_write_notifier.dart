@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../_core/constants/custom_widget.dart';
 import '../community_dto/community_post_write_dto.dart';
 import '../community_repository/community_post_write_repositroy.dart';
+import 'community_list_notifier.dart';
 
 class CommunityPostWriteState {
   final bool isLoading;
@@ -36,8 +37,9 @@ class CommunityPostWriteState {
 class CommunityPostWriteNotifier
     extends StateNotifier<CommunityPostWriteState> {
   final CommunityPostWriteRepository _repository;
+  final Ref _ref;
 
-  CommunityPostWriteNotifier(this._repository)
+  CommunityPostWriteNotifier(this._repository, this._ref)
       : super(CommunityPostWriteState());
 
   Future<void> createPost(CommunityPostWriteDTO postData) async {
@@ -45,15 +47,10 @@ class CommunityPostWriteNotifier
     try {
       List<String> base64Images = await _convertImageToBase64(postData.images);
 
-      final newPostData = CommunityPostWriteDTO(
-        title: postData.title,
-        content: postData.content,
-        location: postData.location,
-        topicId: postData.topicId,
-        images: base64Images,
-      );
+      final newPostData = postData.copyWith(images: base64Images);
 
       await _repository.createPost(newPostData);
+      await _ref.read(communityListProvider.notifier).getCommunityList();
 
       state = state.copyWith(isLoading: false, isSuccess: true);
       CustomWidget.showToast("게시글이 성공적으로 작성되었습니다");
@@ -71,6 +68,10 @@ class CommunityPostWriteNotifier
       final updatedPostData = postData.copyWith(images: base64Images);
 
       await _repository.updatePost(postId, updatedPostData);
+
+      _ref
+          .read(communityListProvider.notifier).getCommunityList();
+
       state = state.copyWith(isLoading: false, isSuccess: true);
       CustomWidget.showToast("게시글이 성공적으로 수정되었습니다");
     } catch (e) {
@@ -84,6 +85,8 @@ class CommunityPostWriteNotifier
         state.copyWith(isLoading: true, errorMessage: null, isSuccess: false);
     try {
       await _repository.deletePost(postId);
+
+      _ref.read(communityListProvider.notifier).removePostFromList(postId);
 
       state = state.copyWith(isLoading: false, isSuccess: true);
       CustomWidget.showToast("게시글이 성공적으로 삭제되었습니다.");
@@ -112,10 +115,15 @@ class CommunityPostWriteNotifier
   }
 }
 
+final communityPostWriteRepositoryProvider =
+    Provider<CommunityPostWriteRepository>((ref) {
+  final dio = Dio();
+  return CommunityPostWriteRepository(dio);
+});
+
 final communityPostWriteProvider =
     StateNotifierProvider<CommunityPostWriteNotifier, CommunityPostWriteState>(
         (ref) {
-  final dio = Dio();
-  final repository = CommunityPostWriteRepository(dio);
-  return CommunityPostWriteNotifier(repository);
+  final repository = ref.read(communityPostWriteRepositoryProvider);
+  return CommunityPostWriteNotifier(repository, ref);
 });
