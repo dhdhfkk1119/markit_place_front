@@ -1,21 +1,18 @@
 // lib/domain/members/dtos/my_profile_response_data_dto.dart
 import '../models/session_user.dart';
 
-// GET /api/members/me API의 'response' 필드 내부 상세 데이터를 위한 DTO
 class MyProfileResponseDataDto {
   final int id;
   final String? loginId;
   final String? email;
-  final String?
-      name; // 서버에서 'nickname'으로 올 경우, 이 필드에 매핑하거나 SessionUser에 nickname 필드 추가 고려
-  final String role;
-  final String? status;
+  final String? name;
+  final String role; // String? 에서 String 으로 변경
+  final String status;
+  final String? provider; // <<< provider 필드 추가
   final String? profileImageBase64;
   final String? profileImageUrl;
-
-  // 추가된 필드 (백엔드 /api/members/me 응답에 이 필드들이 포함되어야 함)
   final int? mannerScore;
-  final int? retransactionRate; // API 응답 필드명 확인 필요 (예: reTransactionRate)
+  final int? retransactionRate;
   final String? userCode;
 
   MyProfileResponseDataDto({
@@ -23,8 +20,9 @@ class MyProfileResponseDataDto {
     this.loginId,
     this.email,
     this.name,
-    required this.role,
-    this.status,
+    required this.role, // required 추가
+    required this.status,
+    this.provider, // <<< 생성자에 provider 추가
     this.profileImageBase64,
     this.profileImageUrl,
     this.mannerScore,
@@ -37,37 +35,30 @@ class MyProfileResponseDataDto {
       id: json['id'] as int,
       loginId: json['loginId'] as String?,
       email: json['email'] as String?,
-      name: json['name'] as String? ??
-          json['nickname'] as String?, // 'nickname'도 고려
-      role: json['role'] as String,
-      status: json['status'] as String?,
+      name: json['name'] as String?,
+      role: json['role'] as String, // String? 에서 String 으로 변경
+      status: json['status'] as String,
+      provider: json['provider'] as String?, // <<< json에서 provider 매핑
       profileImageBase64: json['profileImageBase64'] as String?,
       profileImageUrl: json['profileImageUrl'] as String?,
-      // 추가된 필드 파싱 (백엔드 응답 키와 일치해야 함)
       mannerScore: json['mannerScore'] as int?,
       retransactionRate: json['retransactionRate'] as int? ??
-          json['reTransactionRate'] as int?, // 실제 API 응답 키 확인
+          json['reTransactionRate'] as int?,
       userCode: json['userCode'] as String?,
     );
   }
 
-  // 이 DTO를 SessionUser 모델로 변환하는 메소드
   SessionUser toSessionUser() {
-    String? finalProfileImageUrl;
-    if (profileImageBase64 != null && profileImageBase64!.isNotEmpty) {
-      finalProfileImageUrl = 'data:image/png;base64,$profileImageBase64';
-    } else if (profileImageUrl != null && profileImageUrl!.isNotEmpty) {
-      finalProfileImageUrl = profileImageUrl;
-    }
-
+    // 파라미터 제거
     return SessionUser(
       memberId: id,
       loginId: loginId,
       email: email,
       name: name,
-      role: role,
-      profileImageUrl: finalProfileImageUrl,
-      // 추가된 필드 매핑
+      role: this.role, // DTO의 role 직접 사용
+      provider: provider, // <<< SessionUser 생성 시 provider 전달
+      profileImageUrl: profileImageUrl,
+      profileImageBase64: profileImageBase64,
       mannerScore: mannerScore,
       retransactionRate: retransactionRate,
       userCode: userCode,

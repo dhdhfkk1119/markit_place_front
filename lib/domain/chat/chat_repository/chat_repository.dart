@@ -76,6 +76,8 @@ class ChatRepository {
     required int receiverId,
     required String message,
     required int itemId,
+    String? messageType,
+    List<String>? images,
   }) async {
     int currentRoomId = roomId ??
         await ChatRoomRepository.getOrCreateRoom(receiverId, itemId, message);
@@ -85,6 +87,8 @@ class ChatRepository {
       "receiveId": receiverId,
       "message": message,
       "itemId": itemId,
+      "messageType": messageType ?? "TEXT",
+      if (images != null) "images": images,
     };
 
     _client?.send(

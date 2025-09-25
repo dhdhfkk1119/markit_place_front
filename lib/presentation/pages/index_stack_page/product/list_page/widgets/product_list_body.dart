@@ -139,7 +139,7 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
                       ),
                       suffixIcon: InkWell(
                         onTap: () {
-                          productListNotifier.searchProducts(
+                          productListNotifier.updateSearch(
                             ProductSearchDTO(
                                 keyword: widget.searchController.text),
                           );

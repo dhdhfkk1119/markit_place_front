@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../community_dto/community_report_dto.dart';
+import '../../community_report/report_dto/community_report_dto.dart';
 import '../community_dto/community_report_process_dto.dart';
 
 class CommunityReportProcessNotifier

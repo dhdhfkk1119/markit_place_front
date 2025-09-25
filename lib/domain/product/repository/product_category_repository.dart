@@ -1,13 +1,11 @@
 import '../../../_core/utils/my_http.dart';
 
-String Url = baseUrl;
-
 class ProductCategoryRepository {
   // 1. 메서드의 반환 타입을 Map<String, dynamic>에서 List<dynamic>으로 변경
   Future<List<dynamic>> productCategoryList() async {
     try {
       final response = await dio.get(
-        baseUrl + '/item-categories',
+        '/item-categories',
       );
       print('아이템 카테고리 정보 : ${response.statusCode}');
       print('아이템 카테고리 데이터: ${response.data}');

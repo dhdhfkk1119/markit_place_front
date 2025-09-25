@@ -1,19 +1,22 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'profile_dto.dart';
-import 'profile_repository.dart';
+import 'dart:io'; // File 사용은 이제 직접적으로 하지 않지만, 혹시 모를 다른 부분 위해 유지 (제거 가능성 있음)
 
-// 프로필 수정 상태를 관리하는 State 클래스
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../members/dtos/profile_update_request_dto.dart';
+import '../members/models/session_user.dart';
+import './profile_provider.dart';
+import './profile_repository.dart';
+
 class ProfileEditState {
   final bool isLoading;
   final String? error;
-  final ProfileEditResponseDto? response;
+  final SessionUser? response;
   ProfileEditState({this.isLoading = false, this.error, this.response});
 
-  // 상태 복사 및 변경 메서드
   ProfileEditState copyWith({
     bool? isLoading,
     String? error,
-    ProfileEditResponseDto? response,
+    SessionUser? response,
   }) =>
       ProfileEditState(
         isLoading: isLoading ?? this.isLoading,
@@ -22,24 +25,32 @@ class ProfileEditState {
       );
 }
 
-// 프로필 수정 비즈니스 로직을 담당하는 ViewModel
 class ProfileEditViewModel extends StateNotifier<ProfileEditState> {
   final ProfileRepository repository;
-  final String accessToken;
-  ProfileEditViewModel({required this.repository, required this.accessToken})
-      : super(ProfileEditState());
 
-  // 프로필 수정 API 호출 및 상태 갱신
-  Future<void> editProfile({String? name, String? profileImage}) async {
+  ProfileEditViewModel({required this.repository}) : super(ProfileEditState());
+
+  // 파라미터 변경: profileImageFile -> profileImageBase64
+  Future<void> editProfile({String? name, String? profileImageBase64}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final dto = ProfileEditRequestDto(name: name, profileImage: profileImage);
-      final res =
-          await repository.editProfile(accessToken: accessToken, dto: dto);
+      // DTO 생성 시 profileImageBase64를 profileImage 필드에 전달 (DTO 수정 필요)
+      final dto = ProfileUpdateRequestDto(
+        name: name,
+        profileImage:
+            profileImageBase64, // DTO의 profileImage 필드가 Base64 문자열을 받도록 수정 예정
+        // profileImageFile: null, // 이 필드는 DTO에서 제거되거나 사용되지 않음
+      );
+      final res = await repository.updateMyProfile(dto);
       state = state.copyWith(isLoading: false, response: res);
     } catch (e) {
-      // 서버 에러 메시지 원문을 최대한 출력
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 }
+
+final profileEditViewModelProvider =
+    StateNotifierProvider<ProfileEditViewModel, ProfileEditState>((ref) {
+  final repo = ref.watch(ProfileRepositoryProvider);
+  return ProfileEditViewModel(repository: repo);
+});

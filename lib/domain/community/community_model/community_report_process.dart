@@ -1,4 +1,4 @@
-import '../community_dto/community_report_dto.dart';
+import '../../community_report/report_dto/community_report_dto.dart';
 
 class CommunityReportProcessDTO {
   final int? processId;
