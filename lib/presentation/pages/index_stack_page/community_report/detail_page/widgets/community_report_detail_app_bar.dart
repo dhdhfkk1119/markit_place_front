@@ -16,27 +16,25 @@ class CommunityReportDetailAppBar extends ConsumerWidget
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        onPressed: onBack ?? () => Navigator.of(context).maybePop(),
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-      ),
-      title: const Text(
-        '신고 내역',
-        style: TextStyle(
-            fontSize: 22, fontWeight: FontWeight.w800, color: Colors.black),
-      ),
-      centerTitle: true,
-      actions: [
-        CustomWidget.buildIcon(
-          const Icon(Icons.refresh, color: Colors.black),
-          onPressed: () async {
-            ref.invalidate(communityReportDetailProvider);
-          },
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: CustomWidget.buildIcon(
+          const Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
-      ],
+        title: CustomWidget.buildTitle('신고 내역'),
+        centerTitle: true,
+        actions: [
+          CustomWidget.buildIcon(
+            const Icon(Icons.refresh, color: Colors.black),
+            onPressed: () async {
+              ref.invalidate(communityReportDetailProvider);
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../domain/community/community_dto/community_comment_like_dot.dart';
 import '../../../../../../domain/community/community_model/community_comment.dart';
 import '../../../../../../domain/community/community_provider/community_comment_like_notifier.dart';
 import '../../../../../../domain/community/community_provider/community_comment_notifier.dart';
+import '../../../../../../domain/community/community_provider/community_detail_notifier.dart';
 
 class CommunityDetailReply extends ConsumerWidget {
   final CommunityComment comment;
-  const CommunityDetailReply({required this.comment, super.key});
+  final postId;
+
+  const CommunityDetailReply(
+      {required this.comment, required this.postId, super.key});
 
   String _formatDateTime(String dateTimeString, bool isModified) {
     return dateTimeString;
@@ -52,7 +55,8 @@ class CommunityDetailReply extends ConsumerWidget {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                 ),
-                builder: (context) => buildReplyPopUp(context, comment, ref),
+                builder: (context) =>
+                    buildReplyPopUp(context, comment, ref, postId),
               );
             },
             child: const Icon(Icons.more_vert),
@@ -138,7 +142,7 @@ class CommunityDetailReply extends ConsumerWidget {
   }
 
   static Widget buildReplyPopUp(
-      BuildContext context, CommunityComment comment, WidgetRef ref) {
+      BuildContext context, CommunityComment comment, WidgetRef ref, postId) {
     final notifier = ref.read(communityCommentProvider.notifier);
 
     return Column(
@@ -167,16 +171,20 @@ class CommunityDetailReply extends ConsumerWidget {
                     child: const Text("취소"),
                   ),
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
+                    onPressed: () async {
+                      await notifier.updateComment(
+                          commentId: comment.id, content: controller.text);
+                      await ref
+                          .read(communityDetailProvider(postId).notifier)
+                          .getCommunityDetailInfo();
+
+                      Navigator.pop(context, true);
+                    },
                     child: const Text("수정"),
                   ),
                 ],
               ),
             );
-            if (updated == true) {
-              await notifier.updateComment(
-                  commentId: comment.id, content: controller.text);
-            }
           },
         ),
         ListTile(
@@ -195,7 +203,14 @@ class CommunityDetailReply extends ConsumerWidget {
                     child: const Text("취소"),
                   ),
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
+                    onPressed: () async {
+                      await notifier.deleteComment(comment.id);
+                      await ref
+                          .read(communityDetailProvider(postId).notifier)
+                          .getCommunityDetailInfo();
+
+                      Navigator.pop(context, true);
+                    },
                     style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.red),
                     child: const Text("삭제"),
@@ -203,10 +218,6 @@ class CommunityDetailReply extends ConsumerWidget {
                 ],
               ),
             );
-
-            if (deleted == true) {
-              await notifier.deleteComment(comment.id);
-            }
           },
         ),
         ListTile(
