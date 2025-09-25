@@ -268,7 +268,7 @@ class _TossPurchaseState extends State<TossPurchase> {
                               await _checkConfirm(response.success!);
 
                           if (checkResponse["success"]) {
-                            Navigator.of(context).pushNamed("/");
+                            Navigator.of(context).pop();
                           }
                         }
                       },
@@ -325,8 +325,8 @@ class _TossPurchaseState extends State<TossPurchase> {
 
   Future<Map<String, dynamic>> _checkConfirm(Success success) async {
     final response = await dio.post("$baseUrl/toss/confirm/payment",
-        data: json.encode(PurchaseDto.fromMap(success)));
-    print(response);
+        data: json.encode(PurchaseDto.toMap(success)));
+    print("최종 결과 : $response");
 
     if (response.statusCode == 200) {
       return {"success": true};
