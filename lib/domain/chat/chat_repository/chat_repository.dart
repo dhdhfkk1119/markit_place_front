@@ -34,21 +34,29 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig(
-        url: Url + '/ws-stomp',
+        url: '/ws-stomp',
         useSockJS: true,
         onConnect: (StompFrame frame) {
           print("[ChatRepository] STOMP connected successfully!");
-          _connectCompleter!.complete(); // 연결 완료를 알립니다.
+
+          if (!_connectCompleter!.isCompleted) {
+            _connectCompleter!.complete(); // 연결 완료를 알립니다.
+          }
+          print("콜백 이전, 오류 안터짐");
+
           // 연결 성공 후, 특정 방의 메시지 구독
           _client!.subscribe(
             destination: '/topic/chat/room/$roomId',
             callback: (frame) {
+              print("콜백 내부");
               if (frame.body != null) {
                 final data = jsonDecode(frame.body!);
                 onMessageReceived(data);
               }
             },
           );
+
+          print("콜백 이후");
         },
         beforeConnect: () async {
           print("[ChatRepository] Attempting to connect...");
@@ -90,6 +98,9 @@ class ChatRepository {
       "messageType": messageType ?? "TEXT",
       if (images != null) "images": images,
     };
+
+    print(payload);
+    print(payload["images"]);
 
     _client?.send(
       destination: "/app/chat/sendMessage",
