@@ -34,7 +34,7 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig(
-        url: '/ws-stomp',
+        url: '$baseUrl/ws-stomp',
         useSockJS: true,
         onConnect: (StompFrame frame) {
           print("[ChatRepository] STOMP connected successfully!");
@@ -87,8 +87,29 @@ class ChatRepository {
     String? messageType,
     List<String>? images,
   }) async {
+    // 연결이 안 됐으면 connect() 먼저 보장
+    if (roomId != null && !isConnected) {
+      print(
+          "[ChatRepository] sendMessage: Known RoomId $roomId, but not connected. Reconnecting...");
+      await connect(
+        roomId: roomId,
+        onMessageReceived: (_) {},
+      );
+    }
+
     int currentRoomId = roomId ??
         await ChatRoomRepository.getOrCreateRoom(receiverId, itemId, message);
+
+    // 3. 첫 메시지 후 새로운 RoomId가 반환되면, 해당 방으로 연결하고 구독합니다.
+    if (roomId == null && currentRoomId != 0 && !isConnected) {
+      print(
+          "[ChatRepository] sendMessage: New RoomId $currentRoomId established. Connecting...");
+      // connect()를 호출하여 새로운 방 ID로 STOMP 구독을 시작합니다.
+      await connect(
+        roomId: currentRoomId,
+        onMessageReceived: (_) {},
+      );
+    }
 
     final payload = {
       "roomId": currentRoomId,
@@ -100,7 +121,6 @@ class ChatRepository {
     };
 
     print(payload);
-    print(payload["images"]);
 
     _client?.send(
       destination: "/app/chat/sendMessage",

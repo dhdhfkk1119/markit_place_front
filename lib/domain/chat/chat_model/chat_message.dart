@@ -32,7 +32,9 @@ class ChatMessageModel {
       messageId: json['messageId'],
       roomId: json['roomId'],
       sender: User(
-        id: json['senderId'],
+        id: json['senderId'] is int
+            ? json['senderId']
+            : int.tryParse(json['senderId'].toString()) ?? 0,
         loginId: json['senderName'], // 서버에서 loginId 대신 name만 내려줄 수도 있으니 조정 필요
         name: json['senderName'],
         status: MemberStatus.ACTIVE, // 서버 응답에 상태값이 없으면 기본 ACTIVE 처리
