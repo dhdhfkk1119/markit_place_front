@@ -1,3 +1,4 @@
+import '../../../presentation/pages/index_stack_page/report/detail_page/report_detail_page.dart';
 import '../report_model/product_report_model.dart';
 
 class ProductReportDto {
@@ -28,7 +29,7 @@ class ProductReportDto {
       // status: ItemReportStatus.values
       //    .firstWhere((status) => status.name == model.status),
       createdAt: model.createdAt,
-      thumbnailUrl: model.thumbnailUrl,
+      thumbnailUrl: model.itemThumbnailUrl,
     );
   }
 
@@ -38,6 +39,8 @@ class ProductReportDto {
     String? reason,
     ItemReportStatus? status,
     String? createdAt,
+    String? thumbnailUrl,
+    bool? hasNext,
   }) {
     return ProductReportDto(
       id: id ?? this.id,
@@ -45,6 +48,8 @@ class ProductReportDto {
       reason: reason ?? this.reason,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      hasNext: hasNext ?? this.hasNext,
     );
   }
 }

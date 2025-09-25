@@ -88,20 +88,34 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
                                     TextStyle(fontSize: 16, color: Colors.grey),
                               ),
                             )
-                          : ListView.separated(
+                          : ListView.builder(
+                              // ListView.separated 대신 builder 사용
                               controller: _scrollController,
                               itemCount: productList.length +
                                   (productListState.isLoading ? 1 : 0),
                               itemBuilder: (context, index) {
                                 if (index < productList.length) {
                                   final product = productList[index];
-                                  return Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: ProductListItem(
-                                        product, widget.isFilterVisible),
+                                  if (product.itemReportStatus ==
+                                      "BAD_RESOLVED") {
+                                    return const SizedBox.shrink(); // 빈 공간 반환
+                                  }
+                                  return Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ProductListItem(
+                                            product, widget.isFilterVisible),
+                                      ),
+                                      const Divider(
+                                        height: 32,
+                                        thickness: 1,
+                                        color: Colors.grey,
+                                      ),
+                                    ],
                                   );
                                 } else {
-                                  // 마지막에 로딩 인디케이터 표시 (hasNext가 true일 때만)
+                                  // 마지막에 로딩 인디케이터 표시
                                   return const Padding(
                                     padding: EdgeInsets.symmetric(vertical: 16),
                                     child: Center(
@@ -109,11 +123,6 @@ class _ProductListBodyState extends ConsumerState<ProductListBody> {
                                   );
                                 }
                               },
-                              separatorBuilder: (_, __) => const Divider(
-                                height: 32,
-                                thickness: 1,
-                                color: Colors.grey,
-                              ),
                             ),
                     ),
                   ),
