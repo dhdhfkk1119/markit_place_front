@@ -26,7 +26,9 @@ class _CommunityDetailPageDetailPageState
   void initState() {
     super.initState();
     _commentController = TextEditingController();
-    ref.read(communityDetailProvider(widget.postId).notifier).getCommunityDetailInfo();
+    Future.microtask(() {
+      ref.read(communityDetailProvider(widget.postId).notifier).getCommunityDetailInfo();
+    });
   }
 
   @override
