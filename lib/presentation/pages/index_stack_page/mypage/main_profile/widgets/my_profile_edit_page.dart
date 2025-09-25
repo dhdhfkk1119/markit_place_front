@@ -105,7 +105,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
         ),
       );
       if (result == true) {
-        Navigator.pop(context); // 바디로 이동
+        Navigator.pop(context);
       }
       // 취소면 아무 동작 없음(에딧에 머무름)
       return;
