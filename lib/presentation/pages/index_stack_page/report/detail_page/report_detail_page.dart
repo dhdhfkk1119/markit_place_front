@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../domain/report/report_dto/product_report_dto.dart';
 import '../../../../../domain/report/report_notifier/product_report_detail_notifier.dart';
 import 'widgets/report_detail_app_bar.dart';
 import 'widgets/report_detail_body.dart';
 
 class ReportDetailPage extends ConsumerWidget {
-  const ReportDetailPage({super.key, required this.reportId});
   final int reportId;
+  const ReportDetailPage({super.key, required this.reportId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,8 +32,10 @@ class ReportDetailPage extends ConsumerWidget {
         ),
       ),
       data: (dto) => Scaffold(
-        appBar:
-            ReportDetailAppBar(onBack: () => Navigator.of(context).maybePop()),
+        appBar: ReportDetailAppBar(
+          onBack: () => Navigator.of(context).maybePop(),
+          reportId: reportId,
+        ),
         body: ReportDetailBody(
           dto: dto,
           onRefresh: onRefresh,

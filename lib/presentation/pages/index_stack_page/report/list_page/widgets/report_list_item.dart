@@ -26,8 +26,10 @@ class ReportListItem extends StatelessWidget {
         return '보류중';
       case 'IN_PROGRESS':
         return '처리중';
-      case 'RESOLVED':
+      case 'BAD_RESOLVED':
         return '제재완료';
+      case 'RESOLVED':
+        return '기각';
       default:
         return s;
     }

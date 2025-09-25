@@ -14,6 +14,7 @@ class ProductListDto {
   final int itemCategoryId;
   final List<String> tags;
   final String? status;
+  final String? itemReportStatus;
 
   ProductListDto({
     required this.id,
@@ -28,6 +29,7 @@ class ProductListDto {
     required this.itemCategoryId,
     required this.tags,
     this.status,
+    this.itemReportStatus,
   });
 
   factory ProductListDto.fromModel(ProductList model) {
@@ -44,6 +46,7 @@ class ProductListDto {
       itemCategoryId: model.itemCategoryId,
       tags: model.tags,
       status: model.status,
+      itemReportStatus: model.itemReportStatus,
     );
   }
 
@@ -60,6 +63,7 @@ class ProductListDto {
     int? itemCategoryId,
     List<String>? tags,
     String? status,
+    String? itemReportStatus,
   }) {
     return ProductListDto(
       id: id ?? this.id,
@@ -74,6 +78,7 @@ class ProductListDto {
       itemCategoryId: itemCategoryId ?? this.itemCategoryId,
       tags: tags ?? this.tags,
       status: status ?? this.status,
+      itemReportStatus: itemReportStatus ?? this.itemReportStatus,
     );
   }
 }
