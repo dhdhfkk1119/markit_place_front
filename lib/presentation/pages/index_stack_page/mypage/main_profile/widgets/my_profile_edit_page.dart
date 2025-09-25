@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data'; // Uint8List 사용을 위해 추가
 
@@ -8,7 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../../../_core/constants/assets.dart';
-import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../_core/utils/error_utils.dart'; // extractErrorMessage
 import '../../../../../../domain/members/models/session_user.dart';
@@ -31,7 +31,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
 
   File? _selectedImageFile;
   ImageProvider?
-  _finalImageProvider; // UI 표시용 (FileImage, NetworkImage, MemoryImage 등)
+      _finalImageProvider; // UI 표시용 (FileImage, NetworkImage, MemoryImage 등)
   Widget? _profileAvatarWidget; // 최종적으로 CircleAvatar에 들어갈 위젯
 
   String? _originalName;
@@ -58,7 +58,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     final nameToSet = sessionUser.name ?? '';
     final provider = sessionUser.provider?.toUpperCase();
     String?
-    imageSourceToSet; // Network URL or Base64 string for initial display
+        imageSourceToSet; // Network URL or Base64 string for initial display
 
     if (provider == "GOOGLE" || provider == "NAVER") {
       imageSourceToSet = sessionUser.profileImageUrl;
@@ -141,8 +141,17 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
             imageSource.contains('https://')) {
           // 잘못된 형식, 기본 아이콘으로
         } else {
-          final Uint8List? imageBytes =
-          base64ToBytes(imageSource); // Prefix 제거 포함
+          Uint8List? imageBytes;
+          try {
+            String toDecode = imageSource;
+            if (imageSource.contains(',')) {
+              toDecode = imageSource.split(',').last;
+            }
+            imageBytes = base64Decode(toDecode);
+          } catch (e) {
+            _logger.e('Failed to decode base64 string: $e');
+            imageBytes = null;
+          }
           if (imageBytes != null) {
             newImageProvider = MemoryImage(imageBytes);
           }
@@ -199,7 +208,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     _isPickingImage = true;
     try {
       final XFile? pickedXFile =
-      await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600);
+          await _picker.pickImage(source: ImageSource.gallery, maxWidth: 600);
       if (pickedXFile != null) {
         final file = File(pickedXFile.path);
         final bytes = await file.readAsBytes();
@@ -223,7 +232,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content:
-              Text("이미지를 선택하는 중 오류가 발생했습니다: ${extractErrorMessage(e)}")),
+                  Text("이미지를 선택하는 중 오류가 발생했습니다: ${extractErrorMessage(e)}")),
         );
       }
     } finally {
@@ -283,7 +292,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     if (_selectedImageFile != null) {
       try {
         final bytes = await _selectedImageFile!.readAsBytes();
-        base64ImageForServer = bytesToBase64(bytes); // Prefix 없는 순수 Base64
+        base64ImageForServer = base64Encode(bytes); // Prefix 없는 순수 Base64
       } catch (e) {
         _logger.e("Error reading/encoding file for Base64: $e");
         if (mounted) {
@@ -408,7 +417,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     }
 
     final profileEditVMisLoading =
-    ref.watch(profileEditViewModelProvider.select((s) => s.isLoading));
+        ref.watch(profileEditViewModelProvider.select((s) => s.isLoading));
     final viewModel = ref.read(profileEditViewModelProvider.notifier);
     final bool currentOperationInProgress =
         _isSavingProfile || profileEditVMisLoading;
@@ -435,7 +444,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
             onPressed: _isSavingProfile ? null : () => Navigator.pop(context),
           ),
           title:
-          CustomWidget.buildTitle("프로필 수정", size: 18, color: Colors.black),
+              CustomWidget.buildTitle("프로필 수정", size: 18, color: Colors.black),
           centerTitle: true,
           actions: [
             TextButton(
@@ -499,19 +508,19 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                               !isSocialUser, // 소셜 유저면 비활성화
                           decoration: InputDecoration(
                             hintText:
-                            isSocialUser ? "소셜 프로필 닉네임입니다" : "닉네임을 입력하세요",
+                                isSocialUser ? "소셜 프로필 닉네임입니다" : "닉네임을 입력하세요",
                             hintStyle: TextStyle(
                                 color: secondaryTextColor,
                                 fontFamily: Assets.Fonts.cookieRun),
                             border: OutlineInputBorder(
                                 borderRadius:
-                                BorderRadius.circular(small + xxSmall),
+                                    BorderRadius.circular(small + xxSmall),
                                 borderSide: BorderSide(color: accentColor)),
                             focusedBorder: OutlineInputBorder(
                                 borderRadius:
-                                BorderRadius.circular(small + xxSmall),
+                                    BorderRadius.circular(small + xxSmall),
                                 borderSide:
-                                BorderSide(color: primaryColor, width: 2)),
+                                    BorderSide(color: primaryColor, width: 2)),
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: medium, vertical: small + xSmall),
                             fillColor: isSocialUser
