@@ -8,23 +8,25 @@ import '../../../../../domain/community/community_provider/community_detail_noti
 import '../../../../../domain/community/community_provider/community_comment_notifier.dart';
 import 'widgets/community_detail_body.dart';
 
-class CommunityDetailPageDetailPage extends ConsumerStatefulWidget {
+
+class CommunityDetailPage extends ConsumerStatefulWidget {
   final int postId;
-  const CommunityDetailPageDetailPage({required this.postId, super.key});
+  const CommunityDetailPage({required this.postId, super.key});
 
   @override
-  ConsumerState<CommunityDetailPageDetailPage> createState() =>
+  ConsumerState<CommunityDetailPage> createState() =>
       _CommunityDetailPageDetailPageState();
 }
 
 class _CommunityDetailPageDetailPageState
-    extends ConsumerState<CommunityDetailPageDetailPage> {
+    extends ConsumerState<CommunityDetailPage> {
   late TextEditingController _commentController;
 
   @override
   void initState() {
     super.initState();
     _commentController = TextEditingController();
+    ref.read(communityDetailProvider(widget.postId).notifier).getCommunityDetailInfo();
   }
 
   @override
@@ -33,24 +35,27 @@ class _CommunityDetailPageDetailPageState
     super.dispose();
   }
 
+
+  void _refreshDetailPage() {
+    ref.read(communityDetailProvider(widget.postId).notifier).getCommunityDetailInfo();
+  }
+
   @override
   Widget build(BuildContext context) {
     final communityDetailWatch =
-        ref.watch(communityDetailProvider(widget.postId));
+    ref.watch(communityDetailProvider(widget.postId));
     final CommunityDetailDto? dto = communityDetailWatch.communityDetail;
     final bool isLoadingDetail = communityDetailWatch.isLoading;
     final String? detailErrorMessage = communityDetailWatch.errorMessage;
 
     ref.listen<CommunityCommentState>(communityCommentProvider,
-        (previous, next) {
-      if (next.addSuccess) {
-        _commentController.clear();
-        ref
-            .read(communityDetailProvider(widget.postId).notifier)
-            .getCommunityDetailInfo();
-        ref.read(communityCommentProvider.notifier).resetAddSuccess();
-      }
-    });
+            (previous, next) {
+          if (next.addSuccess) {
+            _commentController.clear();
+            _refreshDetailPage();
+            ref.read(communityCommentProvider.notifier).resetAddSuccess();
+          }
+        });
 
     if (isLoadingDetail && dto == null) {
       return const Scaffold(
@@ -73,9 +78,7 @@ class _CommunityDetailPageDetailPageState
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () => ref
-                      .read(communityDetailProvider(widget.postId).notifier)
-                      .getCommunityDetailInfo(),
+                  onPressed: _refreshDetailPage,
                   child: const Text("다시 시도"),
                 )
               ],
@@ -94,7 +97,7 @@ class _CommunityDetailPageDetailPageState
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading:
-            _buildIcon(context, const Icon(CupertinoIcons.back), onPressed: () {
+        _buildIcon(context, const Icon(CupertinoIcons.back), onPressed: () {
           Navigator.pop(context);
         }),
         title: _buildTitle(context, "커뮤니티"),
@@ -104,7 +107,7 @@ class _CommunityDetailPageDetailPageState
       ),
       body: CommunityDetailBody(postId: widget.postId),
       bottomSheet:
-          _buildChatInput(context, ref, widget.postId, _commentController),
+      _buildChatInput(context, ref, widget.postId, _commentController),
     );
   }
 
@@ -155,8 +158,8 @@ class _CommunityDetailPageDetailPageState
                           borderSide: BorderSide.none,
                         ),
                         fillColor:
-                            Theme.of(context).inputDecorationTheme.fillColor ??
-                                Colors.grey[200],
+                        Theme.of(context).inputDecorationTheme.fillColor ??
+                            Colors.grey[200],
                         filled: true,
                         contentPadding: const EdgeInsets.symmetric(
                             vertical: 10.0, horizontal: 16.0),
@@ -168,9 +171,9 @@ class _CommunityDetailPageDetailPageState
                           ref
                               .read(communityCommentProvider.notifier)
                               .addComment(
-                                postId: currentPostId,
-                                content: value,
-                              );
+                            postId: currentPostId,
+                            content: value,
+                          );
                         }
                       },
                     ),
@@ -178,25 +181,25 @@ class _CommunityDetailPageDetailPageState
                   const SizedBox(width: 8),
                   isAddingComment
                       ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2.0))
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2.0))
                       : IconButton(
-                          icon: Icon(Icons.send,
-                              color: Theme.of(context).colorScheme.primary),
-                          onPressed: () {
-                            final commentText = controller.text;
-                            if (commentText.isNotEmpty) {
-                              FocusScope.of(context).unfocus();
-                              ref
-                                  .read(communityCommentProvider.notifier)
-                                  .addComment(
-                                    postId: currentPostId,
-                                    content: commentText,
-                                  );
-                            }
-                          },
-                        ),
+                    icon: Icon(Icons.send,
+                        color: Theme.of(context).colorScheme.primary),
+                    onPressed: () {
+                      final commentText = controller.text;
+                      if (commentText.isNotEmpty) {
+                        FocusScope.of(context).unfocus();
+                        ref
+                            .read(communityCommentProvider.notifier)
+                            .addComment(
+                          postId: currentPostId,
+                          content: commentText,
+                        );
+                      }
+                    },
+                  ),
                 ],
               ),
             ],
@@ -223,7 +226,9 @@ class _CommunityDetailPageDetailPageState
             builder: (bContext) {
               return CustomPopUp.buildCommunityAppBarPopUp(bContext, dto, ref);
             },
-          );
+          ).then((_) {
+            _refreshDetailPage();
+          });
         }),
       ],
     );

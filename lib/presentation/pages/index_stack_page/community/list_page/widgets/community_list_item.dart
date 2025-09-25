@@ -2,14 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_base64_bytes.dart';
-import '../../../../../../domain/community/community_dto/community_list_dto.dart';
 import '../../../../../../domain/community/community_model/community_list.dart';
-
-import '../../../../../../domain/product/dtos/product_list_dtos.dart';
 import '../../detail_page/community_detail_page.dart';
 
 class CommunityListItem extends StatefulWidget {
-  final CommunityListDTO list;
+  final CommunityList list;
   final bool isFilterVisible;
 
   const CommunityListItem(this.list, this.isFilterVisible, {super.key});
@@ -26,10 +23,9 @@ class _CommunityListItemState extends State<CommunityListItem> {
         print("해당 게시글의 ID: ${widget.list.id}");
         Navigator.push(
           context,
-          // 2. MaterialPageRoute를 사용하여 새로운 페이지(DetailPage)를 정의합니다.
           MaterialPageRoute(
-            builder: (context) => CommunityDetailPageDetailPage(
-                postId: widget.list.id), // DetailPage()는 상세 페이지 위젯입니다.
+            builder: (context) => CommunityDetailPage(
+                postId: widget.list.id),
           ),
         );
       },
@@ -43,16 +39,8 @@ class _CommunityListItemState extends State<CommunityListItem> {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Column(
-                  children: [
-                    _buildCommunityImage(widget.list),
-                  ],
-                ),
-                Column(
-                  children: [
-                    _buildBottomIcon(),
-                  ],
-                )
+                _buildCommunityImage(widget.list),
+                _buildBottomIcon(),
               ],
             )
           ],
@@ -61,18 +49,19 @@ class _CommunityListItemState extends State<CommunityListItem> {
     );
   }
 
-  // 게시글에 대한 대표 이미지를 만드는 함수
-  Widget _buildCommunityImage(CommunityListDTO list) {
-    final imageBytes = base64ToBytes(list.thumbnail);
+  Widget _buildCommunityImage(CommunityList list) {
+    final imageBytes = list.thumbnail != null ? base64ToBytes(list.thumbnail!) : null;
 
     if (imageBytes == null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Image.asset(
-          Assets.Images.community2,
+          "null",
+          // 위의 이미지를 샘플 말고 base64로 가져오기
           width: 75,
           height: 75,
           scale: 1,
+          fit: BoxFit.cover,
         ),
       );
     }
@@ -83,26 +72,26 @@ class _CommunityListItemState extends State<CommunityListItem> {
         imageBytes,
         width: 75,
         height: 75,
+        fit: BoxFit.cover,
         scale: 1,
       ),
     );
   }
 
-  // 게시글에 대한 정보를 담음 함수(제목, 위치,가격)
   Widget _buildCommunityInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(
-              horizontal: 8, vertical: 4), // 텍스트 주변 여백
+              horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: Colors.grey.shade200, // 회색 배경
-            borderRadius: BorderRadius.circular(8), // 모서리 둥글게
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
-            "${widget.list.topic}",
-            style: TextStyle(fontSize: 14, color: Colors.grey),
+            widget.list.topic,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             softWrap: false,
@@ -129,7 +118,6 @@ class _CommunityListItemState extends State<CommunityListItem> {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
-        fontFamily: Assets.Fonts.cookieRun,
         fontSize: size,
         color: color ?? Colors.black,
         fontWeight: font ?? FontWeight.w700,
