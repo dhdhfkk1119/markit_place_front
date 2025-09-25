@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../../../../../_core/constants/assets.dart';
+
 import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../domain/community/community_model/community_list.dart';
 import '../../detail_page/community_detail_page.dart';
@@ -24,8 +24,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CommunityDetailPage(
-                postId: widget.list.id),
+            builder: (context) => CommunityDetailPage(postId: widget.list.id),
           ),
         );
       },
@@ -50,18 +49,17 @@ class _CommunityListItemState extends State<CommunityListItem> {
   }
 
   Widget _buildCommunityImage(CommunityList list) {
-    final imageBytes = list.thumbnail != null ? base64ToBytes(list.thumbnail!) : null;
+    final serverImageBytes = list.thumbnail != null ? base64ToBytes(list.thumbnail!) : null;
+    final bytesToDisplay = serverImageBytes ?? base64ToBytes(kDefaultThumbnailBase64);
 
-    if (imageBytes == null) {
+    if (bytesToDisplay == null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: Image.asset(
-          "null",
-          // 위의 이미지를 샘플 말고 base64로 가져오기
+        child: Container(
           width: 75,
           height: 75,
-          scale: 1,
-          fit: BoxFit.cover,
+          color: Colors.grey.shade200,
+          child: const Icon(Icons.image_not_supported, size: 30, color: Colors.grey),
         ),
       );
     }
@@ -69,11 +67,11 @@ class _CommunityListItemState extends State<CommunityListItem> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.memory(
-        imageBytes,
+        bytesToDisplay,
         width: 75,
         height: 75,
-        fit: BoxFit.cover,
         scale: 1,
+        fit: BoxFit.cover,
       ),
     );
   }
@@ -83,8 +81,7 @@ class _CommunityListItemState extends State<CommunityListItem> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(
-              horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.grey.shade200,
             borderRadius: BorderRadius.circular(8),
