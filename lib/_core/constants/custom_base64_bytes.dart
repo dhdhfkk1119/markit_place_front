@@ -4,6 +4,7 @@ import 'dart:typed_data';
 // 기본 썸네일로 사용할 이미지의 Base64 문자열 상수
 const String kDefaultThumbnailBase64 = '';
 
+
 // Base64 문자열에서 프리픽스를 제거하고 바이트 데이터를 반환하는 함수
 Uint8List? base64ToBytes(String? base64String) {
   if (base64String == null || base64String.isEmpty) {
