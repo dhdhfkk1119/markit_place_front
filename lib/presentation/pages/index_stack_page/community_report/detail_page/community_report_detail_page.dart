@@ -7,10 +7,7 @@ import 'widgets/community_report_detail_body.dart';
 class CommunityReportDetailPage extends ConsumerWidget {
   final int reportId;
 
-  const CommunityReportDetailPage({
-    super.key,
-    required this.reportId,
-  });
+  const CommunityReportDetailPage({super.key, required this.reportId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

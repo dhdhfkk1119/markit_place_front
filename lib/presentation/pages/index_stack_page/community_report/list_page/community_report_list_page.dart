@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../domain/community/community_dto/community_list_dto.dart';
 import '../../../../../domain/community_report/report_dto/community_report_dto.dart';
 import '../../../../../domain/community_report/report_notifier/community_report_list_notifier.dart';
 import '../detail_page/community_report_detail_page.dart';
 
 class CommunityReportListPage extends ConsumerWidget {
-  const CommunityReportListPage({super.key});
+  final CommunityListDTO? post;
+  const CommunityReportListPage({super.key, this.post});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,6 +25,16 @@ class CommunityReportListPage extends ConsumerWidget {
         ),
         title: CustomWidget.buildTitle('신고 내역'),
         centerTitle: true,
+        actions: [
+          CustomWidget.buildIcon(
+            const Icon(Icons.refresh, color: Colors.black),
+            onPressed: () async {
+              await ref
+                  .read(communityReportListNotifier.notifier)
+                  .refreshReportCommunityList();
+            },
+          ),
+        ],
       ),
       body: reportListAsync.when(
         data: (reports) => RefreshIndicator(
@@ -33,7 +46,7 @@ class CommunityReportListPage extends ConsumerWidget {
               : ListView.builder(
                   itemCount: reports.length,
                   itemBuilder: (context, index) {
-                    return _buildReportPost(context, reports[index]);
+                    return _buildReportPost(context, reports[index], ref);
                   },
                 ),
         ),
@@ -56,7 +69,8 @@ class CommunityReportListPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildReportPost(BuildContext context, CommunityReportDto report) {
+  Widget _buildReportPost(
+      BuildContext context, CommunityReportDto report, ref) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -76,13 +90,10 @@ class CommunityReportListPage extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
+            SizedBox(
               width: 80,
               height: 80,
-              color: Colors.grey[200],
-              child: const Center(
-                child: Icon(Icons.report_problem, color: Colors.grey, size: 32),
-              ),
+              child: _buildImage(post?.thumbnail),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -128,6 +139,42 @@ class CommunityReportListPage extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildImage(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return _buildDefaultImage();
+    }
+
+    final imageBytes = base64ToBytes(imageUrl);
+
+    if (imageBytes == null) {
+      return _buildDefaultImage();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.memory(
+        imageBytes,
+        fit: BoxFit.cover,
+        width: 80,
+        height: 80,
+      ),
+    );
+  }
+
+  Widget _buildDefaultImage() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Center(
+        child: Icon(Icons.report_problem, color: Colors.grey, size: 32),
       ),
     );
   }

@@ -1,32 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../../domain/community/community_provider/community_detail_notifier.dart';
 import '../../../../../../domain/community_report/report_dto/community_report_dto.dart';
-
-import 'community_report_detail_info_row.dart';
 import 'community_report_detail_card.dart';
+import 'community_report_detail_info_row.dart';
 import 'community_report_detail_status_section.dart';
 
-class CommunityReportDetailBody extends StatelessWidget {
+class CommunityReportDetailBody extends ConsumerWidget {
   final CommunityReportDto report;
 
-  const CommunityReportDetailBody({
-    super.key,
-    required this.report,
-  });
+  const CommunityReportDetailBody({super.key, required this.report});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final detailNotifier = ref.watch(communityDetailProvider(report.postId));
+
+    final dto = detailNotifier.communityDetail;
+
+    if (detailNotifier.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (dto == null) {
+      return const Center(child: Text('게시글 정보를 찾을 수 없습니다.'));
+    }
+
     const divider = Divider(height: 1, color: Color(0xFFEDEDED));
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
-        CommunityReportDetailCard(),
+        CommunityReportDetailCard(post: dto),
         const SizedBox(height: 16),
-        divider,
-        CommunityReportDetailInfoRow(
-          label: '신고 ID',
-          value: '${report.id}',
-        ),
         divider,
         CommunityReportDetailInfoRow(
           label: '게시글 ID',
@@ -60,7 +65,7 @@ class CommunityReportDetailBody extends StatelessWidget {
       final date = DateTime.parse(dateString);
       return '${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}';
     } catch (e) {
-      return dateString; // 파싱 실패시 원본 반환
+      return dateString;
     }
   }
 
