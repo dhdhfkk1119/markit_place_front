@@ -14,6 +14,8 @@ import '../../../../../../_core/utils/my_http.dart'; // dioProvider (praise)
 import '../../../../../../domain/members/models/session_user.dart'; // SessionUser 사용
 import '../../../../../../domain/members/providers/member_auth_provider.dart';
 import '../../../../../../domain/profile/profile_provider.dart'; // ProfileRepositoryProvider 사용을 위해 추가
+import '../../../../../../domain/trade_review/trade_review.dart'; // TradeReview 모델 추가
+import '../../../../../../domain/trade_review/trade_review_provider.dart'; // 리뷰 provider 추가
 import '../../../../auth/social_login_page/social_login_page.dart';
 import '../review_list_screen.dart';
 
@@ -37,7 +39,22 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
     super.initState();
     Future.microtask(() {
       _fetchProfileAndRefreshAuth();
+      _loadRecentReviews(); // Add this line to load reviews on init
     });
+  }
+
+  // Add this new method to load recent reviews
+  Future<void> _loadRecentReviews() async {
+    final userId = ref.read(authNotifierProvider).user?.memberId;
+    if (userId != null) {
+      try {
+        await ref
+            .read(recentReviewsProvider.notifier)
+            .loadRecentReviews(userId);
+      } catch (e) {
+        _logger.e("[MyProfileBody] 최근 리뷰 로드 실패: $e", e, StackTrace.current);
+      }
+    }
   }
 
   Future<void> _fetchProfileAndRefreshAuth({bool showLoading = true}) async {
@@ -422,7 +439,6 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                 const SizedBox(height: verticalSpacing),
                 _buildListTile(
                   title: "받은 거래 후기",
-                  subTitle: "32", // 이 값은 동적으로 변경 필요
                   onTap: () {
                     Navigator.push(
                       context,
@@ -432,7 +448,7 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
                   },
                 ),
                 const SizedBox(height: 10),
-                _buildReviewSection(),
+                _buildRecentReviewsSection(), // 제목도 '받은 거래 후기'로 통일
                 const SizedBox(height: verticalSpacing),
               ],
             ),
@@ -467,52 +483,6 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildReviewSection() {
-    // TODO: 실제 리뷰 데이터로 교체
-    return Column(
-      children: [
-        _buildReviewComment(
-            "꼼꼼하게 확인해주시고, 친절하게 답해주셔서 좋은 거래할 수 있었습니다! 감사합니다.", "강아지는야옹"),
-        _buildReviewComment("매우 친절하고 쿨거래해주셨어요. 덕분에 좋은 거래 했습니다.", "진순이킬러"),
-        _buildReviewComment(
-            "시간약속 잘지켜주시고 친절하세요. 믿고 거래할 수 있는 분입니다. 추천드려요!", "대머리도사"),
-      ],
-    );
-  }
-
-  Widget _buildReviewComment(String text, String author) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-        boxShadow: [
-          BoxShadow(
-              color: Color.fromRGBO(128, 128, 128, 0.1),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: Offset(0, 3)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CustomWidget.buildTitle(text,
-              size: 14, color: mainTextColor, weight: FontWeight.normal),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              CustomWidget.buildTitle("- $author",
-                  size: 12, color: secondaryTextColor),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -661,5 +631,126 @@ class _MyProfileBodyState extends ConsumerState<MyProfileBody> {
         ],
       ),
     );
+  }
+
+  Widget _buildRecentReviewsSection() {
+    final reviewState = ref.watch(recentReviewsProvider);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(
+              color: Color.fromRGBO(128, 128, 128, 0.1),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 3)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 제목 제거(위에서 이미 타이틀이 있음)
+          const SizedBox(height: 4),
+
+          // 로딩 중일 때 표시
+          if (reviewState.isLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          // 에러나 리뷰 없음 모두 동일하게 안내 문구 표시
+          else if (reviewState.error != null || reviewState.reviews.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: CustomWidget.buildTitle("아직 받은 거래 후기가 없습니다.",
+                    size: 14, color: secondaryTextColor),
+              ),
+            )
+          // 리뷰가 있을 경우(최대 3개만 표시)
+          else
+            Column(
+              children: reviewState.reviews
+                  .take(3)
+                  .map((review) => _buildReviewItem(review))
+                  .toList(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewItem(TradeReview review) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(
+              color: Color.fromRGBO(128, 128, 128, 0.1),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, 3)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 거래 상대방 정보
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: profileAvatarColor,
+                child:
+                    const Icon(Icons.person, size: 16, color: Colors.white70),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: CustomWidget.buildTitle(review.reviewerLoginId,
+                    size: 14, weight: FontWeight.w700),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // 별점
+          Row(
+            children: List.generate(
+              5,
+              (index) => Icon(
+                index < review.rating ? Icons.star : Icons.star_border,
+                size: 16,
+                color: primaryColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // 리뷰 내용
+          CustomWidget.buildTitle(review.content,
+              size: 14, color: mainTextColor, weight: FontWeight.normal),
+          const SizedBox(height: 8),
+          // 작성 날짜
+          CustomWidget.buildTitle(_formatDate(review.createdAt),
+              size: 12, color: secondaryTextColor, weight: FontWeight.normal),
+        ],
+      ),
+    );
+  }
+
+  // ISO 8601 형식의 날짜 문자열을 YYYY.MM.DD 형식으로 변환
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return "${date.year}.${date.month.toString().padLeft(2, '0')}.${date.day.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return dateString;
+    }
   }
 }

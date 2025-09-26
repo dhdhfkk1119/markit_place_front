@@ -53,38 +53,41 @@ class _DetailPageState extends ConsumerState<DetailPage> {
         final sellerId = productDetail.sellerId;
         final itemId = product.id;
 
-        return Scaffold(
-          extendBodyBehindAppBar: true,
-          appBar: DetailAppBar(
-            productId: widget.productId,
-            backgroundColor: _appBarColor,
-            iconColor: _iconColor,
-            onBack: () => Navigator.pop(context),
-            onMore: () {
-              showModalBottomSheet(
-                context: context,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                builder: (context) {
-                  return CustomPopUp.buildAppBarPopUp(
-                    context,
-                    "${product.title}",
-                    "${product.content}",
-                    itemId,
-                    ref: ref,
-                  );
-                },
-              );
-            },
-          ),
-          body: DetailBody(
-            scrollController: _scrollController,
-            productId: widget.productId,
-          ),
-          bottomSheet: DetailBottomSheet(
-            receiverId: sellerId,
-            itemId: itemId,
+        return SafeArea(
+          child: Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: DetailAppBar(
+              productId: widget.productId,
+              backgroundColor: _appBarColor,
+              iconColor: _iconColor,
+              onBack: () => Navigator.pop(context),
+              onMore: () {
+                showModalBottomSheet(
+                  context: context,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                  builder: (context) {
+                    return CustomPopUp.buildAppBarPopUp(
+                      context,
+                      "${product.title}",
+                      "${product.content}",
+                      itemId,
+                      ref: ref,
+                    );
+                  },
+                );
+              },
+            ),
+            body: DetailBody(
+              scrollController: _scrollController,
+              productId: widget.productId,
+            ),
+            bottomSheet: DetailBottomSheet(
+              receiverId: sellerId,
+              itemId: itemId,
+            ),
           ),
         );
       },

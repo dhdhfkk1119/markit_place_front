@@ -34,21 +34,29 @@ class ChatRepository {
 
     _client = StompClient(
       config: StompConfig(
-        url: Url + '/ws-stomp',
+        url: '$baseUrl/ws-stomp',
         useSockJS: true,
         onConnect: (StompFrame frame) {
           print("[ChatRepository] STOMP connected successfully!");
-          _connectCompleter!.complete(); // 연결 완료를 알립니다.
+
+          if (!_connectCompleter!.isCompleted) {
+            _connectCompleter!.complete(); // 연결 완료를 알립니다.
+          }
+          print("콜백 이전, 오류 안터짐");
+
           // 연결 성공 후, 특정 방의 메시지 구독
           _client!.subscribe(
             destination: '/topic/chat/room/$roomId',
             callback: (frame) {
+              print("콜백 내부");
               if (frame.body != null) {
                 final data = jsonDecode(frame.body!);
                 onMessageReceived(data);
               }
             },
           );
+
+          print("콜백 이후");
         },
         beforeConnect: () async {
           print("[ChatRepository] Attempting to connect...");
@@ -79,8 +87,29 @@ class ChatRepository {
     String? messageType,
     List<String>? images,
   }) async {
+    // 연결이 안 됐으면 connect() 먼저 보장
+    if (roomId != null && !isConnected) {
+      print(
+          "[ChatRepository] sendMessage: Known RoomId $roomId, but not connected. Reconnecting...");
+      await connect(
+        roomId: roomId,
+        onMessageReceived: (_) {},
+      );
+    }
+
     int currentRoomId = roomId ??
         await ChatRoomRepository.getOrCreateRoom(receiverId, itemId, message);
+
+    // 3. 첫 메시지 후 새로운 RoomId가 반환되면, 해당 방으로 연결하고 구독합니다.
+    if (roomId == null && currentRoomId != 0 && !isConnected) {
+      print(
+          "[ChatRepository] sendMessage: New RoomId $currentRoomId established. Connecting...");
+      // connect()를 호출하여 새로운 방 ID로 STOMP 구독을 시작합니다.
+      await connect(
+        roomId: currentRoomId,
+        onMessageReceived: (_) {},
+      );
+    }
 
     final payload = {
       "roomId": currentRoomId,
@@ -90,6 +119,8 @@ class ChatRepository {
       "messageType": messageType ?? "TEXT",
       if (images != null) "images": images,
     };
+
+    print(payload);
 
     _client?.send(
       destination: "/app/chat/sendMessage",

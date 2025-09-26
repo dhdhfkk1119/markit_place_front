@@ -37,7 +37,6 @@ class ChatRoomRepository {
     }
 
     try {
-      print("요청 URL: http://192.168.0.128:8080/api/chat/rooms");
       print("Authorization 헤더: Bearer $token");
 
       final response = await dio.get(

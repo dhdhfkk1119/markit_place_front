@@ -38,6 +38,7 @@ class ProductList {
   final int itemCategoryId;
   final List<String> tags;
   final String status;
+  final String itemReportStatus;
 
   ProductList({
     required this.id,
@@ -52,6 +53,7 @@ class ProductList {
     required this.itemCategoryId,
     required this.tags,
     required this.status,
+    required this.itemReportStatus,
   });
 
   factory ProductList.fromJson(Map<String, dynamic> json) {
@@ -71,6 +73,7 @@ class ProductList {
       itemCategoryId: (json['itemCategoryId'] as num).toInt(),
       tags: List<String>.from(json['tags'] ?? []),
       status: json['status'] as String,
+      itemReportStatus: (json['itemReportStatus'] as String?) ?? "",
     );
   }
 }

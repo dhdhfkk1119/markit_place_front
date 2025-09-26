@@ -1,4 +1,4 @@
-enum ItemReportStatus { PENDING, IN_PROGRESS, RESOLVED }
+enum ItemReportStatus { PENDING, IN_PROGRESS, RESOLVED, BAD_RESOLVED }
 
 class ProductReportModel {
   final int id;
@@ -6,7 +6,7 @@ class ProductReportModel {
   final String reason;
   final ItemReportStatus status;
   final String createdAt;
-  final String? thumbnailUrl;
+  final String? itemThumbnailUrl;
 
   ProductReportModel({
     required this.id,
@@ -14,7 +14,7 @@ class ProductReportModel {
     required this.reason,
     required this.status,
     required this.createdAt,
-    this.thumbnailUrl,
+    this.itemThumbnailUrl,
   });
 
   factory ProductReportModel.fromJson(Map<String, dynamic> json) {
@@ -29,7 +29,7 @@ class ProductReportModel {
         orElse: () => ItemReportStatus.PENDING,
       ),
       createdAt: (json['createdAt'] as String?) ?? '',
-      thumbnailUrl: json['itemThumbnail'] as String?,
+      itemThumbnailUrl: json['itemThumbnail'] as String?,
     );
   }
 }

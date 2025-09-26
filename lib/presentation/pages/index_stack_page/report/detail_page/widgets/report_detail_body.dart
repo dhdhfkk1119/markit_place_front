@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../../../domain/product/dtos/product_detail_dto.dart';
+import '../../../../../../domain/product/providers/product_detail_notifier.dart';
 import '../../../../../../domain/report/report_dto/product_report_dto.dart';
 import '../../../../../../domain/report/report_model/product_report_model.dart';
 import 'report_detail_info_row.dart';
 import 'report_detail_product_card.dart';
 import 'report_detail_status_section.dart';
 
-class ReportDetailBody extends StatelessWidget {
+class ReportDetailBody extends ConsumerWidget {
   const ReportDetailBody({
     super.key,
     required this.dto,
@@ -16,7 +19,7 @@ class ReportDetailBody extends StatelessWidget {
   final VoidCallback onRefresh;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final divider = const Divider(height: 1, color: Color(0xFFEDEDED));
 
     String statusLabel() {
@@ -25,8 +28,10 @@ class ReportDetailBody extends StatelessWidget {
           return '대기중';
         case ItemReportStatus.IN_PROGRESS:
           return '처리중';
+        case ItemReportStatus.BAD_RESOLVED:
+          return '제재완료';
         case ItemReportStatus.RESOLVED:
-          return '완료';
+          return '반려';
         default:
           return '대기중';
       }
@@ -36,12 +41,8 @@ class ReportDetailBody extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       children: [
         ReportDetailProductCard(
-          itemId: dto.itemId,
-          onTap: null,
-        ),
+            dto: ref.watch(productDetailProvider(dto.itemId))),
         const SizedBox(height: 16),
-        divider,
-        const ReportDetailInfoRow(label: '신고자', value: '-'),
         divider,
         ReportDetailInfoRow(label: '신고 일자', value: dto.createdAt),
         divider,

@@ -46,7 +46,8 @@ class ApiResponseDto<T> {
     T Function(List<dynamic>)? fromJsonListT,
   }) {
     T? responseData;
-    final responseJson = json['response'];
+    // 서버 응답 구조가 'response' 또는 'data' 등 혼재될 수 있으므로, 우선순위로 파싱
+    final responseJson = json['response'] ?? json['data'];
 
     if (responseJson != null) {
       if (fromJsonT != null && responseJson is Map<String, dynamic>) {
