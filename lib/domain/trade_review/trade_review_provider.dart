@@ -39,7 +39,7 @@ class ReviewListState {
     return ReviewListState(
       reviews: reviews ?? this.reviews,
       isLoading: isLoading ?? this.isLoading,
-      error: error != null ? error : null, // null이 명시적으로 전달되면 error를 null로 설정
+      error: error,
     );
   }
 
@@ -78,6 +78,8 @@ class SellerReviewsNotifier extends StateNotifier<ReviewListState> {
     } catch (e) {
       logger.e('판매자 리뷰 로드 실패', e);
       state = state.copyWith(isLoading: false, error: e.toString());
+      // UI 계층으로 에러를 다시 던져서, 호출한 쪽에서 catch 할 수 있도록 합니다.
+      rethrow;
     }
   }
 }
@@ -100,6 +102,8 @@ class RecentReviewsNotifier extends StateNotifier<ReviewListState> {
     } catch (e) {
       logger.e('최근 리뷰 로드 실패', e);
       state = state.copyWith(isLoading: false, error: e.toString());
+      // UI 계층으로 에러를 다시 던져서, 호출한 쪽에서 catch 할 수 있도록 합니다.
+      rethrow;
     }
   }
 }

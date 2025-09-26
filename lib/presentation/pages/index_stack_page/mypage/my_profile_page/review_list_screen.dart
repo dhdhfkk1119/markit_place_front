@@ -58,7 +58,6 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
       }
 
       await ref.read(sellerReviewsProvider.notifier).loadSellerReviews(userId);
-      _logger.i('리뷰 목록을 성공적으로 불러왔습니다.');
     } catch (e) {
       _logger.e('리뷰 목록을 불러오는 중 오류가 발생했습니다: $e', e, StackTrace.current);
     }
@@ -78,7 +77,6 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
 
     try {
       // 페이지네이션 로직이 있다면 여기에 추가
-      // 현재는 mock 데이터만 보여주고 있으므로 실제 구현 시 수정 필요
       await Future.delayed(Duration(seconds: 1)); // 로딩 효과를 위한 지연
     } catch (e) {
       _logger.e('추가 리뷰를 불러오는 중 오류가 발생했습니다: $e', e, StackTrace.current);
@@ -189,39 +187,56 @@ class _ReviewListScreenState extends ConsumerState<ReviewListScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: _loadReviews,
-        child: reviewState.isLoading && reviews.isEmpty
-            ? const Center(child: CircularProgressIndicator())
-            : reviewState.error != null && reviews.isEmpty
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        "리뷰를 불러오는 중 오류가 발생했습니다.\n${reviewState.error}",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  )
-                : reviews.isEmpty
-                    ? const Center(
-                        child: Text("아직 받은 거래 후기가 없습니다."),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: reviews.length + (_isLoadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index < reviews.length) {
-                            return _buildReviewItem(reviews[index]);
-                          } else {
-                            // 로딩 인디케이터 표시
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16.0),
-                              child: Center(child: CircularProgressIndicator()),
-                            );
-                          }
-                        },
-                      ),
+        child: Builder(builder: (context) {
+          // 로딩 중이고, 기존에 보여줄 리뷰가 없을 때
+          if (reviewState.isLoading && reviews.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // 에러가 발생했고, 기존에 보여줄 리뷰가 없을 때
+          if (reviewState.error != null && reviews.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "리뷰 목록을 불러오지 못했습니다",
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadReviews,
+                    child: const Text('재시도'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // 리뷰 데이터가 없을 때
+          if (reviews.isEmpty) {
+            return const Center(
+              child: Text("아직 받은 거래 후기가 없습니다."),
+            );
+          }
+
+          // 리뷰 목록을 보여줄 때
+          return ListView.builder(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: reviews.length + (_isLoadingMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index < reviews.length) {
+                return _buildReviewItem(reviews[index]);
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+            },
+          );
+        }),
       ),
     );
   }
