@@ -10,6 +10,7 @@ import 'widgets/community_detail_body.dart';
 
 class CommunityDetailPage extends ConsumerStatefulWidget {
   final int postId;
+
   const CommunityDetailPage({required this.postId, super.key});
 
   @override
@@ -25,15 +26,14 @@ class _CommunityDetailPageDetailPageState
   void initState() {
     super.initState();
     _commentController = TextEditingController();
-<<<<<<< HEAD
     Future.microtask(() {
-      ref.read(communityDetailProvider(widget.postId).notifier).getCommunityDetailInfo();
+      ref
+          .read(communityDetailProvider(widget.postId).notifier)
+          .getCommunityDetailInfo();
     });
-=======
     ref
         .read(communityDetailProvider(widget.postId).notifier)
         .getCommunityDetailInfo();
->>>>>>> 892f80c95340917dceb8c08ceffefa46d257881f
   }
 
   @override
