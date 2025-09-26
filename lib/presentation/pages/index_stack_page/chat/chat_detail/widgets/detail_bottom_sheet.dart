@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
 import '../../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
 import '../../../../../widgets/custom_text_form_field.dart';
 
@@ -33,7 +34,7 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
       final base64String = base64Encode(bytes);
       await ref.read(chatProvider(widget.roomId).notifier).sendMessage(
         receiverId: widget.receiverId,
-        message: base64String,
+        message: '이미지를 전송했습니다.', // 또는 '' (빈 문자열)
         itemId: widget.itemId,
         messageType: 'IMAGE',
         images: [base64String],
@@ -99,7 +100,10 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
                       receiverId: receiverId,
                       message: message,
                       itemId: itemId,
+                      messageType: 'TEXT',
                     );
+
+                await ref.read(chatDetailNotifierProvider.notifier);
                 _controller.clear();
               },
             ),

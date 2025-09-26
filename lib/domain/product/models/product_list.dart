@@ -73,7 +73,7 @@ class ProductList {
       itemCategoryId: (json['itemCategoryId'] as num).toInt(),
       tags: List<String>.from(json['tags'] ?? []),
       status: json['status'] as String,
-      itemReportStatus: json['itemReportStatus'] as String,
+      itemReportStatus: (json['itemReportStatus'] as String?) ?? "",
     );
   }
 }

@@ -53,10 +53,10 @@ dependencies:
   path: ^1.8.3 # 버전 지정
   dotenv: ^4.2.0
   tosspayments_widget_sdk_flutter: ^2.1.2
-  # device_info: ^2.0.3
   url_launcher: ^6.3.2
   json_annotation: ^4.9.0
   flutter_inappwebview: ^6.1.5
+  device_info_plus: ^11.3.0
 
 dev_dependencies:
   flutter_test:

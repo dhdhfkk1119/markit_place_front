@@ -11,11 +11,12 @@ class PurchaseDto {
     required this.amount,
   });
 
-  factory PurchaseDto.fromMap(Success success) {
-    return PurchaseDto(
-        paymentKey: success.paymentKey ?? '',
-        orderId: success.orderId ?? '',
-        amount: success.amount ?? 0);
+  static Map<String, dynamic> toMap(Success success) {
+    return {
+      "paymentKey": success.paymentKey ?? '',
+      "orderId": success.orderId ?? '',
+      "amount": success.amount ?? 0
+    };
   }
 
   PurchaseDto copyWith({

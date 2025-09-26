@@ -1,24 +1,23 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../_core/utils/my_http.dart' show baseUrl; // ⬅️ baseUrl 임포트
 import '../../../../../domain/chat/chat_dto/chat_message_dto.dart';
 import '../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
-import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
 import '../../../../../domain/chat/chat_provider/chat_room_notifier.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
-import '../../../../../domain/members/providers/profile_provider.dart';
 import '../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../domain/product/providers/product_detail_notifier.dart';
-import '../../../../../domain/sales/providers/sales_list_provider.dart';
-import '../../../../../domain/trade/provider/trade_buy_provider.dart';
-import '../../../../../domain/trade/provider/trade_provider.dart';
-import 'widgets/detail_bottom_sheet.dart';
-
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
 import '../../../../widgets/snackbar_util.dart';
+
+import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
+import 'widgets/detail_bottom_sheet.dart';
 import 'widgets/purchase/toss_purchase.dart';
 
 class ChatDetail extends ConsumerStatefulWidget {
@@ -44,14 +43,21 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
         ref.read(chatDetailNotifierProvider).fetchMessages(
             roomId: widget.room.roomId, myId: authState.user!.memberId);
       } else {}
+
+      ref.read(chatRoomNotifierProvider.notifier).fetchMyChatRooms();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
     final itemAsync = ref.watch(productDetailProvider(widget.room.itemId));
-    ref.read(chatRoomNotifierProvider.notifier).fetchMyChatRooms();
 
     final authState = ref.read(authNotifierProvider);
     final userName = authState.user?.name ?? "";
@@ -70,15 +76,13 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           ref.read(chatDetailNotifierProvider).addNewMessages(next, ref);
 
           Future.delayed(const Duration(milliseconds: 100), () {
-            _scrollController.addListener(() {
-              if (_scrollController.hasClients) {
-                _scrollController.animateTo(
-                  _scrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut,
-                );
-              }
-            });
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
           });
         }
       });
@@ -140,6 +144,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                   itemCount: chatDetailNotifier.messages.length,
                   itemBuilder: (context, index) {
                     final item = chatDetailNotifier.messages[index];
+                    print(
+                        "메시지 #${index}: Type=${item.type}, Content='${item.content}', ImageURLs=${item.imageUrls}");
 
                     if (item.time == 'createdAt') {
                       return _buildDateSeparator(item.content);
@@ -183,15 +189,16 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
 
     if (message.type == 'IMAGE') {
       // 이미지 타입일 경우
-      // 이미지 URL 리스트 중 첫 번째 이미지를 가져와 표시
       final String? imageUrl =
           message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
 
       if (imageUrl != null) {
+        final String fullImageUrl = "$baseUrl/chat-images/$imageUrl";
+        print("이미지 메시지입니다. 생성된 URL: $fullImageUrl");
         messageContent = ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Image.network(
-            imageUrl,
+            fullImageUrl,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) {
                 return child;
@@ -236,14 +243,17 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           const SizedBox(width: 8),
           Flexible(
             child: Container(
+              // 이미지 메시지일 경우 더 넓은 공간 할당 고려
               constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.5),
+                  maxWidth: message.type == 'IMAGE'
+                      ? MediaQuery.of(context).size.width * 0.7
+                      : MediaQuery.of(context).size.width * 0.5),
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Text(message.content),
+              child: messageContent,
             ),
           ),
           Padding(
@@ -265,15 +275,16 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     final Widget messageContent;
 
     if (message.type == 'IMAGE') {
-      // 이미지 타입일 경우
       final String? imageUrl =
           message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
 
       if (imageUrl != null) {
+        final String fullImageUrl = "$baseUrl/chat-images/$imageUrl";
+        print("나의 이미지 주소 : ${fullImageUrl}");
         messageContent = ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Image.network(
-            imageUrl,
+            fullImageUrl,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) {
                 return child;
@@ -326,7 +337,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
               color: Colors.purple[100],
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Text(message.content),
+            child: messageContent,
           ),
         ],
       ),

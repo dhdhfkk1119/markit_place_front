@@ -24,8 +24,8 @@ class ChatDetailRepository {
 
     try {
       print("[Repository] Dio 요청 시작");
-      final response = await Dio().get(
-        Url + '/chat/room/$roomId',
+      final response = await dio.get(
+        '/chat/room/$roomId',
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
