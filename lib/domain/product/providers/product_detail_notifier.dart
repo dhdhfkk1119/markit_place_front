@@ -5,29 +5,32 @@ import '../repository/product_detail_repository.dart';
 import 'product_list_notifier.dart';
 
 // FamilyAsyncNotifier를 사용
+// product_detail_notifier.dart
 class ProductDetailNotifier extends FamilyAsyncNotifier<ProductDetailDto, int> {
-  late final ProductDetailRepository _repository;
+  // _repository 변수를 선언하지 않습니다.
 
   @override
   Future<ProductDetailDto> build(int itemId) async {
-    _repository = ref.read(productDetailRepositoryProvider);
-    // itemId는 build의 인자로 바로 받음
+    // repository는 이 메서드 내에서만 사용합니다.
+    final repository = ref.read(productDetailRepositoryProvider);
+
     try {
-      final productDetailModel =
-          await _repository.productDetail(itemId: itemId);
+      final productDetailModel = await repository.productDetail(itemId: itemId);
       return ProductDetailDto.fromModel(productDetailModel);
     } catch (e) {
-      throw Exception("서버를 연결할수없습니다");
+      throw Exception("서버를 연결할 수 없습니다.");
     }
   }
 
   Future<void> toggleFavorite(int itemId) async {
     if (state.value == null) return;
 
+    // toggleFavorite 메서드 내에서도 repository를 다시 읽어서 사용합니다.
+    final repository = ref.read(productDetailRepositoryProvider);
     final currentProductDetail = state.value!;
 
     try {
-      final status = await _repository.productFavorite(itemId: itemId);
+      final status = await repository.productFavorite(itemId: itemId);
       final newProductList = currentProductDetail.productList.copyWith(
         favoriteCount: status.favoriteCount,
       );

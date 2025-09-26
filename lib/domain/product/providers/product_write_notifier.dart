@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import '../dtos/product_write_dto.dart';
 import '../models/product_list.dart';
 import 'product_detail_notifier.dart';
+import 'product_item_notifier.dart';
 import 'product_list_notifier.dart';
 import '../repository/product_write_repository.dart';
 
@@ -69,10 +70,19 @@ class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {
         tradeLocation: tradeLocation,
       );
 
-      final base64Images = await _convertImagesToBase64(images ?? []);
+      final newLocalBase64Images = await _convertImagesToBase64(images ?? []);
 
-      await _repository.productUpdate(
-          productId, updateDto, memberAddressId, tradeLocation, base64Images);
+      // 2. Notifier에서 '삭제되지 않고 남아있는' 기존 서버 이미지 목록을 가져옵니다.
+      final productItemModel = ref.read(productItemProvider);
+      final existingNetworkBase64Images = productItemModel.networkBase64Images;
+
+      final finalBase64Images = [
+        ...existingNetworkBase64Images,
+        ...newLocalBase64Images
+      ];
+
+      await _repository.productUpdate(productId, updateDto, memberAddressId,
+          tradeLocation, finalBase64Images);
 
       // 상품 리스트 다시 불러오기 (업데이트 반영)
       ref.read(productListProvider.notifier).refreshProductList();
