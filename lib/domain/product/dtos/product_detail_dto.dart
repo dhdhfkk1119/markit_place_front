@@ -59,6 +59,7 @@ class ProductDetailDto {
   }
 
   factory ProductDetailDto.fromModel(ProductDetail model) {
+    print("넘어오는 상품 DTOModel ${model}");
     return ProductDetailDto(
       productList: ProductListDto(
         id: model.id,

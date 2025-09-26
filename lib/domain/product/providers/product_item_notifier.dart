@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,30 +15,31 @@ class ProductItemModel {
   final String errorMessage;
   final String thinkingMessage;
   final String streamingText;
+  final List<String> networkBase64Images;
 
-  ProductItemModel({
-    required this.images,
-    required this.name,
-    required this.description,
-    required this.price,
-    this.isOn = false,
-    this.isLoading = false,
-    required this.errorMessage,
-    this.thinkingMessage = "",
-    this.streamingText = "",
-  });
+  ProductItemModel(
+      {required this.images,
+      required this.name,
+      required this.description,
+      required this.price,
+      this.isOn = false,
+      this.isLoading = false,
+      required this.errorMessage,
+      this.thinkingMessage = "",
+      this.streamingText = "",
+      required this.networkBase64Images});
 
-  ProductItemModel copyWith({
-    List<XFile>? images,
-    String? name,
-    String? description,
-    int? price,
-    bool? isOn,
-    bool? isLoading,
-    String? errorMessage,
-    String? thinkingMessage,
-    String? streamingText,
-  }) {
+  ProductItemModel copyWith(
+      {List<XFile>? images,
+      String? name,
+      String? description,
+      int? price,
+      bool? isOn,
+      bool? isLoading,
+      String? errorMessage,
+      String? thinkingMessage,
+      String? streamingText,
+      List<String>? networkBase64Images}) {
     return ProductItemModel(
       images: images ?? this.images,
       name: name ?? this.name,
@@ -48,6 +50,7 @@ class ProductItemModel {
       errorMessage: errorMessage ?? this.errorMessage,
       thinkingMessage: thinkingMessage ?? this.thinkingMessage,
       streamingText: streamingText ?? this.streamingText,
+      networkBase64Images: networkBase64Images ?? this.networkBase64Images,
     );
   }
 }
@@ -62,7 +65,12 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
       _geminiSubscription?.cancel();
     });
     return ProductItemModel(
-        images: [], name: "", description: "", price: 0, errorMessage: "");
+        images: [],
+        networkBase64Images: [],
+        name: "",
+        description: "",
+        price: 0,
+        errorMessage: "");
   }
 
   void updateDescription(String? newDescription) {
@@ -77,6 +85,10 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
     state = state.copyWith(price: newPrice);
   }
 
+  void setInitialNetworkImages(List<String> base64Images) {
+    state = state.copyWith(networkBase64Images: base64Images);
+  }
+
   void uploadImages({required List<XFile> images, required bool isOn}) {
     state = state.copyWith(
         images: images, name: "", description: "", streamingText: "");
@@ -87,9 +99,24 @@ class ProductItemNotifier extends AutoDisposeNotifier<ProductItemModel> {
     }
   }
 
-  void removeImage(XFile image) {
-    final currentImages = List<XFile>.from(state.images)..remove(image);
-    state = state.copyWith(images: currentImages);
+  void removeImage({XFile? image, String? base64String}) {
+    print("현재 로컬 이미지 수 : ${state.images.length}");
+    print("현재 서버 이미지 수 : ${state.networkBase64Images.length}");
+
+    if (image != null) {
+      // 1. 로컬 이미지(XFile) 삭제
+      final currentImages = List<XFile>.from(state.images)
+        ..removeWhere((x) => x.path == image.path);
+      state = state.copyWith(images: currentImages);
+      print("-> 로컬 이미지 삭제 완료");
+    } else if (base64String != null && base64String.isNotEmpty) {
+      // 2. 서버 이미지(Base64 String) 삭제
+      final currentNetworkImages = List<String>.from(state.networkBase64Images)
+        ..removeWhere((base64) => base64 == base64String);
+
+      state = state.copyWith(networkBase64Images: currentNetworkImages);
+      print("-> 서버 이미지 삭제 완료");
+    }
   }
 
   void subscribe({required int userId}) {

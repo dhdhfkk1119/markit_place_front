@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
-import '../../../../../_core/utils/my_http.dart' show baseUrl; // ⬅️ baseUrl 임포트
+import '../../../../../_core/utils/my_http.dart'
+    show SocketUrl, baseUrl; // ⬅️ baseUrl 임포트
 import '../../../../../domain/chat/chat_dto/chat_message_dto.dart';
+import '../../../../../domain/chat/chat_model/chat_message.dart';
 import '../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
 import '../../../../../domain/chat/chat_provider/chat_room_notifier.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
@@ -187,13 +189,15 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   Widget _buildOtherMessage(BuildContext context, ChatMessageDto message) {
     final Widget messageContent;
 
-    if (message.type == 'IMAGE') {
+    if (message.type == MessageType.IMAGE) {
       // 이미지 타입일 경우
       final String? imageUrl =
           message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
 
+      print("이미지 제대로 들어갔는지 확인 ${message.imageUrls}");
+
       if (imageUrl != null) {
-        final String fullImageUrl = "$baseUrl/chat-images/$imageUrl";
+        final String fullImageUrl = "$SocketUrl/chat-images/$imageUrl";
         print("이미지 메시지입니다. 생성된 URL: $fullImageUrl");
         messageContent = ClipRRect(
           borderRadius: BorderRadius.circular(16),
@@ -214,6 +218,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
               return const Icon(Icons.broken_image, color: Colors.grey);
             },
             fit: BoxFit.cover,
+            width: 150,
           ),
         );
       } else {
@@ -274,12 +279,12 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   Widget _buildMyMessage(BuildContext context, ChatMessageDto message) {
     final Widget messageContent;
 
-    if (message.type == 'IMAGE') {
+    if (message.type == MessageType.IMAGE) {
       final String? imageUrl =
           message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
 
       if (imageUrl != null) {
-        final String fullImageUrl = "$baseUrl/chat-images/$imageUrl";
+        final String fullImageUrl = "$SocketUrl/chat-images/$imageUrl";
         print("나의 이미지 주소 : ${fullImageUrl}");
         messageContent = ClipRRect(
           borderRadius: BorderRadius.circular(16),
@@ -300,6 +305,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
               return const Icon(Icons.broken_image, color: Colors.grey);
             },
             fit: BoxFit.cover,
+            width: 150,
           ),
         );
       } else {

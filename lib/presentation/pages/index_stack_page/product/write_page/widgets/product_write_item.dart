@@ -38,15 +38,37 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
   @override
   void initState() {
     super.initState();
+    // Provider Notifier 초기화 및 구독
     ref.read(productCategoryProvider.notifier);
-
     ref.read(productItemProvider.notifier).subscribe(userId: 1);
 
+    // 애니메이션 컨트롤러 초기화
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
     );
 
+    // 1. 기존 상품 모델이 있을 경우 상태 초기화
+    Future.microtask(() {
+      if (widget.model != null) {
+        // 1-1. 네트워크 이미지 초기화 (Null/Empty 체크)
+        final imageUrls = widget.model!.imageUrls;
+        if (imageUrls != null) {
+          ref
+              .read(productItemProvider.notifier)
+              .setInitialNetworkImages(imageUrls);
+        }
+
+        // 1-2. 카테고리 상태 초기화 (카테고리 ID 및 이름)
+        final initialCategoryId = widget.model!.productList.itemCategoryId;
+        ref.read(selectedCategoryIdProvider.notifier).state = initialCategoryId;
+        // model에 categoryName 필드가 있다면 사용 (UI 표시용)
+        // _selectedCategoryName = widget.model!.categoryName;
+        // categoryName이 없다면, `_buildCategorySelector`에서 카테고리 목록 로딩 후 설정해야 합니다.
+      }
+    });
+
+    // 2. TextEditingController 초기화 (로컬 상태 또는 기존 모델 데이터)
     final initialModel = ref.read(productItemProvider);
     _titleController = TextEditingController(
         text: widget.model?.productList.title ?? initialModel.name);
@@ -260,11 +282,9 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
 
   Widget _buildImageUpload(ProductItemModel productItemModel,
       {ProductDetailDto? dto}) {
-    // 모델에서 가져온 이미지 (로컬 업로드된 이미지들)
-    final localImages = productItemModel.images;
-
-    // 서버에서 받아온 기존 이미지들 (URL)
-    final networkImages = dto?.imageUrls ?? [];
+    final localImages = productItemModel.images; // List<XFile>
+    final networkImages =
+        productItemModel.networkBase64Images; // List<String> (수정됨)
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -331,7 +351,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                         // 서버에서 받은 base64 이미지 삭제
                         ref
                             .read(productItemProvider.notifier)
-                            .removeImage(base64Str as XFile);
+                            .removeImage(base64String: base64Str);
                       },
                       icon: const Icon(
                         Icons.cancel,
@@ -367,7 +387,7 @@ class _ProductWriteItemState extends ConsumerState<ProductWriteItem>
                     onPressed: () {
                       ref
                           .read(productItemProvider.notifier)
-                          .removeImage(imagePath);
+                          .removeImage(image: imagePath);
                     },
                     icon: const Icon(Icons.cancel,
                         color: Color.fromARGB(255, 179, 0, 0)),

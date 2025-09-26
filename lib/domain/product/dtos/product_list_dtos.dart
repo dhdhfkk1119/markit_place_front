@@ -14,7 +14,7 @@ class ProductListDto {
   final int itemCategoryId;
   final List<String> tags;
   final String? status;
-  final String? itemReportStatus;
+  String? itemReportStatus;
 
   ProductListDto({
     required this.id,
@@ -46,7 +46,7 @@ class ProductListDto {
       itemCategoryId: model.itemCategoryId,
       tags: model.tags,
       status: model.status,
-      itemReportStatus: model.itemReportStatus,
+      itemReportStatus: model.itemReportStatus ?? "",
     );
   }
 

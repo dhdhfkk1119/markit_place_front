@@ -41,6 +41,7 @@ class ProductDetail {
   });
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
+    print("넘어오는 상품 JSON ${json}");
     return ProductDetail(
       id: (json['id'] as num).toInt(),
       itemCategoryId: (json['itemCategoryId'] as num).toInt(),
