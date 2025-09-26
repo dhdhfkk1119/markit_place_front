@@ -152,9 +152,13 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
                 ),
                 const SizedBox(height: 4),
                 CustomWidget.buildTitle(
-                  "${model.status == '판매중' ? '판매중' : '판매완료'}",
+                  "${model.status == TradeStatus.ON_SALE ? '판매중' : (model.status == TradeStatus.PENDING ? '예약중' : '판매완료')}",
                   size: 12,
-                  color: model.status == '판매중' ? Colors.green : Colors.red,
+                  color: model.status == TradeStatus.ON_SALE
+                      ? Colors.green
+                      : (model.status == TradeStatus.PENDING
+                          ? Colors.orange // 예약중일 때 주황색 사용
+                          : Colors.red), // 나머지 (판매완료)일 때 빨간색 사용
                   weight: FontWeight.w500,
                 ),
                 const SizedBox(height: 4),
