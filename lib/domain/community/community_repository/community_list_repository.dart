@@ -16,7 +16,7 @@ class CommunityListRepository {
         queryParameters: {"page": page},
       );
 
-      final List<dynamic> postList = response.data['response'];
+      final List<dynamic>? postList = response.data['response'];
 
       if (postList == null) {
         return [];
@@ -29,21 +29,28 @@ class CommunityListRepository {
     }
   }
 
-  Future<List<CommunityListDTO>> searchPosts(String keyword,
-      {int page = 0}) async {
+
+  Future<List<CommunityListDTO>> searchPosts({
+    required String keyword,
+    required List<int> categoryIds,
+    required String sortType,
+    required int page,
+    required int size,
+  }) async {
     try {
-      final response = await _dio.post(
+      final response = await _dio.get(
         "/community/posts/search",
-        data: {
+        queryParameters: {
           "keyword": keyword,
-          "categories": [],
-          "sortType": "latest",
+          "categoryIds": categoryIds,
+          "sortType": sortType,
           "page": page,
-          "size": 10,
+          "size": size,
         },
       );
 
-      final List<dynamic> postList = response.data['response']['content'];
+      final responseMap = response.data?['response'];
+      final List<dynamic>? postList = responseMap?['content'];
 
       if (postList == null) {
         return [];
@@ -57,7 +64,7 @@ class CommunityListRepository {
 }
 
 final communityListRepositoryProvider =
-    Provider<CommunityListRepository>((ref) {
+Provider<CommunityListRepository>((ref) {
   final dio = ref.read(dioProvider);
   return CommunityListRepository(dio);
 });

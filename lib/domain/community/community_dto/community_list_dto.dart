@@ -29,17 +29,17 @@ class CommunityListDTO {
 
   factory CommunityListDTO.fromJson(Map<String, dynamic> json) {
     return CommunityListDTO(
-      id: json['id'],
-      title: json['title'],
-      topic: json['topic'],
-      location: json['location'],
-      preview: json['preview'],
-      thumbnail: json['thumbnail'],
-      likeCount: json['likeCount'],
-      viewCount: json['viewCount'],
-      createdAt: json['createdAt'],
-      commentCount: json['commentCount'],
-      isLiked: json['isLiked'],
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      topic: json['topic'] as String? ?? '',
+      location: json['location'] as String? ?? '',
+      createdAt: json['createdAt'] as String? ?? '',
+      preview: json['preview'] as String?,
+      thumbnail: json['thumbnail'] as String?,
+      likeCount: json['likeCount'] as int?,
+      viewCount: json['viewCount'] as int?,
+      commentCount: json['commentCount'] as int?,
+      isLiked: json['isLiked'] as bool?,
     );
   }
 }

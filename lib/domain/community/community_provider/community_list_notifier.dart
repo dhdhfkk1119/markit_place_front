@@ -1,5 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../community_dto/community_list_dto.dart';
 import '../community_model/community_list.dart';
 import '../community_repository/community_list_repository.dart';
@@ -16,8 +17,21 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
     state = state.copyWith(isLoading: true, errorMessage: null, keyword: "");
 
     try {
-      final dtoList = await _repository.fetchCommunityList(page: 0);
-      final modelList = dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
+      final List<CommunityListDTO>? dtoList =
+          await _repository.fetchCommunityList(page: 0);
+
+      if (dtoList == null) {
+        state = state.copyWith(
+          communityList: [],
+          isLoading: false,
+          currentPage: 0,
+          isLastPage: true,
+        );
+        return;
+      }
+
+      final modelList =
+          dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
       state = state.copyWith(
         communityList: modelList,
         isLoading: false,
@@ -40,11 +54,30 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
       return;
     }
 
-    state = state.copyWith(isLoading: true, errorMessage: null, keyword: keyword);
+    state =
+        state.copyWith(isLoading: true, errorMessage: null, keyword: keyword);
 
     try {
-      final dtoList = await _repository.searchPosts(keyword, page: 0);
-      final modelList = dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
+      final List<CommunityListDTO>? dtoList = await _repository.searchPosts(
+        keyword: keyword,
+        categoryIds: [],
+        sortType: "latest",
+        page: 0,
+        size: 10,
+      );
+
+      if (dtoList == null) {
+        state = state.copyWith(
+          communityList: [],
+          isLoading: false,
+          currentPage: 0,
+          isLastPage: true,
+        );
+        return;
+      }
+
+      final modelList =
+          dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
 
       state = state.copyWith(
         communityList: modelList,
@@ -67,10 +100,23 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
 
     try {
       final nextPage = state.currentPage + 1;
-      final dtoList = state.keyword.isNotEmpty
-          ? await _repository.searchPosts(state.keyword, page: nextPage)
+      final List<CommunityListDTO>? dtoList = state.keyword.isNotEmpty
+          ? await _repository.searchPosts(
+              keyword: state.keyword,
+              categoryIds: [],
+              sortType: "latest",
+              page: nextPage,
+              size: 10,
+            )
           : await _repository.fetchCommunityList(page: nextPage);
-      final modelList = dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
+
+      if (dtoList == null) {
+        state = state.copyWith(isLoading: false, isLastPage: true);
+        return;
+      }
+
+      final modelList =
+          dtoList.map((dto) => CommunityList.fromModel(dto)).toList();
 
       state = state.copyWith(
         communityList: [...state.communityList, ...modelList],
@@ -111,7 +157,8 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
 
   void updatePostInList(CommunityListDTO updatedPostDTO) {
     final updatedPostModel = CommunityList.fromModel(updatedPostDTO);
-    final index = state.communityList.indexWhere((post) => post.id == updatedPostModel.id);
+    final index = state.communityList
+        .indexWhere((post) => post.id == updatedPostModel.id);
     if (index != -1) {
       final updatedList = List<CommunityList>.from(state.communityList);
       updatedList[index] = updatedPostModel;
@@ -121,13 +168,14 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
 
   void removePostFromList(int postId) {
     state = state.copyWith(
-      communityList: state.communityList.where((post) => post.id != postId).toList(),
+      communityList:
+          state.communityList.where((post) => post.id != postId).toList(),
     );
   }
 }
 
-final communityListProvider = StateNotifierProvider<CommunityListNotifier, CommunityListState>(
-        (ref) {
-      final repository = ref.read(communityListRepositoryProvider);
-      return CommunityListNotifier(repository);
-    });
+final communityListProvider =
+    StateNotifierProvider<CommunityListNotifier, CommunityListState>((ref) {
+  final repository = ref.read(communityListRepositoryProvider);
+  return CommunityListNotifier(repository);
+});
