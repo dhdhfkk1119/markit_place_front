@@ -51,12 +51,16 @@ class ChatRoomNotifier extends ChangeNotifier {
     required int receiverId,
     required String message,
     required int itemId,
+    String? messageType,
+    List<String>? images,
   }) async {
     await _chatRepository.sendMessage(
       roomId: roomId,
       receiverId: receiverId,
       message: message,
       itemId: itemId,
+      messageType: messageType,
+      images: images,
     );
 
     await fetchMyChatRooms();
@@ -80,6 +84,11 @@ class ChatRoomNotifier extends ChangeNotifier {
       // 이 로직은 백엔드 응답에 따라 달라질 수 있으므로, 필요시 추가 구현합니다.
       fetchMyChatRooms();
     }
+  }
+
+  Future<void> deleteRoom(int roomId) async {
+    await _chatRoomRepository.deleteRoom(roomId);
+    await fetchMyChatRooms();
   }
 }
 

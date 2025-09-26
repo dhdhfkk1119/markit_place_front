@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:intl/intl.dart';
 import '../community_dto/community_detail_dto.dart';
 import '../community_model/community_comment.dart';
 import '../community_model/community_detail.dart';
@@ -51,6 +51,12 @@ class CommunityDetailNotifier extends ChangeNotifier {
   late CommunityDetailState state;
 
   List<CommunityComment> _originalComments = [];
+
+  final DateFormat formatter = DateFormat("yyyy년 MM월 dd일 HH시 mm분");
+
+  DateTime _parseDisplayTime(String input) {
+    return formatter.parse(input.trim()); // 공백 제거 후 파싱
+  }
 
   CommunityDetailNotifier({required this.ref, required this.postId}) {
     _repository = CommunityDetailRepository();
@@ -105,11 +111,11 @@ class CommunityDetailNotifier extends ChangeNotifier {
       List<CommunityComment> comments, CommentSortOrder order) {
     try {
       if (order == CommentSortOrder.latest) {
-        comments.sort((a, b) =>
-            DateTime.parse(b.createdAt).compareTo(DateTime.parse(a.createdAt)));
+        comments.sort((a, b) => _parseDisplayTime(b.displayTime)
+            .compareTo(_parseDisplayTime(a.displayTime)));
       } else {
-        comments.sort((a, b) =>
-            DateTime.parse(a.createdAt).compareTo(DateTime.parse(b.createdAt)));
+        comments.sort((a, b) => _parseDisplayTime(a.displayTime)
+            .compareTo(_parseDisplayTime(b.displayTime)));
       }
     } catch (e) {
       if (kDebugMode) {

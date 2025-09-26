@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/community/community_dto/community_detail_dto.dart';
 import '../../domain/community/community_provider/community_post_write_notifier.dart';
+import '../../domain/community_report/report_notifier/community_report_notifier.dart';
 import '../../domain/members/providers/member_auth_provider.dart';
 import '../../domain/product/providers/product_detail_notifier.dart';
 import '../../domain/product/providers/product_list_notifier.dart';
@@ -36,13 +37,13 @@ class CustomPopUp {
   }
 
   static buildAppBarPopUp(
-      BuildContext context,
-      String userName,
-      String productName,
-      int productId, {
-        String? title,
-        WidgetRef? ref,
-      }) {
+    BuildContext context,
+    String userName,
+    String productName,
+    int productId, {
+    String? title,
+    WidgetRef? ref,
+  }) {
     if (ref == null) return const SizedBox.shrink();
 
     final notifier = ref.read(productListProvider.notifier);
@@ -104,7 +105,7 @@ class CustomPopUp {
               ),
               ListTile(
                 leading:
-                const Icon(Icons.update, color: Colors.deepPurpleAccent),
+                    const Icon(Icons.update, color: Colors.deepPurpleAccent),
                 title: CustomWidget.buildTitle("수정하기", weight: FontWeight.w200),
                 onTap: () {
                   Navigator.pushReplacement(
@@ -139,7 +140,7 @@ class CustomPopUp {
       builder: (context) {
         return AlertDialog(
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Center(child: CustomWidget.buildTitle("신고하기")),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -227,10 +228,10 @@ class CustomPopUp {
   }
 
   static Widget buildCommunityAppBarPopUp(
-      BuildContext context,
-      CommunityDetailDto dto,
-      WidgetRef ref,
-      ) {
+    BuildContext context,
+    CommunityDetailDto dto,
+    WidgetRef ref,
+  ) {
     // 현재 로그인된 유저 ID 가져오기 (예시)
     final authState = ref.watch(authNotifierProvider);
     final currentUserId = authState.user?.name;
@@ -238,7 +239,8 @@ class CustomPopUp {
 
     print('Current User ID: $currentUserId');
     print('Post Writer ID: $postWriterId');
-    print('Is Owner? ${currentUserId != null && currentUserId == postWriterId}');
+    print(
+        'Is Owner? ${currentUserId != null && currentUserId == postWriterId}');
 
     // 게시글 작성자 ID와 현재 유저 ID가 같은지 확인
     final isOwner = currentUserId != null && currentUserId == dto.writerName;
@@ -256,7 +258,10 @@ class CustomPopUp {
             onTap: () {
               Navigator.pop(context);
               // TODO: 수정 페이지로 이동하는 로직 추가
-              Navigator.push(context, MaterialPageRoute(builder: (context) => CommunityWriteBody(dto: dto)));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CommunityWriteBody(dto: dto)));
             },
           ),
           ListTile(
@@ -297,7 +302,8 @@ class CustomPopUp {
           title: CustomWidget.buildTitle("신고하기", weight: FontWeight.w200),
           onTap: () {
             Navigator.pop(context);
-            // TODO: 신고 팝업 띄우는 로직 추가
+            showCommunityReportPopUp(
+                context, dto.writerName, dto.title, dto.id, ref);
           },
         ),
         ListTile(
@@ -306,6 +312,107 @@ class CustomPopUp {
           onTap: () => Navigator.pop(context),
         ),
       ],
+    );
+  }
+
+  static showCommunityReportPopUp(BuildContext context, String writerName,
+      String title, int postId, WidgetRef ref) {
+    final TextEditingController reasonController = TextEditingController();
+    final report = ref.read(communityReportProvider.notifier);
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 바깥 터치로 닫히지 않도록
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Center(child: CustomWidget.buildTitle("신고하기")),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CustomWidget.buildTitle(
+                    "작성자 이름 : ",
+                  ),
+                  Expanded(
+                    child: CustomWidget.buildTitle(
+                      writerName,
+                      weight: FontWeight.w200,
+                    ),
+                  )
+                ],
+              ),
+              Row(
+                children: [
+                  CustomWidget.buildTitle(
+                    "게시글 제목 : ",
+                  ),
+                  Expanded(
+                    child: CustomWidget.buildTitle(
+                      title,
+                      weight: FontWeight.w200,
+                    ),
+                  ),
+                  CustomWidget.buildTitle(
+                    "($postId)",
+                    weight: FontWeight.w200,
+                  )
+                ],
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                child: CustomWidget.buildTitle("신고 사유 :", size: 14),
+              ),
+              TextField(
+                controller: reasonController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: "신고 사유를 입력하세요",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // 닫기
+              },
+              child: const Text("취소"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                String reason = reasonController.text;
+                if (reason.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("신고 사유를 입력하세요.")),
+                  );
+                  return;
+                }
+                try {
+                  await report.saveCommunityReport(
+                      postId: postId, reason: reason);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("신고가 접수되었습니다.")),
+                  );
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("신고 실패: $e")),
+                  );
+                  Navigator.pop(context); // 팝업 닫기
+                }
+              },
+              child: const Text("확인"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

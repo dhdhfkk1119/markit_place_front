@@ -1,21 +1,24 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
+import '../../../../../_core/utils/my_http.dart' show baseUrl; // ⬅️ baseUrl 임포트
 import '../../../../../domain/chat/chat_dto/chat_message_dto.dart';
 import '../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
-import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
 import '../../../../../domain/chat/chat_provider/chat_room_notifier.dart';
 import '../../../../../domain/members/providers/member_auth_provider.dart';
-import '../../../../../domain/members/providers/profile_provider.dart';
 import '../../../../../domain/product/dtos/product_detail_dto.dart';
 import '../../../../../domain/product/providers/product_detail_notifier.dart';
-import 'widgets/detail_bottom_sheet.dart';
-
 import '../../../../../domain/chat/chat_dto/chat_room_dto.dart';
 import '../../../../widgets/snackbar_util.dart';
+
+import '../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
+import 'widgets/detail_bottom_sheet.dart';
+import 'widgets/purchase/toss_purchase.dart';
 
 class ChatDetail extends ConsumerStatefulWidget {
   final ChatRoomDTO room;
@@ -32,7 +35,6 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   @override
   void initState() {
     super.initState();
-    print("[ChatDetail] initState 호출됨");
 
     Future.microtask(() {
       final authState = ref.read(authNotifierProvider);
@@ -40,18 +42,25 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       if (authState.user != null) {
         ref.read(chatDetailNotifierProvider).fetchMessages(
             roomId: widget.room.roomId, myId: authState.user!.memberId);
-      } else {
-        print("[ChatDetail] fetchMessages 호출 실패: 세션 사용자 정보가 없음");
-      }
+      } else {}
+
+      ref.read(chatRoomNotifierProvider.notifier).fetchMyChatRooms();
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
     final itemAsync = ref.watch(productDetailProvider(widget.room.itemId));
-    ref.read(chatRoomNotifierProvider.notifier).fetchMyChatRooms();
-    // 유저의 정보를 찾아옴
+
+    final authState = ref.read(authNotifierProvider);
+    final userName = authState.user?.name ?? "";
 
     if (chatDetailNotifier.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -67,15 +76,13 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           ref.read(chatDetailNotifierProvider).addNewMessages(next, ref);
 
           Future.delayed(const Duration(milliseconds: 100), () {
-            _scrollController.addListener(() {
-              if (_scrollController.hasClients) {
-                _scrollController.animateTo(
-                  _scrollController.position.maxScrollExtent,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOut,
-                );
-              }
-            });
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
           });
         }
       });
@@ -104,8 +111,17 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           actions: [
             IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
             IconButton(
-                onPressed: () {},
-                icon: const Icon(CupertinoIcons.ellipsis_vertical)),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return buildAppBar(
+                        context, "결제하기", '방나가기', itemAsync, userName);
+                  },
+                );
+              },
+              icon: const Icon(CupertinoIcons.ellipsis_vertical),
+            ),
           ],
           bottom: const PreferredSize(
               preferredSize: Size.zero,
@@ -128,6 +144,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                   itemCount: chatDetailNotifier.messages.length,
                   itemBuilder: (context, index) {
                     final item = chatDetailNotifier.messages[index];
+                    print(
+                        "메시지 #${index}: Type=${item.type}, Content='${item.content}', ImageURLs=${item.imageUrls}");
 
                     if (item.time == 'createdAt') {
                       return _buildDateSeparator(item.content);
@@ -167,6 +185,45 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   }
 
   Widget _buildOtherMessage(BuildContext context, ChatMessageDto message) {
+    final Widget messageContent;
+
+    if (message.type == 'IMAGE') {
+      // 이미지 타입일 경우
+      final String? imageUrl =
+          message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
+
+      if (imageUrl != null) {
+        final String fullImageUrl = "$baseUrl/chat-images/$imageUrl";
+        print("이미지 메시지입니다. 생성된 URL: $fullImageUrl");
+        messageContent = ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            fullImageUrl,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.broken_image, color: Colors.grey);
+            },
+            fit: BoxFit.cover,
+          ),
+        );
+      } else {
+        messageContent = const Text("이미지 없음");
+      }
+    } else {
+      // 텍스트 타입일 경우
+      messageContent = Text(message.content);
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Row(
@@ -186,14 +243,17 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
           const SizedBox(width: 8),
           Flexible(
             child: Container(
+              // 이미지 메시지일 경우 더 넓은 공간 할당 고려
               constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.5),
+                  maxWidth: message.type == 'IMAGE'
+                      ? MediaQuery.of(context).size.width * 0.7
+                      : MediaQuery.of(context).size.width * 0.5),
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Text(message.content),
+              child: messageContent,
             ),
           ),
           Padding(
@@ -212,6 +272,43 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   }
 
   Widget _buildMyMessage(BuildContext context, ChatMessageDto message) {
+    final Widget messageContent;
+
+    if (message.type == 'IMAGE') {
+      final String? imageUrl =
+          message.imageUrls.isNotEmpty ? message.imageUrls[0] : null;
+
+      if (imageUrl != null) {
+        final String fullImageUrl = "$baseUrl/chat-images/$imageUrl";
+        print("나의 이미지 주소 : ${fullImageUrl}");
+        messageContent = ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Image.network(
+            fullImageUrl,
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) {
+                return child;
+              }
+              return CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              );
+            },
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.broken_image, color: Colors.grey);
+            },
+            fit: BoxFit.cover,
+          ),
+        );
+      } else {
+        messageContent = const Text("이미지 없음");
+      }
+    } else {
+      // 텍스트 타입일 경우
+      messageContent = Text(message.content);
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
       child: Row(
@@ -240,7 +337,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
               color: Colors.purple[100],
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Text(message.content),
+            child: messageContent,
           ),
         ],
       ),
@@ -253,7 +350,6 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
     return itemAsync.when(
       data: (item) {
         final Uint8List? imageBytes = base64ToBytes(item.productList.thumbnail);
-
         return Container(
           height: 100,
           width: double.infinity,
@@ -275,11 +371,10 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                           fit: BoxFit.cover,
                         )
                       // 이미지가 없을 경우 대체이미지
-                      : Image.asset(
-                          "assets/product.jpg",
-                          height: 70,
-                          width: 70,
-                          fit: BoxFit.cover,
+                      : const Icon(
+                          Icons.broken_image,
+                          size: 70,
+                          color: Colors.grey,
                         ),
                 ),
                 const SizedBox(width: 10),
@@ -307,6 +402,104 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, stack) => Center(child: Text("상품 정보를 불러오지 못했습니다: $err")),
+    );
+  }
+
+  Widget buildAppBar(BuildContext context, String? title, String? title2,
+      AsyncValue<ProductDetailDto> itemAsync, String userName) {
+    final productDetailDto = itemAsync.value!;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: const Icon(Icons.output, color: Colors.pink),
+          title: CustomWidget.buildTitle("$title2", weight: FontWeight.w200),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('방 나가기 확인'),
+                  content: const Text('정말로 이 채팅방을 나가시겠습니까?'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('취소'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: const Text('나가기'),
+                      onPressed: () {
+                        ref
+                            .read(chatRoomNotifierProvider.notifier)
+                            .deleteRoom(widget.room.roomId);
+
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+        itemAsync.when(
+          data: (item) {
+            if (item.productList.status != "SOLD") {
+              return ListTile(
+                leading:
+                    const Icon(Icons.payment, color: Colors.deepPurpleAccent),
+                title:
+                    CustomWidget.buildTitle("$title", weight: FontWeight.w200),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('결제 확인'),
+                        content: const Text('정말로 결제하시겠습니까?'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('취소'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                              child: const Text('결제'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                        builder: (context) => TossPurchase(
+                                            productDetailDto, userName)));
+                              }),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            // 상품이 판매 완료 상태일 경우 아무것도 표시하지 않음
+            return const SizedBox.shrink();
+          },
+          // 로딩 중이거나 에러 발생 시에도 아무것도 표시하지 않음
+          loading: () => const SizedBox.shrink(),
+          error: (err, stack) => const SizedBox.shrink(),
+        ),
+        ListTile(
+          leading: const Icon(Icons.close, color: Colors.grey),
+          title: const Text("닫기"),
+          onTap: () {
+            Navigator.pop(context); // 바텀시트 닫기
+          },
+        ),
+      ],
     );
   }
 }

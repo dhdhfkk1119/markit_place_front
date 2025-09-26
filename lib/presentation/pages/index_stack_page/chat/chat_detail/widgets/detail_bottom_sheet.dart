@@ -1,6 +1,9 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../../../../domain/chat/chat_provider/chat_detail_notifier.dart';
 import '../../../../../../domain/chat/chat_provider/chat_message_notifier.dart';
 import '../../../../../widgets/custom_text_form_field.dart';
 
@@ -22,6 +25,22 @@ class DetailBottomSheet extends ConsumerStatefulWidget {
 
 class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
   final TextEditingController _controller = TextEditingController(); // 입력 값 확인
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final bytes = await image.readAsBytes();
+      final base64String = base64Encode(bytes);
+      await ref.read(chatProvider(widget.roomId).notifier).sendMessage(
+        receiverId: widget.receiverId,
+        message: '이미지를 전송했습니다.', // 또는 '' (빈 문자열)
+        itemId: widget.itemId,
+        messageType: 'IMAGE',
+        images: [base64String],
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +61,8 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
         child: Row(
           children: [
             IconButton(
-              onPressed: () {},
-              icon: const Icon(CupertinoIcons.heart),
+              onPressed: _pickImage,
+              icon: const Icon(Icons.image),
             ),
             const SizedBox(width: 8),
             Expanded(
@@ -81,7 +100,10 @@ class _DetailBottomSheetState extends ConsumerState<DetailBottomSheet> {
                       receiverId: receiverId,
                       message: message,
                       itemId: itemId,
+                      messageType: 'TEXT',
                     );
+
+                await ref.read(chatDetailNotifierProvider.notifier);
                 _controller.clear();
               },
             ),

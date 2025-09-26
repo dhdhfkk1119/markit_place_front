@@ -11,13 +11,18 @@ class ProductDetailNotifier extends FamilyAsyncNotifier<ProductDetailDto, int> {
   @override
   Future<ProductDetailDto> build(int itemId) async {
     _repository = ref.read(productDetailRepositoryProvider);
-    // itemId는 build의 인자로 바로 받음
+
+    // ref.keepAlive()를 호출하여 Provider의 상태를 유지합니다.
+    // 이렇게 하면 화면이 재빌드되어도 Provider가 초기화되지 않아 경쟁 상태를 방지할 수 있습니다.
+    ref.keepAlive();
+
     try {
       final productDetailModel =
           await _repository.productDetail(itemId: itemId);
       return ProductDetailDto.fromModel(productDetailModel);
     } catch (e) {
-      throw Exception("서버를 연결할수없습니다");
+      // 서버에서 가공된 구체적인 오류 메시지를 그대로 UI로 전달하기 위해 rethrow 합니다.
+      rethrow;
     }
   }
 
@@ -28,15 +33,24 @@ class ProductDetailNotifier extends FamilyAsyncNotifier<ProductDetailDto, int> {
 
     try {
       final status = await _repository.productFavorite(itemId: itemId);
-      state = AsyncValue.data(currentProductDetail);
+      final newProductList = currentProductDetail.productList.copyWith(
+        favoriteCount: status.favoriteCount,
+      );
 
-      // 리스트 Notifier에게는 "이 아이템의 좋아요 수가 이걸로 바뀌었어" 라고 알려주기만 함
+      final newState = currentProductDetail.copyWith(
+        liked: status.liked,
+        productList: newProductList,
+      );
+
+      state = AsyncValue.data(newState);
+
       ref.read(productListProvider.notifier).updateItemFavoriteStatus(
             itemId,
-            status.favoriteCount?.toInt() ?? 0,
+            status.favoriteCount,
           );
     } catch (e) {
-      throw Exception("좋아요 처리 실패: $e");
+      // 여기도 구체적인 에러를 전달하도록 rethrow로 변경합니다.
+      rethrow;
     }
   }
 }

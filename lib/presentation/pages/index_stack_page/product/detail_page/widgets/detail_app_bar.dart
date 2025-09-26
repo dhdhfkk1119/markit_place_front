@@ -78,9 +78,6 @@ class DetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                         await ref
                             .read(productDetailProvider(productId).notifier)
                             .toggleFavorite(productId);
-
-                        // 상세 데이터 새로고침
-                        ref.invalidate(productDetailProvider(productId));
                       },
                     );
                   },

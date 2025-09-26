@@ -5,14 +5,15 @@ import '../../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
 import '../../../../../../_core/constants/assets.dart'; // 기본 이미지 에셋 경로를 위해 추가
 
+import '../../../../../../domain/product/dtos/product_detail_dto.dart';
 import 'fullscreen_gallery.dart';
 
 class DetailItemImage extends StatefulWidget {
-  final List<String> imagePaths;
+  final ProductDetailDto productDetail;
 
   const DetailItemImage({
     super.key,
-    required this.imagePaths,
+    required this.productDetail,
   });
 
   @override
@@ -22,13 +23,16 @@ class DetailItemImage extends StatefulWidget {
 class _DetailItemImageState extends State<DetailItemImage> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  List<String> imagePaths = [];
+
+  @override
+  void initState() {
+    super.initState();
+    imagePaths = widget.productDetail.imageUrls!;
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.imagePaths.isEmpty) {
-      return _buildDefaultImage();
-    }
-
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.5,
       child: Stack(
@@ -36,27 +40,33 @@ class _DetailItemImageState extends State<DetailItemImage> {
         children: [
           PageView.builder(
             controller: _pageController,
-            itemCount: widget.imagePaths.length,
+            itemCount: imagePaths.length,
             onPageChanged: (index) {
               setState(() {
                 _currentIndex = index;
               });
             },
             itemBuilder: (context, index) {
-              final imageUrl = widget.imagePaths[index];
+              final imageUrl = imagePaths[index];
               return InkWell(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => FullScreenGallery(
-                        imagePaths: widget.imagePaths,
+                        imagePaths: imagePaths,
                         initialIndex: _currentIndex,
                       ),
                     ),
                   );
                 },
-                child: _buildImage(imageUrl),
+                child: Stack(
+                  children: [
+                    _buildImage(imageUrl),
+                    if (widget.productDetail.status == "SOLD")
+                      _buildSoldOverlay(),
+                  ],
+                ),
               );
             },
           ),
@@ -69,7 +79,7 @@ class _DetailItemImageState extends State<DetailItemImage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: CustomWidget.buildTitle(
-                "${_currentIndex + 1}/${widget.imagePaths.length}",
+                "${_currentIndex + 1}/${imagePaths.length}",
                 size: 14,
                 color: Colors.white,
               ),
@@ -82,28 +92,76 @@ class _DetailItemImageState extends State<DetailItemImage> {
 
   // Base64 또는 네트워크 이미지를 처리하는 함수
   Widget _buildImage(String imageUrl) {
-    // Base64 문자열을 저장할 변수
-
-    final imageBytes = base64ToBytes(imageUrl);
-
-    if (imageBytes == null) {
-      return _buildDefaultImage();
-    }
-
-    try {
-      return Image.memory(
-        imageBytes,
+    if (imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
         fit: BoxFit.cover,
         width: double.infinity,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+        errorBuilder: (context, error, stackTrace) {
+          print('Network image load failed: $error');
+          return _buildDefaultImage();
+        },
       );
-    } catch (e) {
-      print('Base64 이미지 디코딩 실패: $e');
-      return _buildDefaultImage();
+    } else {
+      // Handle Base64 image
+      final imageBytes = base64ToBytes(imageUrl);
+
+      if (imageBytes == null) {
+        return _buildDefaultImage();
+      }
+
+      try {
+        return Image.memory(
+          imageBytes,
+          fit: BoxFit.cover,
+          width: double.infinity,
+        );
+      } catch (e) {
+        print('Base64 이미지 디코딩 실패: $e');
+        return _buildDefaultImage();
+      }
     }
   }
 
   // 기본 이미지를 만드는 헬퍼 함수
   Widget _buildDefaultImage() {
-    return const Center(child: CircularProgressIndicator());
+    return Image.asset(
+      Assets.Images.logo,
+      fit: BoxFit.cover,
+      width: double.infinity,
+    );
+  }
+
+  // SOLD 오버레이를 만드는 헬퍼 함수
+  Widget _buildSoldOverlay() {
+    return Stack(
+      children: [
+        // 반투명 배경
+        Container(
+          color: Colors.black.withOpacity(0.5),
+        ),
+        Center(
+          child: Transform.rotate(
+            angle: -45 * (3.1415926535 / 240), // -45도 회전
+            child: Container(
+              width: 250, // 대각선 길이 조절
+              height: 60,
+              child: Center(
+                child: CustomWidget.buildTitle(
+                  "SOLD",
+                  size: 50,
+                  color: Colors.white,
+                  weight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

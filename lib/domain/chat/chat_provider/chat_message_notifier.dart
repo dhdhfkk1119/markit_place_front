@@ -22,9 +22,6 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
     if (roomId != null && _roomId != roomId) {
       _roomId = roomId;
       print("[ChatNotifier] Room ID updated to $_roomId");
-      // RoomId가 설정되면 바로 연결 시도 (만약 connect()가 중복 호출되어도 안전하다면)
-      // 또는 connect()는 외부에서 명시적으로 호출하도록 할 수도 있음.
-      // 현재 chatProvider에서는 roomId 설정 후 connect를 호출하므로 여기서 중복 호출은 피할 수 있음.
     }
   }
 
@@ -58,13 +55,22 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
     required int receiverId,
     required String message,
     required int itemId,
+    String? messageType,
+    List<String>? images,
   }) async {
+    final type = messageType ?? 'TEXT';
+
     if (myId == 0) {
       print(
           "[ChatNotifier] sendMessage skipped: Invalid user ID (myId is $myId).");
       if (_roomId == null) return -1; // 임시 처리
       return _roomId!; // 혹은 현재 roomId 반환
     }
+
+    if (_roomId != null && !repository.isConnected) {
+      print("[ChatNotifier] sendMessage: Reconnecting before sending.");
+    }
+
     print(
         "[ChatNotifier] sendMessage called. Current _roomId: $_roomId, receiverId: $receiverId, itemId: $itemId, myId: $myId");
     final int newRoomId = await repository.sendMessage(
@@ -72,6 +78,8 @@ class ChatNotifier extends StateNotifier<ChatMessageDto?> {
       receiverId: receiverId,
       message: message,
       itemId: itemId,
+      messageType: type,
+      images: images,
     );
     print(
         "[ChatNotifier] sendMessage: newRoomId received from repository: $newRoomId");

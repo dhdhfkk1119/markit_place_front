@@ -23,13 +23,18 @@ class ChatDetailNotifier extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. 읽음 처리 API 호출 (메시지를 가져오기 전에 먼저 처리)
-      await repository.markMessagesAsRead(roomId: roomId, myId: myId);
-      print("[Notifier] 메시지 읽음 처리 완료");
-
-      // 2. 메시지 목록 가져오기
+      // 1. 메시지 목록 가져오기 (메인 로직)
       messages = await repository.getMyRoomMessage(roomId: roomId, myId: myId);
       print("[Notifier] 메시지 목록 fetch 완료, messages.length=${messages.length}");
+
+      // 2. 읽음 처리는 별도의 try/catch로 감싸서 메인 로직에 영향이 없도록 합니다.
+      try {
+        await repository.markMessagesAsRead(roomId: roomId, myId: myId);
+        print("[Notifier] 메시지 읽음 처리 완료");
+      } catch (e) {
+        print("[Notifier] 경고: 읽음 처리 실패. $e");
+        // 메시지 로드는 성공했으므로 에러 메시지를 덮어쓰지 않습니다.
+      }
 
       errorMessage = '';
     } catch (e) {
@@ -43,13 +48,20 @@ class ChatDetailNotifier extends ChangeNotifier {
 
   void addNewMessages(ChatMessageDto newMessages, WidgetRef ref) {
     final authState = ref.read(authNotifierProvider);
+    final myId = authState.user?.memberId;
 
-    // 현재 사용자의 ID를 가져와서 isMine 속성을 업데이트
-    if (authState.user != null) {
+    final isMine = newMessages.senderId == myId;
+
+    if (isMine) {
       newMessages = newMessages.copyWith(
-          isMine: newMessages.senderId == authState.user!.memberId);
+        isMine: true,
+        isRead: false,
+      );
+    } else {
+      newMessages = newMessages.copyWith(isMine: false);
     }
 
+    // 메시지 목록에 추가
     final newMessagesList = List<ChatMessageDto>.from(messages)
       ..add(newMessages);
     messages = newMessagesList;

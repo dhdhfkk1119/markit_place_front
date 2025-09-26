@@ -3,7 +3,6 @@ class CommunityCommentDTO {
   final String content;
   final String writerName;
   final String createdAt;
-  final String? imageUrl;
   final int likeCount;
 
   CommunityCommentDTO({
@@ -11,7 +10,6 @@ class CommunityCommentDTO {
     required this.content,
     required this.writerName,
     required this.createdAt,
-    this.imageUrl,
     required this.likeCount,
   });
 
@@ -21,7 +19,6 @@ class CommunityCommentDTO {
       content: json["content"] as String,
       writerName: json["writerName"] as String,
       createdAt: json["createdAt"] as String,
-      imageUrl: json["imageUrl"] as String?,
       likeCount: json["likeCount"] as int,
     );
   }

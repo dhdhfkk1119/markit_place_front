@@ -46,7 +46,8 @@ class ApiResponseDto<T> {
     T Function(List<dynamic>)? fromJsonListT,
   }) {
     T? responseData;
-    final responseJson = json['response'];
+    // 서버 응답 구조가 'response' 또는 'data' 등 혼재될 수 있으므로, 우선순위로 파싱
+    final responseJson = json['response'] ?? json['data'];
 
     if (responseJson != null) {
       if (fromJsonT != null && responseJson is Map<String, dynamic>) {
@@ -101,6 +102,38 @@ class ApiResponseDto<T> {
       'success': success,
       'response': responseJson,
       'error': error?.toJson(),
+    };
+  }
+}
+
+class ProfileDataDto {
+  final int id;
+  final String? name; // Nullable로 변경
+  final String status; // Non-nullable 유지
+  final String? profileImageBase64; // Nullable로 변경
+
+  ProfileDataDto({
+    required this.id,
+    this.name, // Nullable 파라미터
+    required this.status, // Non-nullable 파라미터
+    this.profileImageBase64, // Nullable 파라미터
+  });
+
+  factory ProfileDataDto.fromJson(Map<String, dynamic> json) {
+    return ProfileDataDto(
+      id: json['id'] as int,
+      name: json['name'] as String?, // String?으로 파싱
+      status: json['status'] as String, // String으로 파싱 (null이면 여기서 에러 발생)
+      profileImageBase64: json['profileImageBase64'] as String?, // String?으로 파싱
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name, // null일 수 있음
+      'status': status,
+      'profileImageBase64': profileImageBase64, // null일 수 있음
     };
   }
 }

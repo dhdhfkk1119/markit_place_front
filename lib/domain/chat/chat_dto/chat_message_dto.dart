@@ -8,16 +8,17 @@ class ChatMessageDto {
   final int senderId;
   final int itemId;
   final bool isRead;
+  final List<String> imageUrls;
 
-  ChatMessageDto({
-    required this.content,
-    required this.isMine,
-    required this.type,
-    required this.time,
-    required this.senderId,
-    required this.itemId,
-    required this.isRead,
-  });
+  ChatMessageDto(
+      {required this.content,
+      required this.isMine,
+      required this.type,
+      required this.time,
+      required this.senderId,
+      required this.itemId,
+      required this.isRead,
+      required this.imageUrls});
 
   factory ChatMessageDto.fromModel(ChatMessageModel model, int myId) {
     return ChatMessageDto(
@@ -28,6 +29,7 @@ class ChatMessageDto {
       senderId: model.sender.id,
       itemId: model.itemId,
       isRead: model.isRead,
+      imageUrls: model.imageUrls,
     );
   }
 
@@ -39,6 +41,7 @@ class ChatMessageDto {
     int? senderId,
     int? itemId,
     bool? isRead,
+    List<String>? imageUrls,
   }) {
     return ChatMessageDto(
       content: content ?? this.content,
@@ -48,6 +51,7 @@ class ChatMessageDto {
       senderId: senderId ?? this.senderId,
       itemId: itemId ?? this.itemId,
       isRead: isRead ?? this.isRead,
+      imageUrls: imageUrls ?? this.imageUrls,
     );
   }
 }
