@@ -79,4 +79,81 @@
 <br/>
 
 ## 5. 시현 영상 
+<table>
+  <tr>
+    <td align="center"><b>로그인 </b></td>
+    <td align="center"><b>회원가입</b></td>
+    <td align="center"><b>소셜 로그인</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/0a4cf10c-630d-45a1-b9db-da277b10787b" alt="로그인" width="250"/>
+    </td>
+    <td align="center">
+      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="회원 가입" width="250"/>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="소셜 로그인" width="250"/>
+    </td>
+  </tr>
+</table>
+
+
+<table>
+  <tr>
+    <td align="center"><b>상품 등록</b></td>
+    <td align="center"><b>상품 수정 삭제</b></td>
+    <td align="center"><b>상품 리스트 및 검색 기능</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/d7b61c9c-358a-4d8c-97c1-f1d48e33db0c" alt="상품 등록" width="250"/>
+    </td>
+    <td align="center">
+      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="상품 수정 삭제" width="250"/>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="상품 리스트 및 검색 기능" width="250"/>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center"><b>상품 등록</b></td>
+    <td align="center"><b>상품 수정 삭제</b></td>
+    <td align="center"><b>상품 리스트 및 검색 기능</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/d7b61c9c-358a-4d8c-97c1-f1d48e33db0c" alt="상품 등록" width="250"/>
+    </td>
+    <td align="center">
+      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="상품 수정 삭제" width="250"/>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="상품 리스트 및 검색 기능" width="250"/>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td align="center"><b>상품 등록</b></td>
+    <td align="center"><b>상품 수정 삭제</b></td>
+    <td align="center"><b>상품 리스트 및 검색 기능</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/d7b61c9c-358a-4d8c-97c1-f1d48e33db0c" alt="상품 등록" width="250"/>
+    </td>
+    <td align="center">
+      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="상품 수정 삭제" width="250"/>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="상품 리스트 및 검색 기능" width="250"/>
+    </td>
+  </tr>
+</table>
+
 
