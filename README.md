@@ -135,8 +135,7 @@
       <img src="https://github.com/user-attachments/assets/b7e9e6b3-50d9-4cfd-a396-3dc25b077b1e" alt="커뮤니티 검색" width="250"/>
     </td>
     <td align="center">
-      <img src="https://github.com/user-attachments/assets/d0a98ffc-0791-408c-b75c-89e6bbb8f1d1
-" alt="커뮤니티 수정 삭제" width="250"/>
+      <img src="https://github.com/user-attachments/assets/d0a98ffc-0791-408c-b75c-89e6bbb8f1d1" alt="커뮤니티 수정 삭제" width="250"/>
     </td>
   </tr>
 </table>
