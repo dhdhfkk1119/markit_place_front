@@ -68,17 +68,19 @@
 |  |  |  |
 |-----------------|-----------------|-----------------|
 | 조정우    |  [<img src="https://avatars.githubusercontent.com/u/140272714?v=4" alt="조정우" width="100">](https://github.com/dhdhfkk1119) | <ul><li>프로젝트 계획 및 관리</li><li>채팅,Flutter 레이아웃 작업</li><li>Flutter 상품 및 마이페이지 상태관리</li></ul>     |
-| 유류진   |  <img src="https://github.com/user-attachments/assets/78ec4937-81bb-4637-975d-631eb3c4601e" alt="유류진" width="100">| <ul><li>메인 페이지 개발</li><li>동아리 만들기 페이지 개발</li><li>커스텀훅 개발</li></ul> |
-| 양성빈   |  <img src="https://github.com/user-attachments/assets/78ce1062-80a0-4edb-bf6b-5efac9dd992e" alt="양성빈" width="100">    |<ul><li>홈 페이지 개발</li><li>로그인 페이지 개발</li><li>동아리 찾기 페이지 개발</li><li>동아리 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>  |
-| 조충희    |  <img src="https://github.com/user-attachments/assets/beea8c64-19de-4d91-955f-ed24b813a638" alt="조충희" width="100">    | <ul><li>회원가입 페이지 개발</li><li>마이 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>    |
-| 손지윤    |  <img src="https://github.com/user-attachments/assets/beea8c64-19de-4d91-955f-ed24b813a638" alt="손지윤" width="100">    | <ul><li>회원가입 페이지 개발</li><li>마이 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>    |
-| 황지백    |  <img src="https://github.com/user-attachments/assets/beea8c64-19de-4d91-955f-ed24b813a638" alt="황지백" width="100">    | <ul><li>회원가입 페이지 개발</li><li>마이 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>    |
+| 유류진   |  [<img src="https://avatars.githubusercontent.com/u/208729786?v=4" alt="유류진" width="100">](https://github.com/yooryujin)| <ul><li>Figma 레이아웃</li><li>유저 거래 리뷰 및 평점</li><li>flutter 게시물 등록 수정 삭제</li></ul> |
+| 양성빈   |  [<img src="https://avatars.githubusercontent.com/u/197378605?v=4" alt="양성빈" width="100">](https://github.com/ysb5397)    |<ul><li>홈 페이지 개발</li><li>로그인 페이지 개발</li><li>동아리 찾기 페이지 개발</li><li>동아리 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>  |
+| 조충희    |  [<img src="https://avatars.githubusercontent.com/u/105851912?v=4" alt="조충희" width="100">](https://github.com/dovahk11m)    | <ul><li>회원가입 페이지 개발</li><li>마이 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>    |
+| 손지윤    |  [<img src="https://avatars.githubusercontent.com/u/208729868?v=4" alt="손지윤" width="100">](https://github.com/sonjiyoon12)    | <ul><li>회원가입 페이지 개발</li><li>마이 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>    |
+| 황지백    |  [<img src="https://avatars.githubusercontent.com/u/208729937?v=4" alt="황지백" width="100">](https://github.com/jibaek1)    | <ul><li>회원가입 페이지 개발</li><li>마이 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>    |
 | 조현진    |  <img src="https://github.com/user-attachments/assets/beea8c64-19de-4d91-955f-ed24b813a638" alt="조현진" width="100">    | <ul><li>회원가입 페이지 개발</li><li>마이 프로필 페이지 개발</li><li>커스텀훅 개발</li></ul>    |
 
 <br/>
 <br/>
 
-## 5. 시현 영상 
+## 5. 시현 영상
+
+### 회원정보
 <table>
   <tr>
     <td align="center"><b>로그인 </b></td>
@@ -98,7 +100,7 @@
   </tr>
 </table>
 
-
+### 상품페이지 
 <table>
   <tr>
     <td align="center"><b>상품 등록</b></td>
@@ -118,42 +120,56 @@
   </tr>
 </table>
 
+### 커뮤니티 페이지
 <table>
   <tr>
-    <td align="center"><b>상품 등록</b></td>
-    <td align="center"><b>상품 수정 삭제</b></td>
-    <td align="center"><b>상품 리스트 및 검색 기능</b></td>
+    <td align="center"><b>커뮤니티 등록</b></td>
+    <td align="center"><b>커뮤니티 검색</b></td>
+    <td align="center"><b>커뮤니티 수정 삭제</b></td>
   </tr>
   <tr>
     <td align="center">
-      <img src="https://github.com/user-attachments/assets/d7b61c9c-358a-4d8c-97c1-f1d48e33db0c" alt="상품 등록" width="250"/>
+      <img src="https://github.com/user-attachments/assets/c92af136-4139-442f-a4ad-b551dc0645a2" alt="커뮤니티 등록" width="250"/>
     </td>
     <td align="center">
-      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="상품 수정 삭제" width="250"/>
+      <img src="https://github.com/user-attachments/assets/b7e9e6b3-50d9-4cfd-a396-3dc25b077b1e" alt="커뮤니티 검색" width="250"/>
     </td>
     <td align="center">
-      <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="상품 리스트 및 검색 기능" width="250"/>
+      <img src="https://github.com/user-attachments/assets/d0a98ffc-0791-408c-b75c-89e6bbb8f1d1
+" alt="커뮤니티 수정 삭제" width="250"/>
     </td>
   </tr>
 </table>
 
+### 채팅 페이지
 <table>
   <tr>
-    <td align="center"><b>상품 등록</b></td>
-    <td align="center"><b>상품 수정 삭제</b></td>
-    <td align="center"><b>상품 리스트 및 검색 기능</b></td>
+    <td align="center"><b>로그인 유저 채팅 보내기</b></td>
+    <td align="center"><b>상대방 채팅 보내기</b></td>
   </tr>
   <tr>
     <td align="center">
-      <img src="https://github.com/user-attachments/assets/d7b61c9c-358a-4d8c-97c1-f1d48e33db0c" alt="상품 등록" width="250"/>
+      <img src="https://github.com/user-attachments/assets/49e655ef-89fb-4633-b27c-b417554c645a" alt="상품 등록" width="250"/>
     </td>
     <td align="center">
-      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="상품 수정 삭제" width="250"/>
-    </td>
-    <td align="center">
-      <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="상품 리스트 및 검색 기능" width="250"/>
+      <img src="https://github.com/user-attachments/assets/49e4862b-2168-4c37-b134-03d7486c1206" alt="상품 수정 삭제" width="250"/>
     </td>
   </tr>
 </table>
 
+### 마이 페이지 
+<table>
+  <tr>
+    <td align="center"><b>마이페이지 리스트 페이지</b></td>
+    <td align="center"><b>프로필 수정</b></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/c1fd9553-27ce-4ba0-ba8e-a7074cda22e6" alt="리스트 페이지" width="250"/>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/207fdd05-ec6b-41ef-8f81-fe5ef84f4731" alt="프로필 수정" width="250"/>
+    </td>
+  </tr>
+</table>
 
