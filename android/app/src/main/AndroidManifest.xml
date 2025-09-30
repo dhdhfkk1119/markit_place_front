@@ -12,7 +12,8 @@
         android:label="markit_place_front"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true">
         
         <activity
             android:name=".MainActivity"

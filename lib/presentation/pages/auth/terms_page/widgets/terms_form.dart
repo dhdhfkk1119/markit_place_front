@@ -108,8 +108,8 @@ class TermsAgreementNotifier extends StateNotifier<TermsAgreementData> {
   }
 }
 
-final termsAgreementNotifierProvider = StateNotifierProvider.autoDispose<
-    TermsAgreementNotifier, TermsAgreementData>((ref) {
+final termsAgreementNotifierProvider =
+    StateNotifierProvider<TermsAgreementNotifier, TermsAgreementData>((ref) {
   return TermsAgreementNotifier(ref);
 });
 

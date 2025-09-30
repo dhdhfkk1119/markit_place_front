@@ -1,75 +1,36 @@
 import 'package:dio/dio.dart';
 import '../../../_core/dtos/api_response_dto.dart';
-import '../../../_core/dtos/error_dto.dart'; // ErrorDto 임포트 추가
+import '../../../_core/dtos/error_dto.dart';
 import '../../../_core/utils/error_utils.dart';
 import '../models/term.dart';
 
 class TermsRepository {
   final Dio _dio;
 
-  TermsRepository({Dio? dio})
-      : _dio = dio ?? Dio(BaseOptions(baseUrl: 'http://192.168.0.128:8080')) {
-    // LogInterceptor를 TermsRepository에도 추가할 수 있습니다 (선택 사항).
-    // _dio.interceptors.add(LogInterceptor(requestBody: true, responseBody: true));
-  }
+  // 생성자에서 Dio 인스턴스를 반드시 받도록 수정합니다.
+  // 이제 이 클래스는 자체적으로 Dio를 생성할 수 없습니다.
+  TermsRepository({required Dio dio}) : _dio = dio;
 
   Future<List<Term>> fetchTermsList() async {
     try {
-      final response = await _dio.get('/api/terms');
+      // baseUrl이 적용된 dio 인스턴스를 사용하므로, 상대 경로만 작성합니다.
+      final response = await _dio.get('/terms');
 
+      // onResponse 인터셉터에서 success:false 처리를 하므로, 여기서는 성공 케이스만 다룹니다.
       final apiResponse = ApiResponseDto<List<dynamic>>.fromJson(
         response.data as Map<String, dynamic>,
       );
 
-      if (apiResponse.success && apiResponse.response != null) {
-        final List<dynamic> dynamicList = apiResponse.response!;
-        return dynamicList
-            .map((item) => Term.fromJson(item as Map<String, dynamic>))
-            .toList();
-      } else if (!apiResponse.success && apiResponse.error != null) {
-        throw Exception(
-            apiResponse.error!.message ?? '약관 목록을 불러오는데 실패했습니다. (서버 응답)');
-      } else {
-        throw Exception('알 수 없는 이유로 약관 목록을 불러오지 못했습니다.');
-      }
+      final List<dynamic> dynamicList = apiResponse.response!;
+      return dynamicList
+          .map((item) => Term.fromJson(item as Map<String, dynamic>))
+          .toList();
     } on DioException catch (e) {
-      String finalErrorMessage;
-      ErrorDto? parsedErrorDto;
-
-      if (e.response?.data != null &&
-          e.response!.data is Map<String, dynamic>) {
-        final responseData = e.response!.data as Map<String, dynamic>;
-        if (responseData.containsKey('error') &&
-            responseData['error'] != null &&
-            responseData['error'] is Map<String, dynamic>) {
-          try {
-            parsedErrorDto = ErrorDto.fromJson(
-                responseData['error'] as Map<String, dynamic>);
-          } catch (parseError) {
-            print(
-                '[TermsRepository Error - DioException] Failed to parse ErrorDto: $parseError');
-          }
-        }
-      }
-
-      if (parsedErrorDto?.message != null &&
-          parsedErrorDto!.message!.isNotEmpty) {
-        finalErrorMessage = parsedErrorDto.message!;
-      } else {
-        finalErrorMessage = extractErrorMessage(e);
-      }
-
-      print(
-          '[TermsRepository Error - DioException] Final Message: $finalErrorMessage (Dio Status: ${e.response?.statusCode})');
-      if (parsedErrorDto != null) {
-        print(
-            '[TermsRepository Error - DioException] Parsed ErrorDto: Code: ${parsedErrorDto.code}, Field: ${parsedErrorDto.field}, Status: ${parsedErrorDto.status}');
-      }
-      throw Exception(finalErrorMessage);
+      // DioException 발생 시, 인터셉터에서 가공된 에러 메시지를 사용합니다.
+      throw Exception(extractErrorMessage(e));
     } catch (e) {
-      final errorMessage = extractErrorMessage(e);
-      print('[TermsRepository Error - General] $errorMessage ($e)');
-      throw Exception(errorMessage);
+      // 기타 예외 처리
+      throw Exception('알 수 없는 오류가 발생했습니다: ${e.toString()}');
     }
   }
 }

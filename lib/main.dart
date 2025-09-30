@@ -26,11 +26,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // ===================================================================
-  // !! 개발용 코드: 앱 시작 시 모든 보안 저장소(토큰 등) 데이터 삭제 !!
-  // !! 앱 출시 전 반드시 주석 처리 또는 삭제해야 합니다. !!
-  const storage = FlutterSecureStorage();
-  await storage.deleteAll();
-  logger.w("======= [개발용] 모든 보안 저장소 데이터가 삭제되었습니다. =======");
+  // 자동 로그인 막으려면 아래 세줄 활성화
+  // const storage = FlutterSecureStorage();
+  // await storage.deleteAll();
+  // logger.w("======= [개발용] 모든 보안 저장소 데이터가 삭제되었습니다. =======");
   // ===================================================================
 
   await dotenv.load(fileName: ".env");
