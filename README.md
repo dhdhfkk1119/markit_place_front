@@ -24,8 +24,7 @@
 - **SDK** : Flutter 3.27.4
 - **Build Tool** : Gradle (Groovy)
 - **의존성 관리** : pubspec.yaml (YAML 기반)
-- **개발기간** : 2025.08.25 ~ 09.26
-
+- **개발기간** : 2025.08.25 ~ 2025.09.26
 
 ## 🔑 3. Key Features (주요 기능)
 - **회원 가입**
