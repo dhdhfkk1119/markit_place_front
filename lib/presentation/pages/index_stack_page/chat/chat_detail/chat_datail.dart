@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../../_core/constants/custom_base64_bytes.dart';
 import '../../../../../_core/constants/custom_widget.dart';
@@ -56,6 +58,8 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final ImagePicker _picker = ImagePicker();
+
     final chatDetailNotifier = ref.watch(chatDetailNotifierProvider);
     final itemAsync = ref.watch(productDetailProvider(widget.room.itemId));
 
@@ -116,7 +120,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                   context: context,
                   builder: (context) {
                     return buildAppBar(
-                        context, "결제하기", '방나가기', itemAsync, userName);
+                        context, "결제하기", '방나가기', itemAsync, userName, _picker);
                   },
                 );
               },
@@ -406,7 +410,7 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
   }
 
   Widget buildAppBar(BuildContext context, String? title, String? title2,
-      AsyncValue<ProductDetailDto> itemAsync, String userName) {
+      AsyncValue<ProductDetailDto> itemAsync, String userName, _picker) {
     final productDetailDto = itemAsync.value!;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -480,6 +484,20 @@ class _ChatDetailState extends ConsumerState<ChatDetail> {
                                       itemId: item.productList.id,
                                       messageType: 'TEXT',
                                     );
+
+                                final base64String =
+                                    item.productList.thumbnail!;
+
+                                await ref
+                                    .read(chatProvider(widget.room.roomId)
+                                        .notifier)
+                                    .sendMessage(
+                                  receiverId: item.sellerId,
+                                  message: '',
+                                  itemId: item.productList.id,
+                                  messageType: 'IMAGE',
+                                  images: [base64String],
+                                );
 
                                 await ref
                                     .read(chatDetailNotifierProvider.notifier);

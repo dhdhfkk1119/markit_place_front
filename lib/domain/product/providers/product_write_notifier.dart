@@ -70,11 +70,12 @@ class ProductWriteNotifier extends AutoDisposeAsyncNotifier<void> {
         tradeLocation: tradeLocation,
       );
 
-      final newLocalBase64Images = await _convertImagesToBase64(images ?? []);
-
       // 2. Notifier에서 '삭제되지 않고 남아있는' 기존 서버 이미지 목록을 가져옵니다.
       final productItemModel = ref.read(productItemProvider);
+
       final existingNetworkBase64Images = productItemModel.networkBase64Images;
+
+      final newLocalBase64Images = await _convertImagesToBase64(images ?? []);
 
       final finalBase64Images = [
         ...existingNetworkBase64Images,
