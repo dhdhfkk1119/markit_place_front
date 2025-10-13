@@ -62,8 +62,6 @@
   - 상품,커뮤니티 신고 목록 검사하기 (신고 승인)
   - 모든 기능에 접근 가능
 
-
-
 ## ♻️ 4. Tasks & Responsibilities (작업 및 역할 분담)
 |  |  |  |
 |-----------------|-----------------|-----------------|
@@ -92,7 +90,7 @@
       <img src="https://github.com/user-attachments/assets/0a4cf10c-630d-45a1-b9db-da277b10787b" alt="로그인" width="250"/>
     </td>
     <td align="center">
-      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="회원 가입" width="250"/>
+      <img src="https://github.com/user-attachments/assets/44e7c906-1549-4ab4-96d1-e30e5a342497" alt="회원 가입" width="250"/>
     </td>
     <td align="center">
       <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="소셜 로그인" width="250"/>
