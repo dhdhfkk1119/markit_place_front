@@ -7,6 +7,7 @@ class AppTextFormField extends StatelessWidget {
   final FocusNode? focusNode;
   final String labelText;
   final String? helperText;
+  final TextStyle? helperStyle; // helperStyle 파라미터 추가
   final TextInputType? keyboardType;
   final bool readOnly;
   final bool obscureText;
@@ -14,6 +15,7 @@ class AppTextFormField extends StatelessWidget {
   final Widget? suffixIcon;
   final VoidCallback? onTap;
   final ValueChanged<String>? onChanged;
+  final AutovalidateMode? autovalidateMode;
 
   const AppTextFormField({
     Key? key,
@@ -21,6 +23,7 @@ class AppTextFormField extends StatelessWidget {
     this.focusNode,
     required this.labelText,
     this.helperText,
+    this.helperStyle, // 생성자에 추가
     this.keyboardType,
     this.readOnly = false,
     this.obscureText = false,
@@ -28,20 +31,17 @@ class AppTextFormField extends StatelessWidget {
     this.suffixIcon,
     this.onTap,
     this.onChanged,
+    this.autovalidateMode,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // 기본 스타일 정의 (RegisterForm의 _buildTextFormField 스타일 참고)
-    TextStyle defaultLabelStyle =
-        TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black87);
     final TextStyle defaultHelperStyle = TextStyle(
         fontFamily: Assets.Fonts.cookieRun, color: Colors.grey.shade700);
     TextStyle defaultErrorStyle = TextStyle(
         fontFamily: Assets.Fonts.cookieRun,
         color: Colors.redAccent,
         fontWeight: FontWeight.bold);
-    // 입력 텍스트 스타일도 동일 폰트로 지정 (선택적)
     TextStyle inputTextStyle =
         TextStyle(fontFamily: Assets.Fonts.cookieRun, color: Colors.black);
 
@@ -50,21 +50,21 @@ class AppTextFormField extends StatelessWidget {
       focusNode: focusNode,
       decoration: InputDecoration(
         labelText: labelText,
-        labelStyle: defaultLabelStyle,
+        labelStyle: TextStyle(
+            fontFamily: Assets.Fonts.cookieRun, color: Colors.black87),
         helperText: helperText,
-        helperStyle: defaultHelperStyle,
+        helperStyle: helperStyle ?? defaultHelperStyle, // 외부에서 받은 스타일 적용
         errorStyle: defaultErrorStyle,
         suffixIcon: suffixIcon,
-        // 필요에 따라 테두리 등 추가적인 기본 InputDecoration 속성 설정 가능
-        // 예: border: OutlineInputBorder(borderRadius: BorderRadius.circular(small)),
       ),
       keyboardType: keyboardType,
       readOnly: readOnly,
       obscureText: obscureText,
       validator: validator,
-      style: inputTextStyle, // 입력되는 텍스트에도 폰트 적용
+      style: inputTextStyle,
       onTap: onTap,
       onChanged: onChanged,
+      autovalidateMode: autovalidateMode,
     );
   }
 }
