@@ -420,10 +420,9 @@ class _RegisterFormState extends ConsumerState<RegisterForm> {
                   if (value == null || value.isEmpty) {
                     return '비밀번호를 입력해주세요.';
                   }
-                  if (!RegExp(
-                          r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&,.]{8,20}$')
+                  if (!RegExp(r'^(?=.*[a-zA-Z])(?=.*\d)[A-Za-z\d]{8,16}$')
                       .hasMatch(value)) {
-                    return '비밀번호는 8~20자, 영문, 숫자를 포함해야 합니다.';
+                    return '비밀번호는 8~16자, 영문, 숫자를 포함해야 합니다.';
                   }
                   return null;
                 },
