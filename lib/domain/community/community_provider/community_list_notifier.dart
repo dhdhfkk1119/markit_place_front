@@ -46,10 +46,10 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
     }
   }
 
-  Future<void> searchPosts(String keyword,List<String> categories) async {
+  Future<void> searchPosts(String keyword, List<String> categories) async {
     if (state.isLoading) return;
 
-    if (keyword.isEmpty) {
+    if (keyword.isEmpty && categories.isEmpty) {
       await getCommunityList();
       return;
     }

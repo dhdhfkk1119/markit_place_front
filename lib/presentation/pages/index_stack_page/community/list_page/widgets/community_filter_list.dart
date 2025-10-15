@@ -5,6 +5,7 @@ import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../domain/community/community_provider/community_category_notifier.dart';
 import '../../../../../../domain/community/community_provider/community_list_notifier.dart';
 import '../../../../../../domain/community/community_provider/community_search_status_provider.dart';
+import '../../../../../../domain/product/providers/product_sort_state_provider.dart';
 import 'community_filter_item.dart';
 
 class CommunityFilterList extends ConsumerStatefulWidget {
@@ -33,7 +34,6 @@ class _CommunityFilterListState extends ConsumerState<CommunityFilterList> {
     final notifier = ref.watch(communityCategoryProvider);
     final searchNotifier = ref.watch(communityListProvider.notifier);
 
-
     if (notifier.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -56,6 +56,7 @@ class _CommunityFilterListState extends ConsumerState<CommunityFilterList> {
                   setState(() {
                     _selectedTopics.updateAll((key, value) => false);
                   });
+                  ref.read(selectCommunityCategories.notifier).state = [];
                   searchNotifier.searchPosts("", []);
                 },
                 child: Text(
@@ -70,7 +71,6 @@ class _CommunityFilterListState extends ConsumerState<CommunityFilterList> {
             ],
           ),
           Container(height: 2, color: Colors.grey),
-
           ...categories.map((category) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,10 +99,10 @@ class _CommunityFilterListState extends ConsumerState<CommunityFilterList> {
                           .map((entry) => entry.key)
                           .toList();
 
-                      ref.read(selectCommunityCategories.notifier).state = selectedCategories;
+                      ref.read(selectCommunityCategories.notifier).state =
+                          selectedCategories;
                       ref.read(communityListProvider.notifier).searchPosts(
-                          currentState.keyword,
-                          selectedCategories);
+                          currentState.keyword, selectedCategories);
 
                       print('해당 카테고리 이름 ${selectedCategories}');
                     },

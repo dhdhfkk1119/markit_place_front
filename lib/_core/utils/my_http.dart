@@ -10,16 +10,15 @@ import '../../domain/members/repositories/member_auth_repository.dart';
 /// 팀장 서버 주소 - http://192.168.0.128:8080/api
 /// 자기 서버 주소 - http://10.0.2.2:8080/api
 /// 모바일 테스트용 서버 - https://port-0-market-place-server-m9sgwbay02179a7c.sel4.cloudtype.app/api
-const baseUrl =
-    "http://10.0.2.2:8087/api";
-const SocketUrl = "http://10.0.2.2:8087";
+const baseUrl = "http://10.0.2.2:8080/api";
+const SocketUrl = "http://10.0.2.2:8080";
 
 final dio = Dio(
   BaseOptions(
     baseUrl: baseUrl,
     contentType: "application/json; charset=utf-8",
     validateStatus: (status) => true, // 모든 상태 코드를 onResponse에서 처리
-    listFormat: ListFormat.multiCompatible,
+    listFormat: ListFormat.multi,
   ),
 );
 
