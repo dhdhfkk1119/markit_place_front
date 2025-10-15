@@ -32,7 +32,7 @@ class CommunityListRepository {
 
   Future<List<CommunityListDTO>> searchPosts({
     required String keyword,
-    required List<int> categoryIds,
+    required List<String> categories,
     required String sortType,
     required int page,
     required int size,
@@ -42,7 +42,7 @@ class CommunityListRepository {
         "/community/posts/search",
         queryParameters: {
           "keyword": keyword,
-          "categoryIds": categoryIds,
+          "categories": categories,
           "sortType": sortType,
           "page": page,
           "size": size,

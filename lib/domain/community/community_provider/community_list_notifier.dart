@@ -46,7 +46,7 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
     }
   }
 
-  Future<void> searchPosts(String keyword) async {
+  Future<void> searchPosts(String keyword,List<String> categories) async {
     if (state.isLoading) return;
 
     if (keyword.isEmpty) {
@@ -60,7 +60,7 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
     try {
       final List<CommunityListDTO>? dtoList = await _repository.searchPosts(
         keyword: keyword,
-        categoryIds: [],
+        categories: categories,
         sortType: "latest",
         page: 0,
         size: 10,
@@ -103,7 +103,7 @@ class CommunityListNotifier extends StateNotifier<CommunityListState> {
       final List<CommunityListDTO>? dtoList = state.keyword.isNotEmpty
           ? await _repository.searchPosts(
               keyword: state.keyword,
-              categoryIds: [],
+              categories: [],
               sortType: "latest",
               page: nextPage,
               size: 10,

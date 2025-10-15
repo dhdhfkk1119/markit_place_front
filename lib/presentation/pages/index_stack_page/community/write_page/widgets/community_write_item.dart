@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../../_core/constants/assets.dart';
 import '../../../../../../_core/constants/custom_widget.dart';
+import '../../../../../../domain/community/community_provider/community_category_notifier.dart';
 
-class CommunityWriteItem extends StatelessWidget {
+class CommunityWriteItem extends ConsumerStatefulWidget {
   final TextEditingController titleController;
   final TextEditingController descriptionController;
   final List<dynamic> imageList;
@@ -24,23 +26,28 @@ class CommunityWriteItem extends StatelessWidget {
     required this.onUpdateCategory,
   });
 
+  @override
+  ConsumerState<CommunityWriteItem> createState() => _CommunityWriteItemState();
+}
+
+class _CommunityWriteItemState extends ConsumerState<CommunityWriteItem> {
   final int _maxImageUpload = 10;
 
   Future<void> _uploadImage() async {
-    if (imageList.length >= _maxImageUpload) return;
+    if (widget.imageList.length >= _maxImageUpload) return;
 
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      final updatedList = List<dynamic>.from(imageList)..add(pickedFile);
-      onUpdateImages(updatedList);
+      final updatedList = List<dynamic>.from(widget.imageList)..add(pickedFile);
+      widget.onUpdateImages(updatedList);
     }
   }
 
   void _removeImage(int index) {
-    final updatedList = List<dynamic>.from(imageList)..removeAt(index);
-    onUpdateImages(updatedList);
+    final updatedList = List<dynamic>.from(widget.imageList)..removeAt(index);
+    widget.onUpdateImages(updatedList);
   }
 
   Widget _buildImage(dynamic image) {
@@ -50,6 +57,14 @@ class CommunityWriteItem extends StatelessWidget {
       return Image.file(File(image.path), fit: BoxFit.cover);
     }
     return Container();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(communityCategoryProvider).getCategories();
+    });
   }
 
   @override
@@ -119,7 +134,7 @@ class CommunityWriteItem extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          if (imageList.length < _maxImageUpload)
+          if (widget.imageList.length < _maxImageUpload)
             InkWell(
               onTap: _uploadImage,
               child: Container(
@@ -138,7 +153,7 @@ class CommunityWriteItem extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "${imageList.length}/$_maxImageUpload",
+                      "${widget.imageList.length}/$_maxImageUpload",
                       style: const TextStyle(
                         fontSize: 12.0,
                         fontWeight: FontWeight.w500,
@@ -150,7 +165,7 @@ class CommunityWriteItem extends StatelessWidget {
               ),
             ),
           const SizedBox(width: 15),
-          ...imageList.asMap().entries.map((entry) {
+          ...widget.imageList.asMap().entries.map((entry) {
             final index = entry.key;
             final dynamic imageFile = entry.value;
 
@@ -206,7 +221,7 @@ class CommunityWriteItem extends StatelessWidget {
           child: CustomWidget.buildTitle("제목", size: 14),
         ),
         TextField(
-          controller: titleController,
+          controller: widget.titleController,
           decoration: InputDecoration(
               hintText: '제목',
               border: OutlineInputBorder(
@@ -219,7 +234,7 @@ class CommunityWriteItem extends StatelessWidget {
         TextField(
           maxLines: null,
           minLines: 5,
-          controller: descriptionController,
+          controller: widget.descriptionController,
           decoration: InputDecoration(
               hintText: '여기는 게시물에 대한 정보가 담기는 필드입니다',
               border: OutlineInputBorder(
@@ -243,7 +258,7 @@ class CommunityWriteItem extends StatelessWidget {
               },
               child: Row(
                 children: [
-                  CustomWidget.buildTitle("$selectedCategoryName",
+                  CustomWidget.buildTitle("${widget.selectedCategoryName}",
                       size: 16, weight: FontWeight.w500),
                   const SizedBox(
                     width: 8,
@@ -262,73 +277,77 @@ class CommunityWriteItem extends StatelessWidget {
   }
 
   Widget _buildAppUpdatePop(BuildContext context, String? title) {
-    final Map<String, int> _placeFilters = {
-      '맛집': 1,
-      '생활/편의': 2,
-      '병원/약국': 3,
-      '미용': 4
-    };
-    final Map<String, int> _neighborFilters = {
-      '반려동물': 5,
-      '운동': 6,
-      '동네친구': 7,
-      '고민사연': 8,
-      '취미': 9,
-      '동네풍경': 10
-    };
-    final Map<String, int> _noticeFilters = {
-      '동네행상': 11,
-      '분실/실종': 12,
-      '동네사건사고': 13
-    };
+    final notifier = ref.watch(communityCategoryProvider);
+
+    if (notifier.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (notifier.errorMessage != null) {
+      return Center(child: Text("에러: ${notifier.errorMessage}"));
+    }
+
+    final categories = notifier.categories;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 32.0),
-            child: Row(
-              children: [
-                const Icon(Icons.title, size: 24, color: Colors.deepPurpleAccent),
-                CustomWidget.buildTitle(title ?? "카테고리 선택", size: 18),
-              ],
-            ),
-          ),
-          _buildFilterCategory(
-              context, CupertinoIcons.house_alt_fill, "동네정보", _placeFilters),
-          _buildFilterCategory(
-              context, Icons.people, "이웃과 함께", _neighborFilters),
-          _buildFilterCategory(
-              context, CupertinoIcons.speaker_zzz_fill, "공지사항", _noticeFilters),
-          InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Padding(
-              padding: EdgeInsets.zero,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 32.0),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.close,
-                    color: Colors.grey,
-                    weight: 20,
-                  ),
-                  const SizedBox(width: 32),
-                  CustomWidget.buildTitle("닫기"),
+                  const Icon(Icons.title,
+                      size: 24, color: Colors.deepPurpleAccent),
+                  CustomWidget.buildTitle(title ?? "카테고리 선택", size: 18),
                 ],
               ),
             ),
-          )
-        ],
+
+            ...categories.map((category) {
+              return _buildFilterCategory(
+                context,
+                Icons.category,
+                category.name,
+                category.topics,
+              );
+            }).toList(),
+
+            InkWell(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Padding(
+                padding: EdgeInsets.zero,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.close,
+                      color: Colors.grey,
+                      weight: 20,
+                    ),
+                    const SizedBox(width: 32),
+                    CustomWidget.buildTitle("닫기"),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildFilterCategory(BuildContext context, IconData iconData,
-      String title, Map<String, int> filters) {
+
+  Widget _buildFilterCategory(
+      BuildContext context,
+      IconData iconData,
+      String title,
+      List<dynamic> topics,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -342,8 +361,9 @@ class CommunityWriteItem extends StatelessWidget {
         Wrap(
           spacing: 8.0,
           runSpacing: 8.0,
-          children: filters.entries.map((entry) {
-            return _buildListItem(context, entry.key, entry.value);
+          children: topics.map((topic) {
+            // topic이 DTO 객체이므로 topic.name, topic.id 사용
+            return _buildListItem(context, topic.name, topic.id);
           }).toList(),
         ),
         const SizedBox(height: 16),
@@ -351,12 +371,13 @@ class CommunityWriteItem extends StatelessWidget {
     );
   }
 
+
   Widget _buildListItem(BuildContext context, String text, int topicId) {
-    bool isSelected = selectedCategoryName == text;
+    bool isSelected = widget.selectedCategoryName == text;
 
     return TextButton(
       onPressed: () {
-        onUpdateCategory(text, topicId);
+        widget.onUpdateCategory(text, topicId);
         Navigator.pop(context);
       },
       child: CustomWidget.buildTitle(text,

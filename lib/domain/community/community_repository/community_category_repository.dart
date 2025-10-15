@@ -7,10 +7,10 @@ class CommunityCategoryRepository {
 
   Future<List<CommunityCategoryDTO>> getCategories() async {
     try {
-      final response = await dio.get("$baseUrl/community/categories");
+      final response = await dio.get("$baseUrl/communityCategories");
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonList = response.data['data'];
+        final List<dynamic> jsonList = response.data;
         return jsonList
             .map((json) => CommunityCategoryDTO.fromJson(json))
             .toList();
@@ -22,4 +22,5 @@ class CommunityCategoryRepository {
       throw Exception("Failed to load categories: $e");
     }
   }
+
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../domain/community/community_provider/community_list_notifier.dart';
+import '../../../../../../domain/community/community_provider/community_search_status_provider.dart';
 import '../../../../../widgets/WriteButton.dart';
 import 'community_filter_list.dart';
 import 'community_list_item.dart';
@@ -46,10 +47,13 @@ class _CommunityListBodyState extends ConsumerState<CommunityListBody> {
     super.dispose();
   }
 
+  // CommunityListBody.dart
+
   Future<void> _onRefresh() async {
     final notifier = ref.read(communityListProvider.notifier);
-    if (notifier.state.keyword.isNotEmpty) {
-      await notifier.searchPosts(notifier.state.keyword);
+    final currentCategories = ref.read(selectCommunityCategories).whereType<String>().toList();
+    if (notifier.state.keyword.isNotEmpty || currentCategories.isNotEmpty) {
+      await notifier.searchPosts(notifier.state.keyword, currentCategories);
     } else {
       await notifier.getCommunityList();
     }
@@ -58,7 +62,8 @@ class _CommunityListBodyState extends ConsumerState<CommunityListBody> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(communityListProvider);
-
+    final categories = ref.watch(selectCommunityCategories);
+    print('list BODY 에서 가져온 카테고리 : ${categories}');
     return SafeArea(
       child: Stack(
         children: [
@@ -126,7 +131,8 @@ class _CommunityListBodyState extends ConsumerState<CommunityListBody> {
                     ),
                   ),
                   onSubmitted: (value) {
-                    ref.read(communityListProvider.notifier).searchPosts(value);
+                    ref.read(communityListProvider.notifier)
+                        .searchPosts(value,categories.whereType<String>().toList());
                   },
                 ),
               ),
