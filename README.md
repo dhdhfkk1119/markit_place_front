@@ -110,9 +110,6 @@
       <img src="https://github.com/user-attachments/assets/d7b61c9c-358a-4d8c-97c1-f1d48e33db0c" alt="상품 등록" width="250"/>
     </td>
     <td align="center">
-      <img src="여기에-상품수정삭제-GIF-주소-붙여넣기" alt="상품 수정 삭제" width="250"/>
-    </td>
-    <td align="center">
       <img src="https://github.com/user-attachments/assets/77d69377-c050-4e16-9e28-2a916cb034ac" alt="상품 리스트 및 검색 기능" width="250"/>
     </td>
   </tr>
