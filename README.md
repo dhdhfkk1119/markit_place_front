@@ -102,7 +102,6 @@
 <table>
   <tr>
     <td align="center"><b>상품 등록</b></td>
-    <td align="center"><b>상품 수정 삭제</b></td>
     <td align="center"><b>상품 리스트 및 검색 기능</b></td>
   </tr>
   <tr>
