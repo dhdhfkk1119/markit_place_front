@@ -1,8 +1,5 @@
-<a href="https://club-project-one.vercel.app/" target="_blank">
-// 홍보 이미지 넣기
-</a>
+<img width="720" height="480" alt="제목을 입력해주세요  (2)" src="https://github.com/user-attachments/assets/203c547c-d3b9-48b7-98c0-411613505bc7" />
 
-<br/>
 <br/>
 
 # 📝 Front Flutter 소개 
